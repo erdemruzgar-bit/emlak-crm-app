@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Architectural Curator | Premium Property Listings</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "secondary-fixed-dim": "#b7c8e1",
+                        "outline-variant": "#c2c6d6",
+                        "surface-variant": "#e0e3e5",
+                        "on-tertiary-container": "#fffbff",
+                        "surface-dim": "#d8dadc",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#f2f4f6",
+                        "surface-container-high": "#e6e8ea",
+                        "surface-container": "#eceef0",
+                        "on-surface-variant": "#424754",
+                        "surface-tint": "#0053db",
+                        "on-secondary-fixed": "#0b1c30",
+                        "error": "#ba1a1a",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "background": "#f7f9fb",
+                        "surface": "#f7f9fb",
+                        "on-error-container": "#93000a",
+                        "on-primary-container": "#fefcff",
+                        "surface-container-highest": "#e0e3e5",
+                        "inverse-primary": "#b4c5ff",
+                        "tertiary-container": "#b75b00",
+                        "surface-bright": "#f7f9fb",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "on-surface": "#191c1e",
+                        "error-container": "#ffdad6",
+                        "secondary-fixed": "#d3e4fe",
+                        "primary-container": "#316bf3",
+                        "on-secondary-fixed-variant": "#38485d",
+                        "outline": "#727785",
+                        "on-primary": "#ffffff",
+                        "inverse-on-surface": "#eff1f3",
+                        "tertiary-fixed": "#ffdcc6",
+                        "primary-fixed": "#dbe1ff",
+                        "tertiary": "#924700",
+                        "primary": "#0051d5",
+                        "on-tertiary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-container": "#54647a",
+                        "on-tertiary-fixed-variant": "#723600",
+                        "on-primary-fixed": "#00174b",
+                        "inverse-surface": "#2d3133",
+                        "on-tertiary-fixed": "#311400",
+                        "secondary-container": "#d0e1fb",
+                        "on-background": "#191c1e",
+                        "tertiary-fixed-dim": "#ffb786",
+                        "secondary": "#505f76"
+                    },
+                    fontFamily: {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        .glass-badge {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+        }
+        .primary-gradient {
+            background: linear-gradient(135deg, #0051d5 0%, #316bf3 100%);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface">
+<!-- Top Navigation -->
+<header class="flex justify-between items-center px-6 py-4 w-full sticky top-0 z-50 bg-slate-50 dark:bg-slate-900 font-inter tracking-tight">
+<div class="flex items-center gap-12">
+<span class="text-xl font-black tracking-tighter text-slate-900 dark:text-slate-50">Architectural Curator</span>
+<nav class="hidden md:flex items-center gap-8">
+<a class="text-slate-500 dark:text-slate-400 font-medium hover:text-blue-500 transition-colors" href="#">Portfolio</a>
+<a class="text-blue-600 dark:text-blue-400 font-semibold border-b-2 border-blue-600" href="#">Collections</a>
+<a class="text-slate-500 dark:text-slate-400 font-medium hover:text-blue-500 transition-colors" href="#">Marketplace</a>
+<a class="text-slate-500 dark:text-slate-400 font-medium hover:text-blue-500 transition-colors" href="#">Analytics</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-slate-500 hover:text-blue-500 transition-colors">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 text-slate-500 hover:text-blue-500 transition-colors">
+<span class="material-symbols-outlined" data-icon="favorite">favorite</span>
+</button>
+<div class="w-10 h-10 rounded-full overflow-hidden ml-2 border-2 border-surface-container-high">
+<img class="w-full h-full object-cover" data-alt="Professional headshot of an interior designer in a minimalist studio setting with soft natural light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAo5cTJT6riL3Bc9CgKQWaVGF4yRs9eWN_j8OzzBU3HWwEzwGvW5atK6lpYiEOIXod8oqv-IKzonXYR0v7aVMIR7IyIDYrj-Rc6_7fZQ9iWCSKm44UIfz1jlLRrChyyaeHNs8jY_56SOFDHXuFNhFwYmZa38C6JLZpRikLAObWBkMnkSOxRUbZdA4FpjzxYeR67q1mY2vTe12SIdZQv0Q_8_Pcg3rUrKTsS4BFru7MJa24EQIYUljYNt0mP2mCZryJLZW0pn1tNjMg"/>
+</div>
+</div>
+</header>
+<main class="flex min-h-[calc(100vh-72px)] overflow-hidden">
+<!-- Left Filter Sidebar -->
+<aside class="w-72 bg-surface-container-low p-6 overflow-y-auto flex-shrink-0">
+<h2 class="text-headline-sm font-bold text-on-surface mb-8 tracking-tight">Custom Filter</h2>
+<!-- Location -->
+<div class="mb-8">
+<div class="flex justify-between items-center mb-4">
+<span class="text-sm font-bold tracking-wider uppercase text-on-surface-variant">Location</span>
+<span class="material-symbols-outlined text-sm">expand_less</span>
+</div>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-3 text-primary text-lg">location_on</span>
+<input class="w-full pl-10 pr-4 py-3 bg-surface-container-lowest rounded-xl border-none focus:ring-2 focus:ring-primary/20 text-sm font-medium" type="text" value="Jakarta, Indonesia"/>
+</div>
+</div>
+<!-- Price Range -->
+<div class="mb-8">
+<div class="flex justify-between items-center mb-4">
+<span class="text-sm font-bold tracking-wider uppercase text-on-surface-variant">Price Range</span>
+<span class="material-symbols-outlined text-sm">expand_less</span>
+</div>
+<div class="px-2">
+<div class="h-1.5 w-full bg-surface-container-highest rounded-full relative mb-4">
+<div class="absolute h-full left-[20%] right-[30%] bg-primary rounded-full"></div>
+<div class="absolute w-5 h-5 bg-white border-2 border-primary rounded-full top-1/2 -translate-y-1/2 left-[20%] shadow-sm"></div>
+<div class="absolute w-5 h-5 bg-white border-2 border-primary rounded-full top-1/2 -translate-y-1/2 left-[70%] shadow-sm"></div>
+</div>
+<div class="flex justify-between text-xs font-bold text-on-surface-variant">
+<span>$10,000</span>
+<span>$50,000</span>
+</div>
+</div>
+</div>
+<!-- Land Area -->
+<div class="mb-8">
+<div class="flex justify-between items-center mb-4">
+<span class="text-sm font-bold tracking-wider uppercase text-on-surface-variant">Land Area</span>
+<span class="material-symbols-outlined text-sm">expand_less</span>
+</div>
+<div class="grid grid-cols-2 gap-3">
+<div class="relative">
+<span class="absolute right-3 top-3 text-[10px] font-bold text-on-surface-variant">MIN</span>
+<input class="w-full px-3 py-3 bg-surface-container-lowest rounded-xl border-none focus:ring-2 focus:ring-primary/20 text-sm" placeholder="Sq Ft" type="text"/>
+</div>
+<div class="relative">
+<span class="absolute right-3 top-3 text-[10px] font-bold text-on-surface-variant">MAX</span>
+<input class="w-full px-3 py-3 bg-surface-container-lowest rounded-xl border-none focus:ring-2 focus:ring-primary/20 text-sm" placeholder="Sq Ft" type="text"/>
+</div>
+</div>
+</div>
+<!-- Type of Place -->
+<div class="mb-8">
+<div class="flex justify-between items-center mb-4">
+<span class="text-sm font-bold tracking-wider uppercase text-on-surface-variant">Type of Place</span>
+<span class="material-symbols-outlined text-sm">expand_less</span>
+</div>
+<div class="space-y-3">
+<label class="flex items-center gap-3 cursor-pointer group">
+<div class="w-5 h-5 border-2 border-primary rounded-md flex items-center justify-center bg-primary">
+<span class="material-symbols-outlined text-white text-sm" style="font-variation-settings: 'wght' 700">check</span>
+</div>
+<span class="text-sm font-medium text-on-surface">Single Family Home</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer">
+<div class="w-5 h-5 border-2 border-outline-variant rounded-md"></div>
+<span class="text-sm font-medium text-on-surface-variant">Apartment</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer">
+<div class="w-5 h-5 border-2 border-outline-variant rounded-md"></div>
+<span class="text-sm font-medium text-on-surface-variant">Condo/Townhouse</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer">
+<div class="w-5 h-5 border-2 border-outline-variant rounded-md"></div>
+<span class="text-sm font-medium text-on-surface-variant">Bungalow</span>
+</label>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<section class="flex-grow bg-surface p-8 overflow-y-auto">
+<div class="flex justify-between items-center mb-10">
+<div>
+<h1 class="text-3xl font-black tracking-tighter text-on-surface">Featured Collections</h1>
+<p class="text-on-surface-variant text-sm mt-1">Discover 124 premium properties in Jakarta</p>
+</div>
+<div class="flex gap-2">
+<button class="px-4 py-2 bg-white rounded-full text-xs font-bold shadow-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">sort</span> Sort by: Newest
+                    </button>
+</div>
+</div>
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+<!-- Card 1 -->
+<div class="group bg-surface-container-lowest rounded-3xl overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+<div class="relative h-64">
+<img class="w-full h-full object-cover" data-alt="Modern architectural house with clean lines, large glass windows, and a manicured lawn during the blue hour" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDzEw0MwCw1km1yhlGeOzKHddMwOKBPQn2cJ8ZLzE_AwgXwhTnnBxhgBzQmySy5ofHYZm56XonNWeowhQvYicjhNIQrCQFWLCW3DELmqTbT5eJE94nGMq6Ajf38NVjxqhDS3R67t5R7nP8fQQi-VRMhs5XuNj0sgukbdB8dYh1r9YJVGb_CftxY0uB6PpvWTvn5JXYWMsEIxb-E1VcJOo_nZlRAwmuwPtpHnmC5OucL2vtuNcR0OxlL11cdJXy_-GnTjnAjsd7h_DA"/>
+<div class="absolute top-4 left-4 glass-badge px-3 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-widest text-primary">Home</div>
+<button class="absolute top-4 right-4 w-10 h-10 bg-white/90 backdrop-blur rounded-full flex items-center justify-center text-primary shadow-sm">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1">bookmark</span>
+</button>
+</div>
+<div class="p-6">
+<div class="flex justify-between items-start mb-2">
+<h3 class="text-xl font-bold tracking-tight text-on-surface">Dream House Reality</h3>
+<div class="flex items-center gap-1 bg-surface-container-low px-2 py-1 rounded-md">
+<span class="material-symbols-outlined text-yellow-500 text-sm" style="font-variation-settings: 'FILL' 1">star</span>
+<span class="text-xs font-bold text-on-surface">4.9/5</span>
+</div>
+</div>
+<p class="flex items-center gap-1 text-on-surface-variant text-xs mb-4">
+<span class="material-symbols-outlined text-sm">location_on</span>
+                            Jl. Kemang Raya No. 12, Jakarta
+                        </p>
+<div class="flex justify-between items-center">
+<span class="text-lg font-black text-primary">$367.00<span class="text-xs font-medium text-on-surface-variant tracking-normal">/month</span></span>
+<button class="p-2 bg-secondary-container text-on-secondary-container rounded-xl">
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Card 2 (Active/Selected) -->
+<div class="group bg-surface-container-lowest rounded-3xl overflow-hidden ring-4 ring-primary/10 transition-all duration-300 shadow-xl">
+<div class="relative h-64">
+<img class="w-full h-full object-cover" data-alt="Luxury cliffside villa with infinity pool, modern white architecture, and sweeping ocean views at sunset" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC9cq3KOZTzLpXvVbmoWKxlgBWDZ_wZerclOD1DE8eH2cEj7VsEoA_RUa01ZiVUFGjp5OUWZdF2LtdxH2djKCn4uM9tPi3ZG3mOY5DSuBfaZk7_wDeHd3Ikg4gT2AeIr9XXUmGuVAOvYkBpv75FYijnl0Ymgs0EbQ_0joSKPBc7-mVUh7kmhomTXeL-E8O8vM4JORWbphxf-U_vjx8IjQgvQrJAJuqv1I_VHm0fB8WSVZZ5qX1fEHfWte0j80VQ5glN2CAUgiqtPfw"/>
+<div class="absolute top-4 left-4 glass-badge px-3 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-widest text-primary">Villa</div>
+<button class="absolute top-4 right-4 w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white shadow-lg">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1">bookmark</span>
+</button>
+</div>
+<div class="p-6">
+<div class="flex justify-between items-start mb-2">
+<h3 class="text-xl font-bold tracking-tight text-on-surface">Midnight Ridge Villa</h3>
+<div class="flex items-center gap-1 bg-surface-container-low px-2 py-1 rounded-md">
+<span class="material-symbols-outlined text-yellow-500 text-sm" style="font-variation-settings: 'FILL' 1">star</span>
+<span class="text-xs font-bold text-on-surface">5.0/5</span>
+</div>
+</div>
+<p class="flex items-center gap-1 text-on-surface-variant text-xs mb-4">
+<span class="material-symbols-outlined text-sm">location_on</span>
+                            Sentul City, Highlands Jakarta
+                        </p>
+<div class="flex justify-between items-center">
+<span class="text-lg font-black text-primary">$850.00<span class="text-xs font-medium text-on-surface-variant tracking-normal">/month</span></span>
+<button class="p-2 bg-primary text-white rounded-xl">
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="group bg-surface-container-lowest rounded-3xl overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+<div class="relative h-64">
+<img class="w-full h-full object-cover" data-alt="Minimalist urban apartment interior with floor-to-ceiling windows, designer furniture, and soft morning light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCXxJUaMF-XTfvfh9hor1nD4rmuLqqEfLdZ_CAY7SHC5YWoQdglnb2pKj-MN4u3fy3MEU8MHPrxQSKG7BiyawVcKAlUnw7Is8TYh9rJTPFEi73YCJWOeapvR0ttdCkR-cKqCnamX-hUSwaHCWwgnRuQqvdhvHthqFJj23C35CZ454QHp7I4cauhadlfHq59KkdoiOFY-6Dp3yvabi8rkBqVbvn12bzjbGeu5p2OlKgonv582RhAr59RGDzlSDCOG6LbmhtUxF_paBc"/>
+<div class="absolute top-4 left-4 glass-badge px-3 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-widest text-primary">Apartment</div>
+<button class="absolute top-4 right-4 w-10 h-10 bg-white/90 backdrop-blur rounded-full flex items-center justify-center text-primary shadow-sm">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1">bookmark</span>
+</button>
+</div>
+<div class="p-6">
+<div class="flex justify-between items-start mb-2">
+<h3 class="text-xl font-bold tracking-tight text-on-surface">Skyline Loft</h3>
+<div class="flex items-center gap-1 bg-surface-container-low px-2 py-1 rounded-md">
+<span class="material-symbols-outlined text-yellow-500 text-sm" style="font-variation-settings: 'FILL' 1">star</span>
+<span class="text-xs font-bold text-on-surface">4.7/5</span>
+</div>
+</div>
+<p class="flex items-center gap-1 text-on-surface-variant text-xs mb-4">
+<span class="material-symbols-outlined text-sm">location_on</span>
+                            SCBD District 8, Jakarta
+                        </p>
+<div class="flex justify-between items-center">
+<span class="text-lg font-black text-primary">$1,200.00<span class="text-xs font-medium text-on-surface-variant tracking-normal">/month</span></span>
+<button class="p-2 bg-secondary-container text-on-secondary-container rounded-xl">
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Right Property Detail Sidebar -->
+<aside class="w-96 bg-surface-container-high overflow-y-auto flex-shrink-0">
+<div class="p-6">
+<div class="relative rounded-2xl overflow-hidden mb-6 aspect-video">
+<img class="w-full h-full object-cover" data-alt="Close up of a luxury villa's outdoor seating area with premium fabric and a panoramic view of the forest canopy" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBLlglgRamCRpXMF4RuF_u0_g7H7FnQnxm9-JqOpp4NfNVa3Jo9EccADxuoQnDv_HzGFFydPNOO200lwtr9RzU9bqee6jEyVeXShyyQOh0-6MdVBtYYER6EAfHoBplTXg6LKRhVQwkL0t-mEjwPlZyQR23pxZopViI2Xl7EE_YL8zNvUCZEuKj7_xiO_k_91zI_CZMmYG9CcOYTRQb6bZs8oepFhUO9rzs0Xq09GBEw9QAQK-eXhwKPUqg3VHpe-LDgvrJHEc9BPsg"/>
+<button class="absolute bottom-4 right-4 bg-white/90 backdrop-blur text-primary text-[10px] font-black px-3 py-1 rounded-lg">48 PHOTOS</button>
+</div>
+<div class="mb-6">
+<h2 class="text-2xl font-black tracking-tighter text-on-surface mb-2">Midnight Ridge Villa</h2>
+<p class="text-sm text-on-surface-variant leading-relaxed">
+                        A masterful blend of brutalist architecture and organic warmth. Located in the exclusive Sentul Highlands, this villa offers unparalleled privacy with panoramic ridge views.
+                    </p>
+</div>
+<div class="grid grid-cols-2 gap-3 mb-8">
+<div class="bg-surface-container-low p-4 rounded-2xl flex items-center gap-3">
+<div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">door_open</span>
+</div>
+<div>
+<span class="block text-xs font-bold text-on-surface">6 Rooms</span>
+<span class="block text-[10px] text-on-surface-variant">Functional</span>
+</div>
+</div>
+<div class="bg-surface-container-low p-4 rounded-2xl flex items-center gap-3">
+<div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">bed</span>
+</div>
+<div>
+<span class="block text-xs font-bold text-on-surface">4 Beds</span>
+<span class="block text-[10px] text-on-surface-variant">King Size</span>
+</div>
+</div>
+<div class="bg-surface-container-low p-4 rounded-2xl flex items-center gap-3">
+<div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">countertops</span>
+</div>
+<div>
+<span class="block text-xs font-bold text-on-surface">2 Kitchen</span>
+<span class="block text-[10px] text-on-surface-variant">Wet/Dry</span>
+</div>
+</div>
+<div class="bg-surface-container-low p-4 rounded-2xl flex items-center gap-3">
+<div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">square_foot</span>
+</div>
+<div>
+<span class="block text-xs font-bold text-on-surface">2,820 sqft</span>
+<span class="block text-[10px] text-on-surface-variant">Total Area</span>
+</div>
+</div>
+</div>
+<div class="mb-8">
+<div class="flex justify-between items-center mb-4">
+<h4 class="text-sm font-black tracking-tight text-on-surface">Location Map</h4>
+<button class="text-[10px] font-bold text-primary flex items-center gap-1">VIEW FULL <span class="material-symbols-outlined text-xs">open_in_new</span></button>
+</div>
+<div class="rounded-2xl h-48 overflow-hidden relative group">
+<img class="w-full h-full object-cover" data-alt="Satellite map view of a lush hilly suburban area with winding roads and scattered residential developments" data-location="Jakarta" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBTF4ixhAR5m8JFswZl7QRWKTUoUtjLpyEwkIFrVonF1IHfW4u8uk0yJwhZeEZsNwOgE-dvK30efOnux1TBqieElAcWbtheytVC5pWNC-BEtGEhjJqj9-0WS0ycVFuNY4GrjPijJkTdTImYnzuwXuDHWezsAVGqNEoq1kr7hNf6Ujeb6Bmcwcne1tvOV765nf55DfL8wcpybExeeZNL9rzcXwXfQMx71T-jOkuVXqyd7k-WYZ6Frm6ce-aztaeA6yYOIIovl7lOURg"/>
+<div class="absolute inset-0 bg-primary/10 flex items-center justify-center">
+<div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center shadow-lg animate-pulse">
+<span class="material-symbols-outlined text-white" style="font-variation-settings: 'FILL' 1">location_on</span>
+</div>
+</div>
+</div>
+</div>
+<div class="sticky bottom-0 pt-4 bg-surface-container-high border-t border-outline-variant/10">
+<div class="flex items-center justify-between mb-6">
+<div>
+<span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Pricing</span>
+<span class="block text-2xl font-black text-on-surface">$850.00<span class="text-sm font-medium">/mo</span></span>
+</div>
+<div class="flex -space-x-2">
+<img class="w-8 h-8 rounded-full border-2 border-surface-container-high object-cover" data-alt="Avatar of a male real estate agent in a navy suit" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCugBLiTnGgBKAu9gsvaUuGZblcWzhsTMAuOPM_i0z-yDhgxkdqtUU-_zdtGWxuOzmr3KXlXg-US7S7X7YQhQ-JwKT3y2x9SR-4H71Srwh2HqRgBdWQcrW5xSSTpWRLYUigv-TVDIkv-gyBKFYvmM4HbXv7K9xXIxbGWgAYuzpN6UC1irUqDz8DZOvm8QBiBnllYqCDG171rnOaHaAbzHPTRzZYN5PRHvo4aWwJGyrEhmuaDGhAsl43iwcOoN_y5CLKhjjZgQcq2Ig"/>
+<img class="w-8 h-8 rounded-full border-2 border-surface-container-high object-cover" data-alt="Avatar of a female property manager with a professional smile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVujlE-Od-XGEpjbnRq8xipS6-MYBDsQOkF1JiZYywZKYB-nnSewMR2vjpETCdn5-oLauCuHMN8pjAb-Og2xC_ztP4x1-OIY6fOVSC0qdVKfivoUJgn2xgJfpt0-UdUnZWALDxJxwP4zgrm3gOrjekBfF7WCVO0UAa18LHxa7svDGPxaizuglb1pGlhJzSh4BXA-wQdJuo8ebFDCiW4XJ10J-ZQtrSdggA48l8C9sfIwxRxVf2cuWFAAom9vkAc7CmMNxhqPGZsXU"/>
+<div class="w-8 h-8 rounded-full border-2 border-surface-container-high bg-primary-container text-on-primary-container flex items-center justify-center text-[10px] font-bold">+2</div>
+</div>
+</div>
+<button class="w-full py-4 primary-gradient text-white font-bold rounded-2xl shadow-lg flex items-center justify-center gap-2 group">
+                        Contact Agent
+                        <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">send</span>
+</button>
+</div>
+</div>
+</aside>
+</main>
+</body></html>

@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Midnight Ridge Villa - Architect Curator</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-container-high": "#e6e8ea",
+              "surface-container": "#eceef0",
+              "on-surface-variant": "#424754",
+              "surface-tint": "#0053db",
+              "on-secondary-fixed": "#0b1c30",
+              "error": "#ba1a1a",
+              "secondary-fixed-dim": "#b7c8e1",
+              "outline-variant": "#c2c6d6",
+              "on-tertiary-container": "#fffbff",
+              "surface-variant": "#e0e3e5",
+              "surface-container-lowest": "#ffffff",
+              "surface-container-low": "#f2f4f6",
+              "surface-dim": "#d8dadc",
+              "on-error-container": "#93000a",
+              "on-primary-fixed-variant": "#003ea8",
+              "background": "#f7f9fb",
+              "surface": "#f7f9fb",
+              "primary-fixed-dim": "#b4c5ff",
+              "on-surface": "#191c1e",
+              "error-container": "#ffdad6",
+              "outline": "#727785",
+              "on-primary": "#ffffff",
+              "inverse-on-surface": "#eff1f3",
+              "secondary-fixed": "#d3e4fe",
+              "primary-container": "#316bf3",
+              "on-secondary-fixed-variant": "#38485d",
+              "primary-fixed": "#dbe1ff",
+              "tertiary-fixed": "#ffdcc6",
+              "on-primary-container": "#fefcff",
+              "inverse-primary": "#b4c5ff",
+              "surface-container-highest": "#e0e3e5",
+              "tertiary-container": "#b75b00",
+              "surface-bright": "#f7f9fb",
+              "inverse-surface": "#2d3133",
+              "on-tertiary-fixed": "#311400",
+              "tertiary-fixed-dim": "#ffb786",
+              "secondary": "#505f76",
+              "secondary-container": "#d0e1fb",
+              "on-background": "#191c1e",
+              "tertiary": "#924700",
+              "primary": "#0051d5",
+              "on-tertiary": "#ffffff",
+              "on-secondary": "#ffffff",
+              "on-error": "#ffffff",
+              "on-tertiary-fixed-variant": "#723600",
+              "on-secondary-container": "#54647a",
+              "on-primary-fixed": "#00174b"
+            },
+            fontFamily: {
+              "headline": ["Inter"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+        }
+        .primary-gradient {
+            background: linear-gradient(135deg, #0051d5 0%, #316bf3 100%);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body min-h-screen">
+<!-- TopNavBar (Shared Component) -->
+<nav class="fixed top-0 w-full z-50 bg-slate-50/70 dark:bg-slate-950/70 backdrop-blur-xl flex justify-between items-center px-8 py-4 w-full">
+<div class="flex items-center gap-8">
+<span class="text-xl font-black text-slate-900 dark:text-slate-50 font-headline tracking-tight">Architect Curator</span>
+<div class="hidden md:flex gap-6 items-center">
+<a class="text-blue-700 dark:text-blue-400 font-bold border-b-2 border-blue-600 transition-all duration-300 ease-in-out hover:opacity-80" href="#">Portfolio</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-all duration-300 ease-in-out hover:opacity-80" href="#">Leads</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-all duration-300 ease-in-out hover:opacity-80" href="#">Calendar</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-all duration-300 ease-in-out hover:opacity-80" href="#">Documents</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-all">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-all">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<div class="h-10 w-10 rounded-full bg-surface-container-high overflow-hidden">
+<img alt="Agent Profile" data-alt="professional portrait of a high-end real estate agent in a modern suit against a blurred minimalist office background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBpyakpgp8D7QJeZISzABRYZ3UNOwkDl6xLMp1QJzQvtYHnUXhdW6vQXVSdtGb4hvJVxbMKu36ye8Cnsxrj1FM76R8U_4mBzOqeIGBoRFWiIiwI9Q_YqTBAh7GJqMkh5InncmNzyDQj93eT_F8ESlXlbM2rsKPPO446t9w_ukMXxH-1uo7Qr-iENkQC5nUmF2yd7bSMwlBOL55Zf_NVxj2bh1ULzq9roxE00EhUm4BeiUEmHRawsnm7b8XATwxfa2GgTbvQdCiRJIA"/>
+</div>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="pt-24 pb-12 px-6 lg:px-12 max-w-[1440px] mx-auto">
+<!-- Header & Navigation Back -->
+<div class="flex items-center gap-4 mb-8">
+<button class="h-10 w-10 rounded-full bg-surface-container-low flex items-center justify-center text-on-surface-variant hover:bg-surface-container transition-all">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<div class="flex flex-col">
+<h1 class="text-3xl font-black font-headline tracking-tighter text-on-surface uppercase">Midnight Ridge Villa</h1>
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<span class="text-sm font-medium tracking-wide">1204 Obsidian Trail, High Ridge Estates, CA</span>
+</div>
+</div>
+</div>
+<!-- Bento Gallery Layout -->
+<div class="grid grid-cols-12 grid-rows-2 gap-4 h-[600px] mb-12">
+<div class="col-span-12 md:col-span-8 row-span-2 relative group overflow-hidden rounded-xl">
+<img alt="Midnight Ridge Villa Main View" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="Ultra-modern luxury villa exterior at twilight with glowing interior lights, large glass walls, and a sleek dark metal architectural design" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYzvzLe69uQaqr20t5YMkhPB5EJ0Ras9fiLuurs591I8F9OdvsTD4l9-FkL2MphTgJWTfZO_o6M7bIX1K9wiKShAz2lKiB6_t2MPX9747hZjzBwg_bjkvisJhTqpeZTjK-Nkmh9nt-hX5ZUFlV_ukto_Lvz6-6x1D3u1dj1UdJjpIfC2_35GxQg3azJIFDx1l848YrhezEnpD99hIOWdpP6gOh41hihlVoOuX-GmYfU-5xzZiFi--hzZ1pb9nv2fPl9eVM8DF3K20"/>
+<div class="absolute top-4 left-4 glass-effect px-4 py-2 rounded-md">
+<span class="text-xs font-bold tracking-widest text-primary uppercase">Exclusive Listing</span>
+</div>
+</div>
+<div class="hidden md:block col-span-4 row-span-1 overflow-hidden rounded-xl">
+<img alt="Interior Design" class="w-full h-full object-cover" data-alt="Spacious living room with high ceilings, minimalist Italian furniture, and floor-to-ceiling windows overlooking a forest at dusk" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBSLPoyfmckeQw53MJrhEVIYXBk61NrzXyvR7TYMYYXUtURDlcdqF53yMVFHUB_yYQc_0DYs0AXRtrBQwh2rE1F_RKkfgyHPjnpAShSzrq5NbdDNTCWNQB9T5NmsemlkiDN-oMyEhs6q5-fLhuSTJXijR6z5oO6wBaVPzwEJ5MIgyMBSU8RDbHrs4L_W_wzj-RkI4rewCOqivWXev__i3whxbfabUZu4_XeYxhbFjWsqbsKtNPZZFcsSZaTMdgvizZ06g6MyFkaj40"/>
+</div>
+<div class="hidden md:block col-span-2 row-span-1 overflow-hidden rounded-xl">
+<img alt="Modern Kitchen" class="w-full h-full object-cover" data-alt="Sleek gourmet kitchen with dark marble countertops, hidden appliances, and soft recessed lighting under oak cabinetry" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDlYK3qkWMKtTsmTH5gNt8FTX5Ury7jNQIwEz9IoOTN2jBEfIN1TfA1KDr9VRXYCAcIBnY9P1yT8y48PjZnE5siSTtVnEp6gcJeblbkNkcHPwxrPsoV893U-mAHLWZ86LoU9UnSQuIyRR-vxp3_oUMVx6l3QslxaGhqw0Msag_ZRCJeC5QEPwndXQ8ZPLutjJKCQdrZ-OmGTOZOK1m9T1hdCk965H87_aAynC7aRW99OzjYmXCJIdSYbSptADl84oxMEeOYhQz58CY"/>
+</div>
+<div class="hidden md:block col-span-2 row-span-1 relative group overflow-hidden rounded-xl bg-surface-container-high">
+<img alt="More Photos" class="w-full h-full object-cover opacity-60" data-alt="Elegant master bathroom with a freestanding tub and panoramic mountain views through a large window" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBKWiHAVA0TQApTTfliYugLjbqcp7cAQ7aLsZdNv3Q1UQEcj-xg2x1FVwdeGh5IdlUi6dbGOMjkD0yjAXfaFcHrALPnMPd2km15dm0YgzplXNqUVlYfCgctVZthHapzdAL5BbaT-zqpCPIzFnwlfnpJ9-fE3fxwz0HNQc7PaIBZZEEhCY7Cix8roj1CwP51fwwRozkay9LlSDy8zaW6qUvgqv88bWDQalz2BXzIo6TdsV-HqPu4PGGrnqYgqqzrrXH8yNNk4suNThU"/>
+<div class="absolute inset-0 flex items-center justify-center bg-on-surface/20 hover:bg-on-surface/40 transition-all cursor-pointer">
+<span class="text-white font-bold text-lg">+18 Photos</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+<!-- Left Column: Details -->
+<div class="lg:col-span-8 space-y-12">
+<!-- Quick Stats Grid -->
+<section class="grid grid-cols-3 md:grid-cols-6 gap-4">
+<div class="bg-surface-container-low p-4 rounded-xl flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-primary mb-1">meeting_room</span>
+<span class="text-lg font-bold text-on-surface">6</span>
+<span class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Rooms</span>
+</div>
+<div class="bg-surface-container-low p-4 rounded-xl flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-primary mb-1">bed</span>
+<span class="text-lg font-bold text-on-surface">4</span>
+<span class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Beds</span>
+</div>
+<div class="bg-surface-container-low p-4 rounded-xl flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-primary mb-1">bathtub</span>
+<span class="text-lg font-bold text-on-surface">2</span>
+<span class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Baths</span>
+</div>
+<div class="bg-surface-container-low p-4 rounded-xl flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-primary mb-1">countertops</span>
+<span class="text-lg font-bold text-on-surface">2</span>
+<span class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Kitchens</span>
+</div>
+<div class="bg-surface-container-low p-4 rounded-xl flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-primary mb-1">square_foot</span>
+<span class="text-lg font-bold text-on-surface">2,820</span>
+<span class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Sqft</span>
+</div>
+<div class="bg-surface-container-low p-4 rounded-xl flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-primary mb-1">garage</span>
+<span class="text-lg font-bold text-on-surface">1</span>
+<span class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Garage</span>
+</div>
+</section>
+<!-- Property Overview -->
+<section>
+<h2 class="text-xl font-bold tracking-tight mb-4 text-on-surface border-l-4 border-primary pl-4">The Architect's Vision</h2>
+<p class="text-on-surface-variant leading-relaxed mb-6">
+                        Nestled along the jagged ridgeline of obsidian cliffs, Midnight Ridge Villa is a masterclass in modern brutalist architecture softened by organic textures. Designed by the award-winning firm Studio Nocturne, the property features cantilevered glass wings that offer 270-degree views of the canyon below. 
+                    </p>
+<p class="text-on-surface-variant leading-relaxed">
+                        Every element has been curated for the discerning collector: hand-honed basalt floors, reclaimed cedar ceilings, and a smart-climate system that mimics the natural flow of mountain air. The transition between indoor and outdoor spaces is seamless, centering around a monolithic infinity pool that appears to spill directly into the valley.
+                    </p>
+</section>
+<!-- Tabbed Interface -->
+<section class="bg-surface-container-lowest p-8 rounded-xl shadow-sm">
+<div class="flex gap-8 border-b border-surface-variant mb-6">
+<button class="pb-4 border-b-2 border-primary text-primary font-bold text-sm tracking-widest uppercase">About Property</button>
+<button class="pb-4 border-b-2 border-transparent text-on-surface-variant hover:text-on-surface transition-all font-bold text-sm tracking-widest uppercase">Location Insights</button>
+<button class="pb-4 border-b-2 border-transparent text-on-surface-variant hover:text-on-surface transition-all font-bold text-sm tracking-widest uppercase">Client Reviews (12)</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<ul class="space-y-3">
+<li class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-primary text-sm">check_circle</span>
+<span class="text-sm font-medium">Smart Home Automation Hub</span>
+</li>
+<li class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-primary text-sm">check_circle</span>
+<span class="text-sm font-medium">Wine Cellar (500 Bottle Capacity)</span>
+</li>
+<li class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-primary text-sm">check_circle</span>
+<span class="text-sm font-medium">Private Heliport Access</span>
+</li>
+</ul>
+<ul class="space-y-3">
+<li class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-primary text-sm">check_circle</span>
+<span class="text-sm font-medium">Solar Grid Independent Energy</span>
+</li>
+<li class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-primary text-sm">check_circle</span>
+<span class="text-sm font-medium">Reinforced Concrete Structure</span>
+</li>
+<li class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-primary text-sm">check_circle</span>
+<span class="text-sm font-medium">Custom Sound-Dampening Glazing</span>
+</li>
+</ul>
+</div>
+</section>
+<!-- Location Map -->
+<section>
+<h2 class="text-xl font-bold tracking-tight mb-4 text-on-surface border-l-4 border-primary pl-4">Location</h2>
+<div class="h-[300px] rounded-xl overflow-hidden relative">
+<img alt="Map View" class="w-full h-full object-cover" data-alt="Stylized dark-themed topological map with clean white lines and a single cobalt blue location pin on a ridge" data-location="High Ridge Estates, California" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB2LuAN0m4zUO4HW98BVzUVGuxSVO3hdD_FxiXc9yAZk4zFB0xDGBOQwpoVTnwKiHj1aRuTHgzKKJ1kLgMYJMgLzVbiEBvokFZ4bczPhF7yGee-M9fPW1vrOc1x_-tVK2rlBDfJ8sKhCVnOwmpVCjPUXzBegIdn4TCJsHxsVX8Gx2Y6Jc9QlvIgiL_YxcprDk4PhjhfNWkQWwE1owgtegmUeyUK3I6PRPdOAUmFaaBNL3gJ37bg6o98SUSWfbZTPgO88WAG0qiTBvs"/>
+<div class="absolute inset-0 bg-primary/10 pointer-events-none"></div>
+<div class="absolute bottom-4 left-4 bg-white/90 backdrop-blur p-4 rounded-xl shadow-lg flex items-center gap-4">
+<div class="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">navigation</span>
+</div>
+<div>
+<p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Get Directions</p>
+<p class="text-sm font-semibold text-on-surface">15 mins from City Center</p>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Column: CTA Sidebar -->
+<div class="lg:col-span-4">
+<div class="sticky top-28 space-y-6">
+<!-- Price & CTA Card -->
+<div class="bg-surface-container-highest p-8 rounded-xl shadow-lg">
+<div class="mb-6">
+<span class="text-xs font-bold tracking-widest text-on-surface-variant uppercase">Property Value</span>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="text-4xl font-black font-headline text-on-surface">$4,850,000</span>
+</div>
+<p class="text-xs text-tertiary font-bold mt-2 flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+                                Trending: +4.2% this quarter
+                            </p>
+</div>
+<div class="space-y-4">
+<button class="w-full primary-gradient text-white font-bold py-4 rounded-xl shadow-sm hover:opacity-90 transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-lg">payments</span>
+                                Order Now
+                            </button>
+<button class="w-full bg-surface-container-lowest text-on-surface border border-outline-variant/30 font-bold py-4 rounded-xl hover:bg-surface-container transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-lg">mail</span>
+                                Contact Agent
+                            </button>
+</div>
+<div class="mt-8 pt-8 border-t border-outline-variant/30">
+<div class="flex items-center gap-4">
+<img alt="Listing Agent" class="h-12 w-12 rounded-full object-cover" data-alt="headshot of a confident professional male real estate agent in his 40s with a warm smile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdj7g80I8cAm_FomHOspU4J9_HkAlFDJqVHbAXfHTuL0tpVXNL49NguHL7F2PaN7Zxvjp4tueHufhg0ye_lK4BHLIaw6klFMeuTOKR1UxIlMb_-Mxxav4RC22cE16BYls-Ftb26IFii3rGFKOXjFnkjhvgVo14BlI5t4BOQwYOwyhOBxOSrEBffZz2C02S-PPNPX9mberp_-8uC7JPQ4QrvbBADy0TzXQvUtgFrlyd4W6wjliLoYTCXD6dct20vJwKYM3sHwcFVTI"/>
+<div>
+<h4 class="font-bold text-on-surface">Julian Vane</h4>
+<p class="text-xs text-on-surface-variant">Senior Portfolio Director</p>
+</div>
+<button class="ml-auto h-10 w-10 bg-secondary-container text-on-secondary-container rounded-full flex items-center justify-center hover:scale-105 transition-transform">
+<span class="material-symbols-outlined">call</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Mortgage Calculator Hook -->
+<div class="bg-surface-container-low p-6 rounded-xl">
+<h3 class="font-bold text-on-surface mb-2">Mortgage Estimation</h3>
+<p class="text-sm text-on-surface-variant mb-4">Estimated at $24,450/mo based on 20% down payment and 6.5% interest.</p>
+<a class="text-sm text-primary font-bold hover:underline flex items-center gap-1" href="#">
+                            Calculate personalized rates
+                            <span class="material-symbols-outlined text-sm">chevron_right</span>
+</a>
+</div>
+<!-- Neighborhood Score -->
+<div class="bg-white p-6 rounded-xl shadow-sm space-y-4">
+<h3 class="font-bold text-on-surface border-b border-surface-variant pb-3">Area Scores</h3>
+<div class="flex justify-between items-center">
+<span class="text-sm font-medium text-on-surface-variant">Walkability</span>
+<div class="flex gap-1">
+<div class="h-2 w-8 bg-primary rounded-full"></div>
+<div class="h-2 w-8 bg-surface-container-high rounded-full"></div>
+<div class="h-2 w-8 bg-surface-container-high rounded-full"></div>
+</div>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-sm font-medium text-on-surface-variant">Privacy Rank</span>
+<div class="flex gap-1">
+<div class="h-2 w-8 bg-primary rounded-full"></div>
+<div class="h-2 w-8 bg-primary rounded-full"></div>
+<div class="h-2 w-8 bg-primary rounded-full"></div>
+</div>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-sm font-medium text-on-surface-variant">Air Quality</span>
+<div class="flex gap-1">
+<div class="h-2 w-8 bg-primary rounded-full"></div>
+<div class="h-2 w-8 bg-primary rounded-full"></div>
+<div class="h-2 w-8 bg-surface-container-high rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer Simple -->
+<footer class="mt-12 py-8 px-12 border-t border-surface-variant/30 text-center">
+<p class="text-on-surface-variant text-sm font-medium">Architect Curator — Luxury Real Estate CRM. Established 2024.</p>
+</footer>
+</body></html>

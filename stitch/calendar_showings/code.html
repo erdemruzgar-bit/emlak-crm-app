@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>EstateEase CRM - Calendar</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-primary-container": "#fefcff",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "on-tertiary-fixed": "#311400",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed-variant": "#723600",
+                        "background": "#f7f9fb",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container": "#eceef0",
+                        "tertiary": "#924700",
+                        "tertiary-fixed-dim": "#ffb786",
+                        "primary-fixed": "#dbe1ff",
+                        "inverse-on-surface": "#eff1f3",
+                        "surface": "#f7f9fb",
+                        "tertiary-fixed": "#ffdcc6",
+                        "error": "#ba1a1a",
+                        "surface-container-highest": "#e0e3e5",
+                        "on-primary-fixed": "#00174b",
+                        "on-error": "#ffffff",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "secondary-fixed": "#d3e4fe",
+                        "surface-container-low": "#f2f4f6",
+                        "on-secondary-fixed": "#0b1c30",
+                        "inverse-primary": "#b4c5ff",
+                        "secondary-container": "#d0e1fb",
+                        "on-primary": "#ffffff",
+                        "on-secondary-fixed-variant": "#38485d",
+                        "tertiary-container": "#b75b00",
+                        "outline-variant": "#c2c6d6",
+                        "secondary": "#505f76",
+                        "on-surface": "#191c1e",
+                        "surface-container-high": "#e6e8ea",
+                        "inverse-surface": "#2d3133",
+                        "surface-tint": "#0053db",
+                        "surface-variant": "#e0e3e5",
+                        "on-tertiary": "#ffffff",
+                        "outline": "#727785",
+                        "surface-bright": "#f7f9fb",
+                        "on-error-container": "#93000a",
+                        "primary": "#0051d5",
+                        "on-background": "#191c1e",
+                        "surface-dim": "#d8dadc",
+                        "secondary-fixed-dim": "#b7c8e1",
+                        "on-secondary-container": "#54647a",
+                        "primary-container": "#316bf3",
+                        "on-surface-variant": "#424754",
+                        "on-tertiary-container": "#fffbff"
+                    },
+                    fontFamily: {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface antialiased">
+<!-- Sidebar Navigation -->
+<aside class="fixed left-0 top-0 h-full flex flex-col p-4 z-50 bg-slate-100 dark:bg-slate-950 h-screen w-64 rounded-r-3xl tonal-shift no-border">
+<div class="text-lg font-black text-slate-900 dark:text-white mb-8 px-2">EstateEase</div>
+<nav class="flex-1 space-y-2">
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-medium text-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="domain">domain</span>
+<span class="font-medium text-sm">Properties</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+<span class="font-medium text-sm">Leads</span>
+</a>
+<!-- Calendar Active Tab -->
+<a class="flex items-center gap-3 px-4 py-3 bg-white dark:bg-slate-800 text-blue-700 dark:text-blue-300 shadow-sm rounded-xl transition-all translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="calendar_today" style="font-variation-settings: 'FILL' 1;">calendar_today</span>
+<span class="font-semibold text-sm">Calendar</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="assignment">assignment</span>
+<span class="font-medium text-sm">Tasks</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-medium text-sm">Settings</span>
+</a>
+</nav>
+<div class="mt-auto space-y-4 pt-4 border-t border-slate-200/50">
+<button class="w-full bg-gradient-to-br from-primary to-primary-container text-white rounded-xl py-3 px-4 flex items-center justify-center gap-2 font-semibold shadow-[0_12px_32px_rgba(25,28,30,0.06)] active:scale-95 transition-all">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+                New Listing
+            </button>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span class="font-medium text-sm">Help Center</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Wrapper -->
+<main class="ml-64 min-h-screen flex flex-col">
+<!-- Top Bar -->
+<header class="flex items-center justify-between px-8 py-4 w-full sticky top-0 z-40 bg-slate-50/70 dark:bg-slate-900/70 backdrop-blur-xl shadow-sm">
+<div class="flex items-center gap-6 flex-1">
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg" data-icon="search">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20 transition-all" placeholder="Search calendar, events..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<div class="h-8 w-8 rounded-full overflow-hidden border-2 border-primary/10">
+<img alt="User avatar" class="w-full h-full object-cover" data-alt="professional real estate agent headshot, smiling middle-aged man in a navy suit, high-end studio lighting, soft blurred background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD5tor0p9tamgwc3iiAUB9DCCZtydJK8NPU9VHmDtN_IL9cg8DG6Eh0vwi5HRRf6INpf4XqdDFrV1mc0EB4WZcCv07PkEtSaqDW848eUZF5Slm3mhUefc1en0dY76vbXPzG4EErwXnK9FWqbYXVw5bSLc6tm1wywHWKD1JXibkYN6W23RTREgW3KskQRFIb1CEhYbXXp_ubEictYwEwXHVWFdEQ9R77LbWA713OVPZspX2yOVulrOhG11-5iyGwLLRLItNtu1ptRZA"/>
+</div>
+</div>
+</header>
+<div class="p-8 flex gap-8 flex-1 overflow-hidden">
+<!-- Daily Agenda Sidebar (Left) -->
+<section class="w-80 flex flex-col gap-6 shrink-0 h-full overflow-y-auto">
+<div class="space-y-1">
+<h2 class="text-2xl font-bold tracking-tight text-on-surface">Daily Agenda</h2>
+<p class="text-sm text-on-surface-variant">Wednesday, Oct 24, 2023</p>
+</div>
+<!-- Timeline Section -->
+<div class="space-y-4">
+<!-- Showing Item -->
+<div class="bg-surface-container-lowest p-4 rounded-xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] group cursor-pointer hover:translate-x-1 transition-transform">
+<div class="flex items-center justify-between mb-2">
+<span class="px-2 py-0.5 bg-secondary-container text-on-secondary-container text-[10px] font-bold rounded uppercase tracking-wider">Showing</span>
+<span class="text-xs font-medium text-on-surface-variant">09:30 AM</span>
+</div>
+<h4 class="font-bold text-on-surface text-sm mb-1 group-hover:text-primary transition-colors">Oakwood Manor Penthouse</h4>
+<p class="text-xs text-on-surface-variant leading-relaxed">Client: Marcus Thorne</p>
+<div class="mt-3 flex items-center gap-2 text-primary">
+<span class="material-symbols-outlined text-sm" data-icon="location_on">location_on</span>
+<span class="text-[11px] font-semibold">Emerald Hills, CA</span>
+</div>
+</div>
+<!-- Meeting Item -->
+<div class="bg-surface-container-lowest p-4 rounded-xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] group cursor-pointer hover:translate-x-1 transition-transform border-l-4 border-primary">
+<div class="flex items-center justify-between mb-2">
+<span class="px-2 py-0.5 bg-primary-fixed text-on-primary-fixed text-[10px] font-bold rounded uppercase tracking-wider">Client Meeting</span>
+<span class="text-xs font-medium text-on-surface-variant">11:00 AM</span>
+</div>
+<h4 class="font-bold text-on-surface text-sm mb-1 group-hover:text-primary transition-colors">Contract Signing</h4>
+<p class="text-xs text-on-surface-variant leading-relaxed">Office HQ - Room 402</p>
+<div class="mt-3 flex -space-x-2">
+<img alt="Client 1" class="h-6 w-6 rounded-full border-2 border-white" data-alt="professional portrait of a young woman with a warm smile, high-end corporate style, soft lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBIgS8aA5BmMFIFJDMZuzyylIqPTDlYmSKN0HuBUvrqm2V1JlbI9nwtlOxRHkBDdVIjuVqLv_tHii3EXJabqzDOcRFEqkKnAUbLbZ7YP8lWOhtx846MX1utVZzSTHfUbyFVDL088xPuz1IMK9p6o2lK0xjd5EkNdZNk--wYh6v9nO8Ks3ixsussnIF9p27fm7I1OH9EDHnwO-_Be828P54wV48adawBpTSPWtjh_tdad3soWqo11iL59zFJ9Pz81vy0I32yDKzas1k"/>
+<img alt="Client 2" class="h-6 w-6 rounded-full border-2 border-white" data-alt="close-up of a businessman in a light grey suit, soft morning light, professional setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCraOUpsJq_OsciiOo6JOgN6uxA8WC6hxyvUf9NIDU8KaNvbpwkmD5HWpfBmSbka6iX7i0HrdxuZ7j8mX_5C6JdNEEYAA-BVhSEIU4Mm2M23tTRyghrptyg7tFNfOi9aGTwzRv3oZXP-q3xV37PgJcCmvOT7Ljhnw7NtNNV72-IYZbgWsyUK70ez8rYA-sBbM91bLu5_gEl9jHD_BYwVdfkxKHTTjjOFfSMTTEAXrtS0Uu2UvzFrV0WobS1OPsFTCOreqRAASc-Mtc"/>
+</div>
+</div>
+<!-- Reminder Item -->
+<div class="bg-tertiary/10 p-4 rounded-xl group cursor-pointer hover:translate-x-1 transition-transform border-l-4 border-tertiary">
+<div class="flex items-center justify-between mb-2">
+<span class="px-2 py-0.5 bg-tertiary text-white text-[10px] font-bold rounded uppercase tracking-wider">Reminder</span>
+<span class="text-xs font-medium text-tertiary">14:00 PM</span>
+</div>
+<h4 class="font-bold text-on-surface text-sm mb-1">Follow up with listing agents</h4>
+<p class="text-xs text-on-surface-variant leading-relaxed">Re: Sunset Boulevard Appraisal</p>
+</div>
+<!-- Appointment Item -->
+<div class="bg-surface-container-lowest p-4 rounded-xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] group cursor-pointer hover:translate-x-1 transition-transform">
+<div class="flex items-center justify-between mb-2">
+<span class="px-2 py-0.5 bg-surface-container text-on-surface-variant text-[10px] font-bold rounded uppercase tracking-wider">Inspection</span>
+<span class="text-xs font-medium text-on-surface-variant">16:30 PM</span>
+</div>
+<h4 class="font-bold text-on-surface text-sm mb-1 group-hover:text-primary transition-colors">Villa Mariposa Check</h4>
+<p class="text-xs text-on-surface-variant leading-relaxed">Structural review stage 2</p>
+</div>
+</div>
+<!-- Add Event CTA -->
+<button class="mt-auto w-full py-3 border-2 border-dashed border-outline-variant text-outline hover:border-primary hover:text-primary rounded-xl flex items-center justify-center gap-2 transition-all font-medium text-sm">
+<span class="material-symbols-outlined text-sm" data-icon="add_circle">add_circle</span>
+                    Quick Appointment
+                </button>
+</section>
+<!-- Calendar View (Right) -->
+<section class="flex-1 bg-surface-container-lowest rounded-3xl p-8 flex flex-col shadow-[0_12px_32px_rgba(25,28,30,0.06)] border border-white/40">
+<div class="flex items-center justify-between mb-10">
+<div class="flex items-center gap-6">
+<h1 class="text-3xl font-extrabold tracking-tighter text-on-surface">October 2023</h1>
+<div class="flex items-center bg-surface-container-low rounded-xl p-1 shadow-inner">
+<button class="p-1.5 hover:bg-white rounded-lg transition-all text-on-surface-variant">
+<span class="material-symbols-outlined text-sm" data-icon="chevron_left">chevron_left</span>
+</button>
+<button class="px-4 py-1.5 bg-white shadow-sm rounded-lg text-xs font-bold text-primary">Today</button>
+<button class="p-1.5 hover:bg-white rounded-lg transition-all text-on-surface-variant">
+<span class="material-symbols-outlined text-sm" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+<div class="flex bg-surface-container-low rounded-xl p-1">
+<button class="px-4 py-1.5 text-xs font-bold text-on-surface-variant hover:text-on-surface transition-colors">Day</button>
+<button class="px-4 py-1.5 text-xs font-bold text-on-surface-variant hover:text-on-surface transition-colors">Week</button>
+<button class="px-4 py-1.5 bg-white shadow-sm rounded-lg text-xs font-bold text-on-surface">Month</button>
+</div>
+</div>
+<!-- Calendar Grid -->
+<div class="flex-1 grid grid-cols-7 grid-rows-6 gap-px bg-surface-container/50 overflow-hidden rounded-2xl border border-surface-container">
+<!-- Day Headers -->
+<div class="bg-surface-container-low p-4 text-center text-[10px] font-black uppercase tracking-widest text-on-surface-variant border-b border-surface-container">Mon</div>
+<div class="bg-surface-container-low p-4 text-center text-[10px] font-black uppercase tracking-widest text-on-surface-variant border-b border-surface-container">Tue</div>
+<div class="bg-surface-container-low p-4 text-center text-[10px] font-black uppercase tracking-widest text-on-surface-variant border-b border-surface-container">Wed</div>
+<div class="bg-surface-container-low p-4 text-center text-[10px] font-black uppercase tracking-widest text-on-surface-variant border-b border-surface-container">Thu</div>
+<div class="bg-surface-container-low p-4 text-center text-[10px] font-black uppercase tracking-widest text-on-surface-variant border-b border-surface-container">Fri</div>
+<div class="bg-surface-container-low p-4 text-center text-[10px] font-black uppercase tracking-widest text-on-surface-variant border-b border-surface-container">Sat</div>
+<div class="bg-surface-container-low p-4 text-center text-[10px] font-black uppercase tracking-widest text-on-surface-variant border-b border-surface-container">Sun</div>
+<!-- Calendar Cells (Partial Implementation) -->
+<!-- Empty/Prev Month -->
+<div class="bg-surface-container-low/30 p-4 text-outline/30 text-sm font-bold">25</div>
+<div class="bg-surface-container-low/30 p-4 text-outline/30 text-sm font-bold">26</div>
+<div class="bg-surface-container-low/30 p-4 text-outline/30 text-sm font-bold">27</div>
+<div class="bg-surface-container-low/30 p-4 text-outline/30 text-sm font-bold">28</div>
+<div class="bg-surface-container-low/30 p-4 text-outline/30 text-sm font-bold">29</div>
+<div class="bg-surface-container-low/30 p-4 text-outline/30 text-sm font-bold">30</div>
+<div class="bg-white p-4 text-on-surface text-sm font-bold group hover:bg-surface-container-low transition-colors cursor-pointer">1</div>
+<!-- Oct 2-8 -->
+<div class="bg-white p-4 text-on-surface text-sm font-bold relative group hover:bg-surface-container-low transition-colors cursor-pointer">2</div>
+<div class="bg-white p-4 text-on-surface text-sm font-bold group hover:bg-surface-container-low transition-colors cursor-pointer">
+<span>3</span>
+<div class="mt-2 space-y-1">
+<div class="h-1 w-full bg-primary/40 rounded-full"></div>
+</div>
+</div>
+<div class="bg-white p-4 text-on-surface text-sm font-bold group hover:bg-surface-container-low transition-colors cursor-pointer">4</div>
+<div class="bg-white p-4 text-on-surface text-sm font-bold group hover:bg-surface-container-low transition-colors cursor-pointer">5</div>
+<div class="bg-white p-4 text-on-surface text-sm font-bold group hover:bg-surface-container-low transition-colors cursor-pointer">
+<span>6</span>
+<div class="mt-2 space-y-1">
+<div class="h-1 w-full bg-tertiary/40 rounded-full"></div>
+<div class="h-1 w-1/2 bg-primary/40 rounded-full"></div>
+</div>
+</div>
+<div class="bg-white p-4 text-on-surface text-sm font-bold group hover:bg-surface-container-low transition-colors cursor-pointer">7</div>
+<div class="bg-white p-4 text-on-surface text-sm font-bold group hover:bg-surface-container-low transition-colors cursor-pointer">8</div>
+<!-- Oct 9-15 -->
+<div class="bg-white p-4 text-on-surface text-sm font-bold group hover:bg-surface-container-low transition-colors cursor-pointer">9</div>
+<div class="bg-white p-4 text-on-surface text-sm font-bold group hover:bg-surface-container-low transition-colors cursor-pointer">10</div>
+<div class="bg-white p-4 text-on-surface text-sm font-bold group hover:bg-surface-container-low transition-colors cursor-pointer">11</div>
+<div class="bg-white p-4 text-on-surface text-sm font-bold group hover:bg-surface-container-low transition-colors cursor-pointer">12</div>
+<div class="bg-white p-4 text-on-surface text-sm font-bold group hover:bg-surface-container-low transition-colors cursor-pointer">13</div>
+<div class="bg-white p-4 text-on-surface text-sm font-bold group hover:bg-surface-container-low transition-colors cursor-pointer">14</div>
+<div class="bg-white p-4 text-on-surface text-sm font-bold group hover:bg-surface-container-low transition-colors cursor-pointer">15</div>
+<!-- Oct 16-22 -->
+<div class="bg-white p-4 text-on-surface text-sm font-bold group hover:bg-surface-container-low transition-colors cursor-pointer">16</div>
+<div class="bg-white p-4 text-on-surface text-sm font-bold group hover:bg-surface-container-low transition-colors cursor-pointer">17</div>
+<div class="bg-white p-4 text-on-surface text-sm font-bold group hover:bg-surface-container-low transition-colors cursor-pointer">18</div>
+<div class="bg-white p-4 text-on-surface text-sm font-bold group hover:bg-surface-container-low transition-colors cursor-pointer">19</div>
+<div class="bg-white p-4 text-on-surface text-sm font-bold group hover:bg-surface-container-low transition-colors cursor-pointer">20</div>
+<div class="bg-white p-4 text-on-surface text-sm font-bold group hover:bg-surface-container-low transition-colors cursor-pointer">21</div>
+<div class="bg-white p-4 text-on-surface text-sm font-bold group hover:bg-surface-container-low transition-colors cursor-pointer">22</div>
+<!-- Oct 23-29 (Focusing on Current Week) -->
+<div class="bg-white p-4 text-on-surface text-sm font-bold group hover:bg-surface-container-low transition-colors cursor-pointer">23</div>
+<!-- ACTIVE DAY -->
+<div class="bg-primary-container/10 p-4 text-primary text-sm font-bold relative ring-2 ring-inset ring-primary shadow-lg overflow-hidden">
+<span>24</span>
+<div class="mt-2 space-y-1.5">
+<div class="bg-primary h-4 px-2 text-[8px] text-white flex items-center rounded-sm">Oakwood Penthouse</div>
+<div class="bg-secondary h-4 px-2 text-[8px] text-white flex items-center rounded-sm">Contract Signing</div>
+</div>
+<div class="absolute -right-2 -bottom-2 opacity-10">
+<span class="material-symbols-outlined text-6xl" data-icon="event_note">event_note</span>
+</div>
+</div>
+<div class="bg-white p-4 text-on-surface text-sm font-bold group hover:bg-surface-container-low transition-colors cursor-pointer">25</div>
+<div class="bg-white p-4 text-on-surface text-sm font-bold group hover:bg-surface-container-low transition-colors cursor-pointer">26</div>
+<div class="bg-white p-4 text-on-surface text-sm font-bold group hover:bg-surface-container-low transition-colors cursor-pointer">27</div>
+<div class="bg-white p-4 text-on-surface text-sm font-bold group hover:bg-surface-container-low transition-colors cursor-pointer">28</div>
+<div class="bg-white p-4 text-on-surface text-sm font-bold group hover:bg-surface-container-low transition-colors cursor-pointer">29</div>
+<!-- Fill Oct 30-31 -->
+<div class="bg-white p-4 text-on-surface text-sm font-bold group hover:bg-surface-container-low transition-colors cursor-pointer">30</div>
+<div class="bg-white p-4 text-on-surface text-sm font-bold group hover:bg-surface-container-low transition-colors cursor-pointer">31</div>
+<!-- Next Month -->
+<div class="bg-surface-container-low/30 p-4 text-outline/30 text-sm font-bold">1</div>
+<div class="bg-surface-container-low/30 p-4 text-outline/30 text-sm font-bold">2</div>
+<div class="bg-surface-container-low/30 p-4 text-outline/30 text-sm font-bold">3</div>
+<div class="bg-surface-container-low/30 p-4 text-outline/30 text-sm font-bold">4</div>
+<div class="bg-surface-container-low/30 p-4 text-outline/30 text-sm font-bold">5</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Contextual FAB (Hidden on Mobile, but defined for Screen purpose) -->
+<button class="fixed bottom-8 right-8 h-14 w-14 bg-primary text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-50">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+</button>
+</body></html>

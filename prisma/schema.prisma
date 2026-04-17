@@ -1,0 +1,354 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  AGENT
+}
+
+enum CustomerType {
+  BUYER
+  SELLER
+  TENANT
+  LANDLORD
+}
+
+enum ConsentType {
+  ACIK_RIZA
+  AYDINLATMA
+  PAZARLAMA
+}
+
+enum ListingType {
+  SATILIK
+  KIRALIK
+}
+
+enum PropertyType {
+  DAIRE
+  VILLA
+  ARSA
+  ISYERI
+  MUSTAKILEV
+}
+
+enum PropertyStatus {
+  ACTIVE
+  SOLD
+  RENTED
+  INACTIVE
+}
+
+enum AppointmentType {
+  GOSTERIM
+  TOPLANTI
+  DIGER
+}
+
+enum AppointmentStatus {
+  PLANNED
+  COMPLETED
+  CANCELLED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
+enum InteractionType {
+  CALL
+  EMAIL
+  VISIT
+  WHATSAPP
+}
+
+// ─── Kullanıcı & Şube ───
+
+model Branch {
+  id        String   @id @default(cuid())
+  name      String
+  address   String?
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users      User[]
+  customers  Customer[]
+  properties Property[]
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  phone        String?
+  role         Role     @default(AGENT)
+  isActive     Boolean  @default(true)
+  branchId     String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  branch              Branch?               @relation(fields: [branchId], references: [id])
+  assignedCustomers   Customer[]            @relation("AssignedAgent")
+  assignedProperties  Property[]            @relation("AssignedAgent")
+  appointments        Appointment[]
+  tasks               Task[]                @relation("TaskOwner")
+  assignedTasks       Task[]                @relation("TaskAssigner")
+  customerNotes       CustomerNote[]
+  customerInteractions CustomerInteraction[]
+  auditLogs           AuditLog[]
+}
+
+// ─── KVKK Audit Log ───
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String   // CREATE, READ, UPDATE, DELETE
+  entity    String   // Customer, Property, etc.
+  entityId  String?
+  oldValue  String?  @db.Text
+  newValue  String?  @db.Text
+  ipAddress String?
+  timestamp DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([entity, entityId])
+  @@index([userId])
+  @@index([timestamp])
+}
+
+// ─── Müşteri Yönetimi ───
+
+model Customer {
+  id             String       @id @default(cuid())
+  firstName      String
+  lastName       String
+  email          String?
+  phone          String?
+  tcKimlikNo     String?      // AES-256 encrypted
+  address        String?
+  customerType   CustomerType @default(BUYER)
+  source         String?      // Referans, İnternet, vs.
+  isAnonymized   Boolean      @default(false)
+  assignedAgentId String?
+  branchId       String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  // === TALEP PROFİLİ ===
+  stage              String?   // LEAD, QUALIFIED, ACTIVE, SHOWING, OFFER, CONTRACT, CLOSED, LOST
+  minBudget          Float?
+  maxBudget          Float?
+  budgetCurrency     String?   @default("TRY")
+
+  // === ZAMAN / ACİLİYET ===
+  urgency            String?   // LOW, MEDIUM, HIGH, URGENT
+  desiredMoveDate    DateTime?
+
+  // === MÜLK TERCİHLERİ ===
+  preferredTypes     String[]  // ["DAIRE", "VILLA"]
+  preferredCities    String[]  // ["İstanbul"]
+  preferredDistricts String[]  // ["Kadıköy", "Beşiktaş"]
+  minArea            Float?
+  maxArea            Float?
+  minRooms           String?   // "2+1"
+  maxRooms           String?   // "4+1"
+  preferredFeatures  String[]  // ["Otopark", "Havuz", "Asansör"]
+
+  // === FİNANSMAN ===
+  financingMethod    String?   // NAKIT, KREDI, TAKAS
+  preApprovalStatus  String?   // NONE, PENDING, APPROVED, REJECTED
+  downPaymentPercent Float?
+
+  // === SEGMENTASYON ===
+  tags               String[]  // ["VIP", "Yatırımcı"]
+  notesSummary       String?   @db.Text
+
+  // === TAKİP ===
+  lastContactDate    DateTime?
+  nextFollowUpDate   DateTime?
+
+  assignedAgent  User?               @relation("AssignedAgent", fields: [assignedAgentId], references: [id])
+  branch         Branch?             @relation(fields: [branchId], references: [id])
+  consents       CustomerConsent[]
+  notes          CustomerNote[]
+  interactions   CustomerInteraction[]
+  propertyMatches PropertyMatch[]
+  ownedProperties Property[]          @relation("PropertyOwner")
+  appointments   Appointment[]
+
+  @@index([assignedAgentId])
+  @@index([branchId])
+  @@index([stage])
+  @@index([urgency])
+  @@index([lastContactDate])
+  @@index([nextFollowUpDate])
+}
+
+model CustomerConsent {
+  id          String      @id @default(cuid())
+  customerId  String
+  consentType ConsentType
+  consentText String      @db.Text
+  isGranted   Boolean     @default(false)
+  grantedAt   DateTime?
+  revokedAt   DateTime?
+  ipAddress   String?
+  createdAt   DateTime    @default(now())
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId])
+}
+
+model CustomerNote {
+  id         String   @id @default(cuid())
+  customerId String
+  userId     String
+  content    String   @db.Text
+  createdAt  DateTime @default(now())
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id])
+}
+
+model CustomerInteraction {
+  id         String          @id @default(cuid())
+  customerId String
+  userId     String
+  type       InteractionType
+  summary    String?         @db.Text
+  date       DateTime        @default(now())
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id])
+}
+
+// ─── İlan / Portföy ───
+
+model Property {
+  id             String         @id @default(cuid())
+  title          String
+  listingType    ListingType
+  propertyType   PropertyType
+  price          Float
+  currency       String         @default("TRY")
+  area           Float?         // m²
+  rooms          String?        // 3+1, 2+1, vs.
+  bathrooms      Int?
+  floor          Int?
+  totalFloors    Int?
+  age            Int?           // Bina yaşı
+  heating        String?
+  address        String?
+  city           String?
+  district       String?
+  neighborhood   String?
+  lat            Float?
+  lng            Float?
+  description    String?        @db.Text
+  status         PropertyStatus @default(ACTIVE)
+  ownerId        String?
+  assignedAgentId String?
+  branchId       String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  owner         Customer?       @relation("PropertyOwner", fields: [ownerId], references: [id])
+  assignedAgent User?           @relation("AssignedAgent", fields: [assignedAgentId], references: [id])
+  branch        Branch?         @relation(fields: [branchId], references: [id])
+  images        PropertyImage[]
+  matches       PropertyMatch[]
+  appointments  Appointment[]
+
+  @@index([status])
+  @@index([listingType])
+  @@index([city, district])
+  @@index([assignedAgentId])
+}
+
+model PropertyImage {
+  id         String  @id @default(cuid())
+  propertyId String
+  url        String
+  order      Int     @default(0)
+  isPrimary  Boolean @default(false)
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+}
+
+model PropertyMatch {
+  id         String   @id @default(cuid())
+  propertyId String
+  customerId String
+  matchScore Float?
+  isNotified Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@unique([propertyId, customerId])
+}
+
+// ─── Randevu & Görev ───
+
+model Appointment {
+  id         String            @id @default(cuid())
+  title      String
+  type       AppointmentType   @default(GOSTERIM)
+  propertyId String?
+  customerId String?
+  userId     String
+  startDate  DateTime
+  endDate    DateTime
+  location   String?
+  notes      String?           @db.Text
+  status     AppointmentStatus @default(PLANNED)
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  property Property? @relation(fields: [propertyId], references: [id])
+  customer Customer? @relation(fields: [customerId], references: [id])
+  user     User      @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([startDate])
+}
+
+model Task {
+  id           String       @id @default(cuid())
+  title        String
+  description  String?      @db.Text
+  userId       String
+  assignedById String?
+  dueDate      DateTime?
+  priority     TaskPriority @default(MEDIUM)
+  status       TaskStatus   @default(TODO)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  user       User  @relation("TaskOwner", fields: [userId], references: [id])
+  assignedBy User? @relation("TaskAssigner", fields: [assignedById], references: [id])
+
+  @@index([userId])
+  @@index([status])
+}

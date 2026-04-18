@@ -34,6 +34,10 @@ export async function GET() {
     branchFilter.branchId = user.branchId;
   }
 
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+  const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+  const appointmentFilter = user.role === "AGENT" ? { userId: user.id as string } : {};
+
   const [
     totalCustomers,
     activeProperties,
@@ -41,32 +45,37 @@ export async function GET() {
     pendingAppointments,
     propertyTypeGroups,
     recentAuditLogs,
+    overdueFollowUps,
+    todayAppointments,
   ] = await Promise.all([
     prisma.customer.count({ where: { isAnonymized: false, ...agentFilter } }),
     prisma.property.count({ where: { status: "ACTIVE", ...branchFilter } }),
     prisma.property.count({
-      where: {
-        status: { in: ["SOLD", "RENTED"] },
-        updatedAt: { gte: monthStart, lte: monthEnd },
-        ...branchFilter,
-      },
+      where: { status: { in: ["SOLD", "RENTED"] }, updatedAt: { gte: monthStart, lte: monthEnd }, ...branchFilter },
     }),
     prisma.appointment.count({
+      where: { status: "PLANNED", startDate: { gte: now }, ...appointmentFilter },
+    }),
+    prisma.property.groupBy({ by: ["propertyType"], _count: { id: true }, where: branchFilter }),
+    prisma.auditLog.findMany({ orderBy: { timestamp: "desc" }, take: 10, include: { user: { select: { name: true } } } }),
+    prisma.customer.findMany({
       where: {
-        status: "PLANNED",
-        startDate: { gte: now },
-        ...(user.role === "AGENT" ? { userId: user.id as string } : {}),
+        isAnonymized: false,
+        nextFollowUpDate: { lte: now },
+        stage: { notIn: ["CLOSED", "LOST"] },
+        ...agentFilter,
       },
-    }),
-    prisma.property.groupBy({
-      by: ["propertyType"],
-      _count: { id: true },
-      where: branchFilter,
-    }),
-    prisma.auditLog.findMany({
-      orderBy: { timestamp: "desc" },
+      select: { id: true, firstName: true, lastName: true, phone: true, nextFollowUpDate: true, stage: true, urgency: true },
+      orderBy: { nextFollowUpDate: "asc" },
       take: 10,
-      include: { user: { select: { name: true } } },
+    }),
+    prisma.appointment.findMany({
+      where: { startDate: { gte: todayStart, lte: todayEnd }, status: "PLANNED", ...appointmentFilter },
+      include: {
+        customer: { select: { id: true, firstName: true, lastName: true } },
+        property: { select: { id: true, title: true } },
+      },
+      orderBy: { startDate: "asc" },
     }),
   ]);
 
@@ -135,5 +144,7 @@ export async function GET() {
     monthlySales,
     propertyTypeDistribution,
     recentActivities,
+    overdueFollowUps,
+    todayAppointments,
   });
 }

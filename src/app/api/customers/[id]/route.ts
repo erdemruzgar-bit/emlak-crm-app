@@ -4,6 +4,8 @@ import { auth } from "@/lib/auth";
 import { decrypt } from "@/lib/encryption";
 import { createAuditLog } from "@/lib/audit";
 import { customerUpdateSchema } from "@/lib/validations/customer";
+import { runCustomerMatching } from "@/lib/matching";
+import { canEditCustomer, extractActor } from "@/lib/rbac";
 
 // GET /api/customers/:id
 export async function GET(
@@ -17,6 +19,7 @@ export async function GET(
 
   const { id } = await params;
 
+  try {
   const customer = await prisma.customer.findUnique({
     where: { id },
     include: {
@@ -56,6 +59,9 @@ export async function GET(
   });
 
   return NextResponse.json(decryptedCustomer);
+  } catch {
+    return NextResponse.json({ error: "Sunucu hatası" }, { status: 500 });
+  }
 }
 
 // PUT /api/customers/:id
@@ -69,6 +75,8 @@ export async function PUT(
   }
 
   const { id } = await params;
+
+  try {
   const body = await req.json();
   const parsed = customerUpdateSchema.safeParse(body);
 
@@ -79,6 +87,34 @@ export async function PUT(
   const oldCustomer = await prisma.customer.findUnique({ where: { id } });
   if (!oldCustomer) {
     return NextResponse.json({ error: "Müşteri bulunamadı" }, { status: 404 });
+  }
+
+  const actor = extractActor(session);
+  if (!canEditCustomer(actor, oldCustomer)) {
+    await createAuditLog({
+      userId: actor?.id,
+      action: "DENIED_EDIT",
+      entity: "Customer",
+      entityId: id,
+      ipAddress: req.headers.get("x-forwarded-for") || undefined,
+    });
+    return NextResponse.json({ error: "Bu müşteriyi düzenleme yetkiniz yok" }, { status: 403 });
+  }
+
+  // AGENT kendi müşterisini başkasına devredemez
+  if (parsed.data.assignedAgentId !== undefined && parsed.data.assignedAgentId !== oldCustomer.assignedAgentId) {
+    if (actor?.role === "AGENT") {
+      return NextResponse.json({ error: "Danışman atama yetkiniz yok" }, { status: 403 });
+    }
+    if (parsed.data.assignedAgentId) {
+      const newAgent = await prisma.user.findUnique({
+        where: { id: parsed.data.assignedAgentId },
+        select: { id: true, isActive: true },
+      });
+      if (!newAgent || !newAgent.isActive) {
+        return NextResponse.json({ error: "Seçilen danışman geçersiz" }, { status: 400 });
+      }
+    }
   }
 
   const updateData: Record<string, unknown> = { ...parsed.data };
@@ -101,7 +137,12 @@ export async function PUT(
     ipAddress: req.headers.get("x-forwarded-for") || undefined,
   });
 
+  runCustomerMatching(id).catch(() => {});
+
   return NextResponse.json(customer);
+  } catch {
+    return NextResponse.json({ error: "Sunucu hatası" }, { status: 500 });
+  }
 }
 
 // DELETE /api/customers/:id — KVKK: Anonymize instead of hard delete

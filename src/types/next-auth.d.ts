@@ -7,6 +7,9 @@ declare module "next-auth" {
       role: "ADMIN" | "MANAGER" | "AGENT";
       branchId: string | null;
       branchName: string | null;
+      photoUrl: string | null;
+      canExport: boolean;
+      canImport: boolean;
     } & DefaultSession["user"];
   }
 }
@@ -16,5 +19,8 @@ declare module "next-auth/jwt" {
     role: "ADMIN" | "MANAGER" | "AGENT";
     branchId: string | null;
     branchName: string | null;
+    photoUrl: string | null;
+    canExport: boolean;
+    canImport: boolean;
   }
 }

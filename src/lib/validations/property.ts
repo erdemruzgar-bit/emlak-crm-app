@@ -4,6 +4,7 @@ export const propertyCreateSchema = z.object({
   title: z.string().min(3, "Başlık en az 3 karakter olmalı"),
   listingType: z.enum(["SATILIK", "KIRALIK"]),
   propertyType: z.enum(["DAIRE", "VILLA", "ARSA", "ISYERI", "MUSTAKILEV"]),
+  status: z.enum(["ACTIVE", "SOLD", "RENTED", "INACTIVE"]).optional(),
   price: z.number().positive("Fiyat pozitif olmalı"),
   currency: z.string().default("TRY"),
   area: z.number().positive().optional(),
@@ -20,8 +21,8 @@ export const propertyCreateSchema = z.object({
   lat: z.number().optional(),
   lng: z.number().optional(),
   description: z.string().optional(),
-  ownerId: z.string().optional(),
-  assignedAgentId: z.string().optional(),
+  ownerId: z.string().nullable().optional(),
+  assignedAgentId: z.string().nullable().optional(),
   branchId: z.string().optional(),
 });
 

@@ -54,7 +54,7 @@ async function main() {
         createMany: {
           data: [
             { consentType: "ACIK_RIZA", consentText: "Kişisel verilerimin işlenmesine açık rıza veriyorum.", isGranted: true, grantedAt: new Date() },
-            { consentType: "AYDINLATMA", consentText: "KVKK aydınlatma metnini okudum.", isGranted: true, grantedAt: new Date() },
+            { consentType: "AYDINLATMA", consentText: "KVKK aydınlatma metnini okudum. Verilerimin grubumuzun tüm şubelerindeki yetkili danışmanlar tarafından hizmet amacıyla görüntülenebileceğini kabul ediyorum.", isGranted: true, grantedAt: new Date() },
             { consentType: "PAZARLAMA", consentText: "Pazarlama iletişimine izin veriyorum.", isGranted: true, grantedAt: new Date() },
           ],
         },
@@ -77,7 +77,7 @@ async function main() {
         createMany: {
           data: [
             { consentType: "ACIK_RIZA", consentText: "Kişisel verilerimin işlenmesine açık rıza veriyorum.", isGranted: true, grantedAt: new Date() },
-            { consentType: "AYDINLATMA", consentText: "KVKK aydınlatma metnini okudum.", isGranted: true, grantedAt: new Date() },
+            { consentType: "AYDINLATMA", consentText: "KVKK aydınlatma metnini okudum. Verilerimin grubumuzun tüm şubelerindeki yetkili danışmanlar tarafından hizmet amacıyla görüntülenebileceğini kabul ediyorum.", isGranted: true, grantedAt: new Date() },
             { consentType: "PAZARLAMA", consentText: "Pazarlama iletişimine izin veriyorum.", isGranted: false },
           ],
         },
@@ -104,7 +104,7 @@ async function main() {
         createMany: {
           data: [
             { consentType: "ACIK_RIZA", consentText: "Kişisel verilerimin işlenmesine açık rıza veriyorum.", isGranted: true, grantedAt: new Date() },
-            { consentType: "AYDINLATMA", consentText: "KVKK aydınlatma metnini okudum.", isGranted: true, grantedAt: new Date() },
+            { consentType: "AYDINLATMA", consentText: "KVKK aydınlatma metnini okudum. Verilerimin grubumuzun tüm şubelerindeki yetkili danışmanlar tarafından hizmet amacıyla görüntülenebileceğini kabul ediyorum.", isGranted: true, grantedAt: new Date() },
             { consentType: "PAZARLAMA", consentText: "Pazarlama iletişimine izin veriyorum.", isGranted: true, grantedAt: new Date() },
           ],
         },
@@ -128,7 +128,7 @@ async function main() {
         createMany: {
           data: [
             { consentType: "ACIK_RIZA", consentText: "Kişisel verilerimin işlenmesine açık rıza veriyorum.", isGranted: true, grantedAt: new Date() },
-            { consentType: "AYDINLATMA", consentText: "KVKK aydınlatma metnini okudum.", isGranted: true, grantedAt: new Date() },
+            { consentType: "AYDINLATMA", consentText: "KVKK aydınlatma metnini okudum. Verilerimin grubumuzun tüm şubelerindeki yetkili danışmanlar tarafından hizmet amacıyla görüntülenebileceğini kabul ediyorum.", isGranted: true, grantedAt: new Date() },
             { consentType: "PAZARLAMA", consentText: "Pazarlama iletişimine izin veriyorum.", isGranted: false },
           ],
         },
@@ -154,7 +154,7 @@ async function main() {
         createMany: {
           data: [
             { consentType: "ACIK_RIZA", consentText: "Kişisel verilerimin işlenmesine açık rıza veriyorum.", isGranted: true, grantedAt: new Date() },
-            { consentType: "AYDINLATMA", consentText: "KVKK aydınlatma metnini okudum.", isGranted: true, grantedAt: new Date() },
+            { consentType: "AYDINLATMA", consentText: "KVKK aydınlatma metnini okudum. Verilerimin grubumuzun tüm şubelerindeki yetkili danışmanlar tarafından hizmet amacıyla görüntülenebileceğini kabul ediyorum.", isGranted: true, grantedAt: new Date() },
             { consentType: "PAZARLAMA", consentText: "Pazarlama iletişimine izin veriyorum.", isGranted: true, grantedAt: new Date() },
           ],
         },

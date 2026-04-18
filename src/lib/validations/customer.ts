@@ -34,7 +34,7 @@ export const customerCreateSchema = z.object({
   address: z.string().optional(),
   customerType: z.enum(["BUYER", "SELLER", "TENANT", "LANDLORD"]),
   source: z.string().optional(),
-  assignedAgentId: z.string().optional(),
+  assignedAgentId: z.string().nullable().optional(),
   branchId: z.string().optional(),
   consents: z.object({
     acikRiza: z.boolean(),
@@ -52,8 +52,9 @@ export const customerUpdateSchema = z.object({
   address: z.string().optional(),
   customerType: z.enum(["BUYER", "SELLER", "TENANT", "LANDLORD"]).optional(),
   source: z.string().optional(),
-  assignedAgentId: z.string().optional(),
+  assignedAgentId: z.string().nullable().optional(),
   branchId: z.string().optional(),
+  photoUrl: z.string().nullable().optional(),
   ...demandProfileFields,
 });
 

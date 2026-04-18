@@ -1,15 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import {
   ArrowLeft, User, StickyNote, MessageCircle, ShieldCheck, Trash2, Loader2, UserX,
   Phone, Mail, Fingerprint, Tag, Globe, Headphones, Building2, MapPin, Calendar, Info,
-  Send, PlusCircle, Target, Save, X,
+  Send, PlusCircle, Target, Save, X, Pencil, CheckCircle, Clock, Home, Camera, Search,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
+import { EditableText, EditableSelect, EditableTextarea } from "@/components/ui/editable-field";
 
 interface Customer {
   id: string;
@@ -21,6 +23,7 @@ interface Customer {
   address: string | null;
   customerType: string;
   source: string | null;
+  photoUrl: string | null;
   assignedAgent: { id: string; name: string } | null;
   branch: { id: string; name: string } | null;
   consents: Consent[];
@@ -75,6 +78,36 @@ interface Interaction {
   date: string;
 }
 
+interface Appointment {
+  id: string;
+  title: string;
+  type: string;
+  startDate: string;
+  status: string;
+  location: string | null;
+  property: { id: string; title: string } | null;
+}
+
+interface PropertyMatchResult {
+  id: string;
+  matchScore: number | null;
+  status: "SUGGESTED" | "INTERESTED" | "REJECTED";
+  property: {
+    id: string;
+    title: string;
+    price: number;
+    currency: string;
+    propertyType: string;
+    listingType: string;
+    city: string | null;
+    district: string | null;
+    area: number | null;
+    rooms: string | null;
+    status: string;
+    images: { url: string }[];
+  };
+}
+
 const typeLabels: Record<string, string> = { BUYER: "Alıcı", SELLER: "Satıcı", TENANT: "Kiracı", LANDLORD: "Ev Sahibi" };
 const consentLabels: Record<string, string> = { ACIK_RIZA: "Açık Rıza", AYDINLATMA: "Aydınlatma Metni", PAZARLAMA: "Pazarlama İzni" };
 const interactionLabels: Record<string, string> = { CALL: "Telefon", EMAIL: "E-posta", VISIT: "Ziyaret", WHATSAPP: "WhatsApp" };
@@ -85,10 +118,12 @@ const tabs = [
   { key: "demand", label: "Talep Profili", icon: Target },
   { key: "notes", label: "Notlar", icon: StickyNote },
   { key: "interactions", label: "İletişim", icon: MessageCircle },
+  { key: "appointments", label: "Randevular", icon: Calendar },
+  { key: "matches", label: "İlgili İlanlar", icon: Home },
   { key: "kvkk", label: "KVKK Rızaları", icon: ShieldCheck },
 ] as const;
 
-const stageLabels: Record<string, string> = { LEAD: "Lead", QUALIFIED: "Nitelikli", ACTIVE: "Aktif", SHOWING: "Gösterim", OFFER: "Teklif", CONTRACT: "Sözleşme", CLOSED: "Kapandı", LOST: "Kayıp" };
+const stageLabels: Record<string, string> = { LEAD: "Aday", QUALIFIED: "Nitelikli", ACTIVE: "Aktif Takip", SHOWING: "Gösterimde", OFFER: "Teklif Aşaması", CONTRACT: "Sözleşme Aşaması", CLOSED: "Kazanıldı", LOST: "Kaybedildi" };
 const stageColors: Record<string, string> = { LEAD: "bg-surface-container text-on-surface-variant", QUALIFIED: "bg-secondary-container text-on-secondary-container", ACTIVE: "bg-primary-fixed text-primary", SHOWING: "bg-tertiary-fixed text-tertiary", OFFER: "bg-tertiary-container text-on-tertiary-container", CONTRACT: "bg-primary-container text-on-primary-container", CLOSED: "bg-green-100 text-green-700", LOST: "bg-error-container text-on-error-container" };
 const urgencyLabels: Record<string, string> = { LOW: "Düşük", MEDIUM: "Orta", HIGH: "Yüksek", URGENT: "Acil" };
 const urgencyColors: Record<string, string> = { LOW: "bg-green-100 text-green-700", MEDIUM: "bg-surface-container text-on-surface-variant", HIGH: "bg-tertiary-fixed text-tertiary", URGENT: "bg-error-container text-on-error-container" };
@@ -99,9 +134,23 @@ const featureOptions = ["Otopark", "Havuz", "Asansör", "Balkon", "Güvenlik", "
 export default function CustomerDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const { data: session } = useSession();
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"info" | "demand" | "notes" | "interactions" | "kvkk">("info");
+  const [activeTab, setActiveTab] = useState<"info" | "demand" | "notes" | "interactions" | "appointments" | "matches" | "kvkk">("info");
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [appointmentsLoading, setAppointmentsLoading] = useState(false);
+  const [propertyMatches, setPropertyMatches] = useState<PropertyMatchResult[]>([]);
+  const [matchesLoading, setMatchesLoading] = useState(false);
+  const [users, setUsers] = useState<{ id: string; name: string; role: string; isActive: boolean; branch: { name: string } | null }[]>([]);
+  const [showAddProperty, setShowAddProperty] = useState(false);
+  const [addQuery, setAddQuery] = useState("");
+  const [addResults, setAddResults] = useState<Array<{ id: string; title: string; price: number; currency: string; city: string | null; district: string | null; propertyType: string }>>([]);
+  const addTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [editingInfo, setEditingInfo] = useState(false);
+  const [infoSaving, setInfoSaving] = useState(false);
+  const [infoSaved, setInfoSaved] = useState(false);
+  const [photoUploading, setPhotoUploading] = useState(false);
   const [demandSaving, setDemandSaving] = useState(false);
   const [demandSaved, setDemandSaved] = useState(false);
   const [newNote, setNewNote] = useState("");
@@ -111,11 +160,43 @@ export default function CustomerDetailPage() {
   const [interactionSaving, setInteractionSaving] = useState(false);
 
   useEffect(() => {
-    fetch(`/api/customers/${params.id}`)
-      .then((res) => res.json())
-      .then((data) => { setCustomer(data); setLoading(false); })
-      .catch(() => setLoading(false));
+    // Paralel: müşteri detay + randevular + eşleşmeler (sekme sayıları anında doğru olsun)
+    setMatchesLoading(true);
+    setAppointmentsLoading(true);
+    Promise.all([
+      fetch(`/api/customers/${params.id}`).then((r) => r.json()),
+      fetch(`/api/appointments?customerId=${params.id}`).then((r) => r.json()).catch(() => []),
+      fetch(`/api/customers/${params.id}/matches`).then((r) => r.json()).catch(() => []),
+    ]).then(([cust, appts, matches]) => {
+      setCustomer(cust);
+      setAppointments(Array.isArray(appts) ? appts : []);
+      setPropertyMatches(Array.isArray(matches) ? matches : []);
+      setLoading(false);
+      setAppointmentsLoading(false);
+      setMatchesLoading(false);
+    }).catch(() => {
+      setLoading(false);
+      setAppointmentsLoading(false);
+      setMatchesLoading(false);
+    });
   }, [params.id]);
+
+  const sessionUser = session?.user as unknown as { id?: string; role?: string } | undefined;
+  const canEdit = useMemo(() => {
+    if (!sessionUser || !customer) return false;
+    if (sessionUser.role === "ADMIN" || sessionUser.role === "MANAGER") return true;
+    return customer.assignedAgent?.id === sessionUser.id;
+  }, [sessionUser, customer]);
+  const canAnonymize = sessionUser?.role === "ADMIN" || sessionUser?.role === "MANAGER";
+  const canReassign = canAnonymize; // sadece m\u00fcd\u00fcr + admin
+
+  useEffect(() => {
+    if (canReassign && editingInfo && users.length === 0) {
+      fetch("/api/users").then((r) => r.ok ? r.json() : []).then((data) => {
+        if (Array.isArray(data)) setUsers(data.filter((u: { isActive: boolean }) => u.isActive));
+      }).catch(() => {});
+    }
+  }, [canReassign, editingInfo, users.length]);
 
   if (loading) return (
     <div className="flex items-center justify-center h-64 text-on-surface-variant">
@@ -136,29 +217,42 @@ export default function CustomerDetailPage() {
           <Link href="/customers" className="h-10 w-10 rounded-full bg-surface-container-low flex items-center justify-center text-on-surface-variant hover:bg-surface-container transition-all">
             <ArrowLeft className="w-5 h-5" />
           </Link>
+          {/* Avatar / Photo */}
+          {customer.photoUrl ? (
+            <img src={customer.photoUrl} alt={`${customer.firstName} ${customer.lastName}`}
+              className="w-16 h-16 rounded-2xl object-cover object-top shadow-md" />
+          ) : (
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/40 to-primary/70 flex items-center justify-center shadow-md">
+              <span className="text-xl font-black text-white select-none">
+                {customer.firstName.charAt(0)}{customer.lastName.charAt(0)}
+              </span>
+            </div>
+          )}
           <div>
             <h1 className="text-3xl font-black tracking-tighter text-on-surface">{customer.firstName} {customer.lastName}</h1>
             <p className="text-sm text-on-surface-variant font-medium">{typeLabels[customer.customerType]}</p>
           </div>
         </div>
-        <button
-          onClick={() => {
-            if (confirm("Bu müşterinin verilerini anonimleştirmek istediğinize emin misiniz? (KVKK Unutulma Hakkı)")) {
-              fetch(`/api/customers/${customer.id}`, { method: "DELETE" }).then(() => router.push("/customers"));
-            }
-          }}
-          className="px-5 py-3 text-sm text-error bg-error-container/30 hover:bg-error-container/50 rounded-xl transition-all font-bold flex items-center gap-2"
-        >
-          <Trash2 className="w-4 h-4" />
-          Veriyi Anonimleştir
-        </button>
+        {canAnonymize && (
+          <button
+            onClick={() => {
+              if (confirm("Bu müşterinin verilerini anonimleştirmek istediğinize emin misiniz? (KVKK Unutulma Hakkı)")) {
+                fetch(`/api/customers/${customer.id}`, { method: "DELETE" }).then(() => router.push("/customers"));
+              }
+            }}
+            className="px-5 py-3 text-sm text-error bg-error-container/30 hover:bg-error-container/50 rounded-xl transition-all font-bold flex items-center gap-2"
+          >
+            <Trash2 className="w-4 h-4" />
+            Veriyi Anonimleştir
+          </button>
+        )}
       </div>
 
       {/* Tabs */}
       <div className="flex bg-surface-container-low p-1 rounded-xl w-fit">
         {tabs.map((tab) => {
           const Icon = tab.icon;
-          const count = tab.key === "notes" ? customer.notes.length : tab.key === "interactions" ? customer.interactions.length : null;
+          const count = tab.key === "notes" ? customer.notes.length : tab.key === "interactions" ? customer.interactions.length : tab.key === "appointments" ? appointments.length : tab.key === "matches" ? propertyMatches.length : null;
           return (
             <button
               key={tab.key}
@@ -179,20 +273,164 @@ export default function CustomerDetailPage() {
       <AnimatePresence mode="wait">
         {activeTab === "info" && (
           <motion.div key="info" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-            className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-8 border border-outline-variant/10"
+            className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-8 border border-outline-variant/10 space-y-6"
           >
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold text-on-surface">Kişisel Bilgiler</h3>
+              {canEdit ? (
+                <button onClick={() => { setEditingInfo(!editingInfo); setInfoSaved(false); }}
+                  className={cn("flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all",
+                    editingInfo ? "bg-surface-container text-on-surface-variant" : "bg-primary-fixed text-primary hover:bg-primary-container"
+                  )}>
+                  {editingInfo ? <><X className="w-4 h-4" />İptal</> : <><Pencil className="w-4 h-4" />Düzenle</>}
+                </button>
+              ) : (
+                <span className="text-xs text-on-surface-variant bg-surface-container-low px-3 py-2 rounded-xl">
+                  Sadece atanan danışman ({customer.assignedAgent?.name || "—"}) düzenleyebilir
+                </span>
+              )}
+            </div>
+
+            {/* Fotoğraf bölümü — her zaman aynı yerde; upload butonu sadece düzenleme modunda */}
+            <div className="flex items-center gap-4 p-4 bg-surface-container-low rounded-2xl min-h-[112px]">
+              {customer.photoUrl ? (
+                <img src={customer.photoUrl} alt="" className="w-20 h-20 rounded-2xl object-cover object-top shrink-0" />
+              ) : (
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/40 to-primary/70 flex items-center justify-center shrink-0">
+                  <span className="text-2xl font-black text-white select-none">
+                    {customer.firstName.charAt(0)}{customer.lastName.charAt(0)}
+                  </span>
+                </div>
+              )}
+              <div className="flex-1">
+                <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-1">Profil Fotoğrafı</p>
+                <p className="text-sm font-bold text-on-surface">{customer.firstName} {customer.lastName}</p>
+                {editingInfo && (
+                  <div className="flex items-center gap-2 mt-2">
+                    <label className="cursor-pointer px-3 py-1.5 bg-white rounded-lg text-xs font-bold hover:bg-surface-container transition-all flex items-center gap-2 shadow-sm">
+                      {photoUploading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Camera className="w-3 h-3" />}
+                      {photoUploading ? "Yükleniyor..." : "Fotoğraf Yükle"}
+                      <input type="file" accept="image/*" className="hidden" disabled={photoUploading}
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          setPhotoUploading(true);
+                          const fd = new FormData();
+                          fd.append("file", file);
+                          const res = await fetch("/api/upload", { method: "POST", body: fd });
+                          if (res.ok) {
+                            const data = await res.json();
+                            setCustomer({ ...customer, photoUrl: data.url });
+                          }
+                          setPhotoUploading(false);
+                        }} />
+                    </label>
+                    {customer.photoUrl && (
+                      <button type="button" onClick={() => setCustomer({ ...customer, photoUrl: null })}
+                        className="text-xs text-on-surface-variant hover:text-error transition-colors flex items-center gap-1">
+                        <X className="w-3 h-3" /> Kaldır
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Alanlar: view+edit aynı layout */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <InfoRow icon={User} label="Ad" value={customer.firstName} />
-              <InfoRow icon={User} label="Soyad" value={customer.lastName} />
-              <InfoRow icon={Mail} label="E-posta" value={customer.email} />
-              <InfoRow icon={Phone} label="Telefon" value={customer.phone} />
-              <InfoRow icon={Fingerprint} label="TC Kimlik No" value={customer.tcKimlikNo ? `***${customer.tcKimlikNo.slice(-4)}` : null} />
-              <InfoRow icon={Tag} label="Müşteri Tipi" value={typeLabels[customer.customerType]} />
-              <InfoRow icon={Globe} label="Kaynak" value={customer.source} />
-              <InfoRow icon={Headphones} label="Danışman" value={customer.assignedAgent?.name} />
-              <InfoRow icon={Building2} label="Şube" value={customer.branch?.name} />
-              <InfoRow icon={MapPin} label="Adres" value={customer.address} />
-              <InfoRow icon={Calendar} label="Kayıt Tarihi" value={new Date(customer.createdAt).toLocaleDateString("tr-TR")} />
+              <EditableText icon={User} label="Ad" editing={editingInfo}
+                value={customer.firstName}
+                onChange={(v) => setCustomer({ ...customer, firstName: v })} />
+              <EditableText icon={User} label="Soyad" editing={editingInfo}
+                value={customer.lastName}
+                onChange={(v) => setCustomer({ ...customer, lastName: v })} />
+              <EditableText icon={Mail} label="E-posta" editing={editingInfo} type="email"
+                value={customer.email}
+                onChange={(v) => setCustomer({ ...customer, email: v })} />
+              <EditableText icon={Phone} label="Telefon" editing={editingInfo} type="tel"
+                value={customer.phone}
+                onChange={(v) => setCustomer({ ...customer, phone: v })} />
+              <EditableText icon={Fingerprint} label="TC Kimlik No" editing={false}
+                value={customer.tcKimlikNo ? `***${customer.tcKimlikNo.slice(-4)}` : null}
+                onChange={() => {}} />
+              <EditableSelect icon={Tag} label="Müşteri Tipi" editing={editingInfo}
+                value={customer.customerType}
+                onChange={(v) => setCustomer({ ...customer, customerType: v })}
+                options={[
+                  { value: "BUYER", label: "Alıcı" },
+                  { value: "SELLER", label: "Satıcı" },
+                  { value: "TENANT", label: "Kiracı" },
+                  { value: "LANDLORD", label: "Ev Sahibi" },
+                ]} />
+              <EditableSelect icon={Globe} label="Kaynak" editing={editingInfo}
+                value={customer.source}
+                onChange={(v) => setCustomer({ ...customer, source: v || null })}
+                options={[
+                  { value: "referans", label: "Referans" },
+                  { value: "internet", label: "İnternet" },
+                  { value: "sahibinden", label: "Sahibinden.com" },
+                  { value: "hepsiemlak", label: "Hepsiemlak" },
+                  { value: "walkin", label: "Ofis Ziyareti" },
+                  { value: "diger", label: "Diğer" },
+                ]} />
+              <EditableSelect icon={Headphones} label="Danışman" editing={editingInfo && canReassign}
+                value={customer.assignedAgent?.id || ""}
+                onChange={(id) => {
+                  const u = users.find((x) => x.id === id);
+                  setCustomer({ ...customer, assignedAgent: id ? { id, name: u?.name || "" } : null });
+                }}
+                options={users.length > 0
+                  ? users.map((u) => ({
+                      value: u.id,
+                      label: `${u.name}${u.branch?.name ? ` · ${u.branch.name}` : ""}`,
+                    }))
+                  : customer.assignedAgent
+                  ? [{ value: customer.assignedAgent.id, label: customer.assignedAgent.name }]
+                  : []} />
+              <EditableText icon={Building2} label="Şube" editing={false}
+                value={customer.branch?.name}
+                onChange={() => {}} />
+              <EditableTextarea icon={MapPin} label="Adres" editing={editingInfo}
+                value={customer.address}
+                onChange={(v) => setCustomer({ ...customer, address: v || null })}
+                className="sm:col-span-2" />
+              <EditableText icon={Calendar} label="Kayıt Tarihi" editing={false}
+                value={new Date(customer.createdAt).toLocaleDateString("tr-TR")}
+                onChange={() => {}} />
+            </div>
+
+            {/* Kaydet butonu yer rezerve eden sabit konteyner (yüksekliği değişmesin) */}
+            <div className="flex justify-end min-h-[52px] items-center">
+              {editingInfo && (
+                <button onClick={async () => {
+                  setInfoSaving(true);
+                  await fetch(`/api/customers/${customer.id}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      firstName: customer.firstName,
+                      lastName: customer.lastName,
+                      email: customer.email,
+                      phone: customer.phone,
+                      address: customer.address,
+                      customerType: customer.customerType,
+                      source: customer.source,
+                      photoUrl: customer.photoUrl,
+                      ...(canReassign ? { assignedAgentId: customer.assignedAgent?.id || null } : {}),
+                    }),
+                  });
+                  setInfoSaving(false);
+                  setInfoSaved(true);
+                  setEditingInfo(false);
+                  setTimeout(() => setInfoSaved(false), 2000);
+                }} disabled={infoSaving}
+                  className={cn("px-8 py-3 rounded-xl text-sm font-bold flex items-center gap-2 transition-all",
+                    infoSaved ? "bg-green-100 text-green-700" : "primary-gradient text-white shadow-lg shadow-primary/10"
+                  )}>
+                  {infoSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : infoSaved ? <CheckCircle className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+                  {infoSaved ? "Kaydedildi!" : "Kaydet"}
+                </button>
+              )}
             </div>
           </motion.div>
         )}
@@ -382,7 +620,12 @@ export default function CustomerDetailPage() {
 
             {/* Kaydet */}
             <div className="flex justify-end">
-              <button
+              {!canEdit && (
+                <span className="text-xs text-on-surface-variant bg-surface-container-low px-4 py-3 rounded-xl">
+                  Sadece atanan danışman talep profilini düzenleyebilir
+                </span>
+              )}
+              {canEdit && <button
                 onClick={async () => {
                   setDemandSaving(true);
                   await fetch(`/api/customers/${customer.id}`, {
@@ -421,7 +664,7 @@ export default function CustomerDetailPage() {
                 )}
               >
                 {demandSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : demandSaved ? <> Kaydedildi</> : <><Save className="w-4 h-4" /> Talep Profilini Kaydet</>}
-              </button>
+              </button>}
             </div>
           </motion.div>
         )}
@@ -550,6 +793,260 @@ export default function CustomerDetailPage() {
                   </div>
                 );
               })
+            )}
+          </motion.div>
+        )}
+
+        {activeTab === "appointments" && (
+          <motion.div key="appointments" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+            className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-8 space-y-4 border border-outline-variant/10"
+          >
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold text-on-surface">Randevular</h3>
+              <Link href="/calendar" className="text-xs text-primary font-bold hover:underline flex items-center gap-1">
+                Takvime Git <Calendar className="w-3 h-3" />
+              </Link>
+            </div>
+            {appointmentsLoading ? (
+              <div className="flex items-center justify-center py-12 text-on-surface-variant">
+                <Loader2 className="w-5 h-5 animate-spin mr-2" /> Yükleniyor...
+              </div>
+            ) : appointments.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-on-surface-variant">
+                <Calendar className="w-10 h-10 opacity-30 mb-2" />
+                Bu müşteri için randevu yok
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {appointments.map((a) => (
+                  <div key={a.id} className="flex items-start gap-4 p-4 bg-surface-container-low rounded-2xl hover:bg-surface-container transition-all">
+                    <div className="w-10 h-10 bg-primary-container rounded-xl flex items-center justify-center shrink-0 text-on-primary-container text-xs font-bold">
+                      {new Date(a.startDate).toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" })}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="text-sm font-bold text-on-surface">{a.title}</p>
+                        <span className={cn("text-[9px] px-2 py-0.5 rounded font-bold uppercase",
+                          a.status === "COMPLETED" ? "bg-green-100 text-green-700" :
+                          a.status === "CANCELLED" ? "bg-error-container text-on-error-container" :
+                          "bg-surface-container text-on-surface-variant"
+                        )}>
+                          {a.status === "PLANNED" ? "Planlandı" : a.status === "COMPLETED" ? "Tamamlandı" : "İptal"}
+                        </span>
+                      </div>
+                      <p className="text-xs text-on-surface-variant mt-1">
+                        {new Date(a.startDate).toLocaleDateString("tr-TR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+                      </p>
+                      {a.property && (
+                        <Link href={`/properties/${a.property.id}`}
+                          className="flex items-center gap-1 text-xs text-primary hover:underline mt-1">
+                          <Home className="w-3 h-3" />{a.property.title}
+                        </Link>
+                      )}
+                      {a.location && (
+                        <p className="flex items-center gap-1 text-xs text-on-surface-variant mt-0.5">
+                          <MapPin className="w-3 h-3" />{a.location}
+                        </p>
+                      )}
+                    </div>
+                    <div className="shrink-0">
+                      <Clock className="w-4 h-4 text-on-surface-variant" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </motion.div>
+        )}
+
+        {activeTab === "matches" && (
+          <motion.div key="matches" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+            className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-8 space-y-4 border border-outline-variant/10"
+          >
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold text-on-surface">İlgili İlanlar</h3>
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-on-surface-variant">{propertyMatches.length} kayıt</span>
+                <button onClick={async () => {
+                  const willOpen = !showAddProperty;
+                  setShowAddProperty(willOpen);
+                  if (willOpen) {
+                    // açıldığında son eklenen aktif ilanları göster
+                    setAddQuery("");
+                    const res = await fetch(`/api/properties?status=ACTIVE&sortBy=createdAt&sortOrder=desc&limit=10`);
+                    const data = await res.json();
+                    setAddResults(Array.isArray(data.properties) ? data.properties : []);
+                  }
+                }}
+                  className="text-xs font-bold text-primary hover:bg-primary-fixed px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+                  <PlusCircle className="w-3.5 h-3.5" />İlan Ekle
+                </button>
+              </div>
+            </div>
+
+            <div className="bg-primary-fixed/60 p-4 rounded-xl text-xs text-on-surface-variant leading-relaxed">
+              <strong className="text-primary">⚡ Öneriler</strong> müşterinin talep profiline (bütçe, şehir, tip, m²) göre otomatik hesaplanır.
+              ✓ <strong>İlgileniyor</strong> olarak işaretledikleriniz üste gelir, ✗ ile reddettikleriniz bir daha önerilmez. Öneri gelmese de <strong>İlan Ekle</strong> ile manuel bağlayabilirsiniz.
+            </div>
+
+            {showAddProperty && (
+              <div className="bg-surface-container-low p-4 rounded-2xl space-y-3">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-on-surface-variant" />
+                  <input
+                    value={addQuery}
+                    autoFocus
+                    onChange={(e) => {
+                      const q = e.target.value;
+                      setAddQuery(q);
+                      if (addTimer.current) clearTimeout(addTimer.current);
+                      addTimer.current = setTimeout(async () => {
+                        const url = q.length >= 2
+                          ? `/api/properties?search=${encodeURIComponent(q)}&limit=10`
+                          : `/api/properties?status=ACTIVE&sortBy=createdAt&sortOrder=desc&limit=10`;
+                        const res = await fetch(url);
+                        const data = await res.json();
+                        setAddResults(Array.isArray(data.properties) ? data.properties : []);
+                      }, 200);
+                    }}
+                    placeholder="İlan ara (başlık, şehir, ilçe)..."
+                    className="w-full pl-10 pr-3 py-2.5 bg-white rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+                {addResults.length > 0 && (
+                  <div className="max-h-56 overflow-y-auto space-y-1.5">
+                    {addResults.map((p) => (
+                      <button key={p.id} type="button"
+                        onClick={async () => {
+                          await fetch(`/api/customers/${customer.id}/matches`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ propertyId: p.id }),
+                          });
+                          setShowAddProperty(false);
+                          setAddQuery("");
+                          setAddResults([]);
+                          // yeniden yükle
+                          setMatchesLoading(true);
+                          const r = await fetch(`/api/customers/${customer.id}/matches`);
+                          const d = await r.json();
+                          setPropertyMatches(Array.isArray(d) ? d : []);
+                          setMatchesLoading(false);
+                        }}
+                        className="w-full text-left p-3 bg-white hover:bg-surface-container-low rounded-xl transition-colors flex items-center justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-bold text-on-surface truncate">{p.title}</p>
+                          <p className="text-xs text-on-surface-variant">
+                            {[p.district, p.city].filter(Boolean).join(", ") || "-"}
+                            {" · "}
+                            <span className="font-semibold text-primary">
+                              {new Intl.NumberFormat("tr-TR", { style: "currency", currency: p.currency || "TRY" }).format(p.price)}
+                            </span>
+                          </p>
+                        </div>
+                        <PlusCircle className="w-4 h-4 text-primary shrink-0" />
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {addQuery.length >= 2 && addResults.length === 0 && (
+                  <p className="text-xs text-on-surface-variant text-center py-2">Bu aramaya uygun ilan bulunamadı</p>
+                )}
+                {addQuery.length < 2 && addResults.length > 0 && (
+                  <p className="text-[10px] text-on-surface-variant text-center pt-1">Son eklenen ilanlar · aramak için yazın</p>
+                )}
+              </div>
+            )}
+
+            {matchesLoading ? (
+              <div className="flex items-center justify-center py-12 text-on-surface-variant">
+                <Loader2 className="w-5 h-5 animate-spin mr-2" /> Hesaplanıyor...
+              </div>
+            ) : propertyMatches.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-on-surface-variant">
+                <Home className="w-10 h-10 opacity-30 mb-2" />
+                Talep profiline uygun ilan bulunamadı
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {propertyMatches.map((m) => {
+                  const p = m.property;
+                  const img = p.images[0]?.url;
+                  const typeLabelsMap: Record<string, string> = { DAIRE: "Daire", VILLA: "Villa", ARSA: "Arsa", ISYERI: "İşyeri", MUSTAKILEV: "Müstakil" };
+                  return (
+                    <div key={m.id}
+                      className={cn("p-3 rounded-2xl transition-all group",
+                        m.status === "INTERESTED" ? "bg-green-50 border border-green-200" : "bg-surface-container-low hover:bg-surface-container"
+                      )}>
+                      <Link href={`/properties/${p.id}`} className="flex gap-3">
+                        <div className="w-20 h-20 rounded-xl overflow-hidden shrink-0 bg-surface-container-high">
+                          {img ? <img src={img} alt={p.title} className="w-full h-full object-cover" /> : <Home className="w-6 h-6 text-on-surface-variant m-auto mt-6" />}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5 mb-0.5">
+                            <p className="text-sm font-bold text-on-surface truncate group-hover:text-primary transition-colors flex-1">{p.title}</p>
+                            {m.status === "INTERESTED" ? (
+                              <span className="text-[9px] px-1.5 py-0.5 bg-green-600 text-white rounded font-black uppercase shrink-0">✓ İlgili</span>
+                            ) : (
+                              <span className="text-[9px] text-on-surface-variant shrink-0">⚡</span>
+                            )}
+                          </div>
+                          <p className="text-xs text-on-surface-variant">{[p.district, p.city].filter(Boolean).join(", ")}</p>
+                          <p className="text-xs font-bold text-primary mt-1">
+                            {new Intl.NumberFormat("tr-TR", { style: "currency", currency: p.currency }).format(p.price)}
+                          </p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-[9px] px-1.5 py-0.5 bg-primary-fixed text-primary rounded font-bold">
+                              {typeLabelsMap[p.propertyType] || p.propertyType}
+                            </span>
+                            {p.area && <span className="text-[9px] text-on-surface-variant">{p.area} m²</span>}
+                            {p.rooms && <span className="text-[9px] text-on-surface-variant">{p.rooms}</span>}
+                          </div>
+                        </div>
+                        {m.matchScore != null && (
+                          <div className={cn("shrink-0 text-xs font-black px-2 py-1 rounded-lg h-fit",
+                            m.matchScore >= 70 ? "bg-green-100 text-green-700" :
+                            m.matchScore >= 50 ? "bg-tertiary-fixed text-tertiary" :
+                            "bg-surface-container text-on-surface-variant"
+                          )}>%{Math.round(m.matchScore)}</div>
+                        )}
+                      </Link>
+                      <div className="flex gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        {m.status !== "INTERESTED" ? (
+                          <button onClick={async () => {
+                            await fetch(`/api/matches/${m.id}`, {
+                              method: "PATCH", headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ status: "INTERESTED" }),
+                            });
+                            setPropertyMatches((prev) => prev.map((x) => x.id === m.id ? { ...x, status: "INTERESTED" } : x));
+                          }} className="flex-1 text-[10px] font-bold py-1.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 flex items-center justify-center gap-1">
+                            <CheckCircle className="w-3 h-3" /> İlgileniyor
+                          </button>
+                        ) : (
+                          <button onClick={async () => {
+                            await fetch(`/api/matches/${m.id}`, {
+                              method: "PATCH", headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ status: "SUGGESTED" }),
+                            });
+                            setPropertyMatches((prev) => prev.map((x) => x.id === m.id ? { ...x, status: "SUGGESTED" } : x));
+                          }} className="flex-1 text-[10px] font-bold py-1.5 bg-surface-container text-on-surface-variant rounded-lg hover:bg-surface-container-high">
+                            Geri Al
+                          </button>
+                        )}
+                        <button onClick={async () => {
+                          await fetch(`/api/matches/${m.id}`, {
+                            method: "PATCH", headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ status: "REJECTED" }),
+                          });
+                          setPropertyMatches((prev) => prev.filter((x) => x.id !== m.id));
+                        }} className="flex-1 text-[10px] font-bold py-1.5 bg-error-container/30 text-error rounded-lg hover:bg-error-container/50 flex items-center justify-center gap-1">
+                          <X className="w-3 h-3" /> Reddet
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             )}
           </motion.div>
         )}

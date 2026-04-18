@@ -12,6 +12,11 @@ import {
   Plus,
   HelpCircle,
   ShieldCheck,
+  CheckSquare,
+  MessageSquare,
+  FileSignature,
+  Wallet,
+  Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -19,7 +24,12 @@ const navigation = [
   { name: "Panel", href: "/dashboard", icon: LayoutDashboard },
   { name: "Müşteriler", href: "/customers", icon: Users },
   { name: "Portföy", href: "/properties", icon: Home },
+  { name: "İletişim", href: "/messages", icon: MessageSquare, badge: "Yeni" },
+  { name: "Sözleşmeler", href: "/contracts", icon: FileSignature, badge: "Yeni" },
+  { name: "Finans", href: "/finance", icon: Wallet, badge: "Yeni" },
+  { name: "Görevler", href: "/tasks", icon: CheckSquare },
   { name: "Takvim", href: "/calendar", icon: CalendarIcon },
+  { name: "Otomasyon", href: "/automation", icon: Zap, badge: "Yeni" },
   { name: "Raporlar", href: "/reports", icon: BarChart3 },
   { name: "Ayarlar", href: "/settings/users", icon: Settings },
 ];
@@ -71,7 +81,12 @@ export default function Sidebar() {
                     : "group-hover:scale-110 transition-transform"
                 )}
               />
-              <span className="text-sm">{item.name}</span>
+              <span className="text-sm flex-1">{item.name}</span>
+              {"badge" in item && item.badge && (
+                <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-tertiary-fixed text-tertiary">
+                  {item.badge}
+                </span>
+              )}
             </Link>
           );
         })}
@@ -87,10 +102,15 @@ export default function Sidebar() {
           <span>Yeni İlan</span>
         </Link>
 
-        <button className="w-full flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-on-surface transition-colors">
+        <a
+          href="/Emlak-CRM-Kullanim-Kilavuzu.pdf"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-full flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container/50 rounded-xl transition-colors"
+        >
           <HelpCircle className="w-5 h-5" />
-          <span className="text-sm font-medium">Yardım Merkezi</span>
-        </button>
+          <span className="text-sm font-medium">Yardım / Kullanım Kılavuzu</span>
+        </a>
 
         <div className="flex items-center gap-2 px-4 py-2 text-xs text-on-surface-variant">
           <ShieldCheck className="w-4 h-4 text-green-600" />

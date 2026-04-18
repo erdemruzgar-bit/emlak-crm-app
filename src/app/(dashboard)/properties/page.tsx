@@ -1,12 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Search, SlidersHorizontal, Plus, LayoutGrid, List, Loader2, Home, ChevronDown, X } from "lucide-react";
+import {
+  Search, SlidersHorizontal, Plus, LayoutGrid, List, Loader2, Home,
+  X, MapPin, DoorOpen, Maximize, ArrowUpDown, LayoutList
+} from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { PropertyCard, type PropertyCardData, formatPrice } from "@/components/ui/property-card";
 import { PropertyDetail } from "@/components/ui/property-detail";
+import { ExcelToolbar } from "@/components/ui/excel-toolbar";
 import { cn } from "@/lib/utils";
 
 interface PropertyFull extends PropertyCardData {
@@ -30,11 +34,27 @@ const statusColors: Record<string, string> = {
   INACTIVE: "bg-surface-container-high text-on-surface-variant",
 };
 
+type ViewMode = "grid" | "compact" | "list";
+
 export default function PropertiesPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center h-64 text-on-surface-variant"><Loader2 className="w-5 h-5 animate-spin mr-2" /> Yükleniyor...</div>}>
+      <PropertiesPageInner />
+    </Suspense>
+  );
+}
+
+function PropertiesPageInner() {
   const router = useRouter();
+  const urlParams = useSearchParams();
   const [properties, setProperties] = useState<PropertyCardData[]>([]);
   const [selectedProperty, setSelectedProperty] = useState<PropertyFull | null>(null);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(urlParams.get("search") || "");
+
+  useEffect(() => {
+    const q = urlParams.get("search") || "";
+    setSearch(q);
+  }, [urlParams]);
   const [listingType, setListingType] = useState("");
   const [propertyType, setPropertyType] = useState("");
   const [status, setStatus] = useState("");
@@ -43,15 +63,18 @@ export default function PropertiesPage() {
   const [rooms, setRooms] = useState("");
   const [minArea, setMinArea] = useState("");
   const [maxArea, setMaxArea] = useState("");
+  const [city, setCity] = useState("");
+  const [sortBy, setSortBy] = useState("createdAt");
+  const [sortOrder, setSortOrder] = useState("desc");
   const [showFilters, setShowFilters] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [viewMode, setViewMode] = useState<ViewMode>("grid");
 
-  const activeFilterCount = [propertyType, status, minPrice, maxPrice, rooms, minArea, maxArea].filter(Boolean).length;
+  const activeFilterCount = [propertyType, status, minPrice, maxPrice, rooms, minArea, maxArea, city].filter(Boolean).length;
 
   useEffect(() => {
     fetchProperties();
-  }, [search, listingType, propertyType, status, minPrice, maxPrice, rooms, minArea, maxArea]);
+  }, [search, listingType, propertyType, status, minPrice, maxPrice, rooms, minArea, maxArea, city, sortBy, sortOrder]);
 
   async function fetchProperties() {
     setLoading(true);
@@ -65,6 +88,9 @@ export default function PropertiesPage() {
       ...(rooms && { rooms }),
       ...(minArea && { minArea }),
       ...(maxArea && { maxArea }),
+      ...(city && { city }),
+      sortBy,
+      sortOrder,
     });
     const res = await fetch(`/api/properties?${params}`);
     const data = await res.json();
@@ -73,13 +99,8 @@ export default function PropertiesPage() {
   }
 
   function clearFilters() {
-    setPropertyType("");
-    setStatus("");
-    setMinPrice("");
-    setMaxPrice("");
-    setRooms("");
-    setMinArea("");
-    setMaxArea("");
+    setPropertyType(""); setStatus(""); setMinPrice(""); setMaxPrice("");
+    setRooms(""); setMinArea(""); setMaxArea(""); setCity("");
   }
 
   async function handleSelectProperty(p: PropertyCardData) {
@@ -93,121 +114,112 @@ export default function PropertiesPage() {
     }
   }
 
+  function toggleSort(field: string) {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSortBy(field);
+      setSortOrder("desc");
+    }
+  }
+
   return (
     <div className="flex gap-8 overflow-hidden h-[calc(100vh-120px)]">
-      <motion.section
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex-1 flex flex-col no-scrollbar overflow-y-auto"
-      >
+      <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex-1 flex flex-col no-scrollbar overflow-y-auto">
         {/* Header */}
-        <div className="flex justify-between items-end mb-10">
+        <div className="flex justify-between items-end mb-8">
           <div>
-            <h1 className="text-3xl font-black tracking-tighter text-on-surface">
-              Portföy
-            </h1>
-            <p className="text-on-surface-variant text-sm mt-1 font-medium">
-              {properties.length} premium mülkü keşfedin
-            </p>
+            <h1 className="text-3xl font-black tracking-tighter text-on-surface">Portföy</h1>
+            <p className="text-on-surface-variant text-sm mt-1 font-medium">{properties.length} ilan</p>
           </div>
-          <Link
-            href="/properties/new"
-            className="primary-gradient text-white px-6 py-3 rounded-xl text-sm font-bold shadow-xl shadow-primary/10 hover:opacity-90 transition-all flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            Yeni İlan
-          </Link>
+          <div className="flex items-center gap-3">
+            <ExcelToolbar
+              exportUrl="/api/properties/export"
+              importUrl="/api/properties/import"
+              label="ilan"
+              onImportSuccess={fetchProperties}
+            />
+            <Link href="/properties/new"
+              className="primary-gradient text-white px-6 py-3 rounded-xl text-sm font-bold shadow-xl shadow-primary/10 hover:opacity-90 transition-all flex items-center gap-2">
+              <Plus className="w-4 h-4" />Yeni İlan
+            </Link>
+          </div>
         </div>
 
         {/* Filters */}
-        <div className="space-y-3 mb-8">
+        <div className="space-y-3 mb-6">
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant w-4 h-4" />
-              <input
-                type="text"
-                placeholder="İlan ara (başlık, adres, şehir)..."
-                value={search}
+              <input type="text" placeholder="İlan ara (başlık, adres, şehir)..." value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/20 outline-none text-sm"
-              />
+                className="w-full pl-10 pr-4 py-3 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/20 outline-none text-sm" />
             </div>
-            <select
-              value={listingType}
-              onChange={(e) => setListingType(e.target.value)}
-              className="px-4 py-3 bg-surface-container-low border-none rounded-xl outline-none text-sm font-medium"
-            >
-              <option value="">Tümü</option>
+            <select value={listingType} onChange={(e) => setListingType(e.target.value)}
+              className="px-4 py-3 bg-surface-container-low border-none rounded-xl outline-none text-sm font-medium">
+              <option value="">Satılık / Kiralık</option>
               <option value="SATILIK">Satılık</option>
               <option value="KIRALIK">Kiralık</option>
             </select>
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className={cn(
-                "px-4 py-3 rounded-xl text-sm font-bold transition-all flex items-center gap-2",
-                showFilters || activeFilterCount > 0
-                  ? "bg-primary text-white"
-                  : "bg-surface-container-low text-on-surface-variant hover:text-on-surface"
-              )}
-            >
+
+            {/* Sort */}
+            <div className="flex items-center gap-1 bg-surface-container-low rounded-xl px-1">
+              <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}
+                className="px-3 py-3 bg-transparent border-none outline-none text-sm font-medium text-on-surface-variant">
+                <option value="createdAt">Tarihe Göre</option>
+                <option value="price">Fiyata Göre</option>
+                <option value="area">Alana Göre</option>
+              </select>
+              <button onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+                className="p-2 text-on-surface-variant hover:text-primary transition-colors" title={sortOrder === "asc" ? "Artan" : "Azalan"}>
+                <ArrowUpDown className={cn("w-4 h-4 transition-transform", sortOrder === "asc" && "rotate-180")} />
+              </button>
+            </div>
+
+            <button onClick={() => setShowFilters(!showFilters)}
+              className={cn("px-4 py-3 rounded-xl text-sm font-bold transition-all flex items-center gap-2",
+                showFilters || activeFilterCount > 0 ? "bg-primary text-white" : "bg-surface-container-low text-on-surface-variant hover:text-on-surface"
+              )}>
               <SlidersHorizontal className="w-4 h-4" />
               Filtreler
               {activeFilterCount > 0 && (
-                <span className="bg-white text-primary text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center">
-                  {activeFilterCount}
-                </span>
+                <span className="bg-white text-primary text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center">{activeFilterCount}</span>
               )}
             </button>
+
+            {/* View Mode */}
             <div className="flex bg-surface-container-low p-1 rounded-xl">
-              <button
-                onClick={() => setViewMode("grid")}
-                className={cn(
-                  "px-4 py-2 rounded-lg text-sm font-bold transition-all",
-                  viewMode === "grid"
-                    ? "bg-white shadow-sm text-primary"
-                    : "text-on-surface-variant hover:text-on-surface"
-                )}
-              >
-                <LayoutGrid className="w-5 h-5" />
+              <button onClick={() => setViewMode("grid")} title="Büyük Kart"
+                className={cn("px-3 py-2 rounded-lg transition-all", viewMode === "grid" ? "bg-white shadow-sm text-primary" : "text-on-surface-variant hover:text-on-surface")}>
+                <LayoutGrid className="w-4 h-4" />
               </button>
-              <button
-                onClick={() => setViewMode("list")}
-                className={cn(
-                  "px-4 py-2 rounded-lg text-sm font-bold transition-all",
-                  viewMode === "list"
-                    ? "bg-white shadow-sm text-primary"
-                    : "text-on-surface-variant hover:text-on-surface"
-                )}
-              >
-                <List className="w-5 h-5" />
+              <button onClick={() => setViewMode("compact")} title="Küçük Kart"
+                className={cn("px-3 py-2 rounded-lg transition-all", viewMode === "compact" ? "bg-white shadow-sm text-primary" : "text-on-surface-variant hover:text-on-surface")}>
+                <LayoutList className="w-4 h-4" />
+              </button>
+              <button onClick={() => setViewMode("list")} title="Liste"
+                className={cn("px-3 py-2 rounded-lg transition-all", viewMode === "list" ? "bg-white shadow-sm text-primary" : "text-on-surface-variant hover:text-on-surface")}>
+                <List className="w-4 h-4" />
               </button>
             </div>
           </div>
 
-          {/* Advanced Filters Panel */}
+          {/* Advanced Filters */}
           <AnimatePresence>
             {showFilters && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                className="overflow-hidden"
-              >
+              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
                 <div className="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/10 shadow-sm">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-sm font-bold text-on-surface">Gelişmiş Filtreler</h3>
                     {activeFilterCount > 0 && (
                       <button onClick={clearFilters} className="text-xs text-primary font-bold flex items-center gap-1 hover:underline">
-                        <X className="w-3 h-3" /> Temizle
+                        <X className="w-3 h-3" />Temizle
                       </button>
                     )}
                   </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
-                    <select
-                      value={propertyType}
-                      onChange={(e) => setPropertyType(e.target.value)}
-                      className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm"
-                    >
+                  <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+                    <select value={propertyType} onChange={(e) => setPropertyType(e.target.value)}
+                      className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm">
                       <option value="">Emlak Tipi</option>
                       <option value="DAIRE">Daire</option>
                       <option value="VILLA">Villa</option>
@@ -215,52 +227,26 @@ export default function PropertiesPage() {
                       <option value="ISYERI">İşyeri</option>
                       <option value="MUSTAKILEV">Müstakil Ev</option>
                     </select>
-                    <select
-                      value={status}
-                      onChange={(e) => setStatus(e.target.value)}
-                      className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm"
-                    >
+                    <select value={status} onChange={(e) => setStatus(e.target.value)}
+                      className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm">
                       <option value="">Durum</option>
                       <option value="ACTIVE">Aktif</option>
                       <option value="SOLD">Satıldı</option>
                       <option value="RENTED">Kiralandı</option>
                       <option value="INACTIVE">Pasif</option>
                     </select>
-                    <input
-                      type="number"
-                      placeholder="Min Fiyat"
-                      value={minPrice}
-                      onChange={(e) => setMinPrice(e.target.value)}
-                      className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm"
-                    />
-                    <input
-                      type="number"
-                      placeholder="Max Fiyat"
-                      value={maxPrice}
-                      onChange={(e) => setMaxPrice(e.target.value)}
-                      className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Oda (3+1)"
-                      value={rooms}
-                      onChange={(e) => setRooms(e.target.value)}
-                      className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm"
-                    />
-                    <input
-                      type="number"
-                      placeholder="Min m²"
-                      value={minArea}
-                      onChange={(e) => setMinArea(e.target.value)}
-                      className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm"
-                    />
-                    <input
-                      type="number"
-                      placeholder="Max m²"
-                      value={maxArea}
-                      onChange={(e) => setMaxArea(e.target.value)}
-                      className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm"
-                    />
+                    <input type="text" placeholder="Şehir" value={city} onChange={(e) => setCity(e.target.value)}
+                      className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm" />
+                    <input type="text" placeholder="Oda (3+1)" value={rooms} onChange={(e) => setRooms(e.target.value)}
+                      className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm" />
+                    <input type="number" placeholder="Min Fiyat" value={minPrice} onChange={(e) => setMinPrice(e.target.value)}
+                      className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm" />
+                    <input type="number" placeholder="Max Fiyat" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)}
+                      className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm" />
+                    <input type="number" placeholder="Min m²" value={minArea} onChange={(e) => setMinArea(e.target.value)}
+                      className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm" />
+                    <input type="number" placeholder="Max m²" value={maxArea} onChange={(e) => setMaxArea(e.target.value)}
+                      className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm" />
                   </div>
                 </div>
               </motion.div>
@@ -271,8 +257,7 @@ export default function PropertiesPage() {
         {/* Content */}
         {loading ? (
           <div className="flex items-center justify-center py-20 text-on-surface-variant">
-            <Loader2 className="w-5 h-5 animate-spin mr-2" />
-            Yükleniyor...
+            <Loader2 className="w-5 h-5 animate-spin mr-2" />Yükleniyor...
           </div>
         ) : properties.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-on-surface-variant">
@@ -280,60 +265,81 @@ export default function PropertiesPage() {
             <p className="text-lg font-medium">İlan bulunamadı</p>
           </div>
         ) : viewMode === "grid" ? (
-          <div className={cn(
-            "grid gap-8 pb-10",
-            selectedProperty ? "grid-cols-1" : "grid-cols-1 xl:grid-cols-2"
-          )}>
+          <div className={cn("grid gap-6 pb-10", selectedProperty ? "grid-cols-1" : "grid-cols-1 xl:grid-cols-2")}>
             {properties.map((p) => (
-              <PropertyCard
-                key={p.id}
-                property={p}
-                isSelected={selectedProperty?.id === p.id}
-                onClick={() => handleSelectProperty(p)}
-                onDoubleClick={() => router.push(`/properties/${p.id}`)}
-              />
+              <PropertyCard key={p.id} property={p} isSelected={selectedProperty?.id === p.id}
+                onClick={() => handleSelectProperty(p)} onDoubleClick={() => router.push(`/properties/${p.id}`)} />
             ))}
           </div>
+
+        ) : viewMode === "compact" ? (
+          <div className={cn("grid gap-3 pb-10", selectedProperty ? "grid-cols-2 sm:grid-cols-3" : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5")}>
+            {properties.map((p) => (
+              <CompactCard key={p.id} property={p} isSelected={selectedProperty?.id === p.id}
+                onClick={() => handleSelectProperty(p)} onDoubleClick={() => router.push(`/properties/${p.id}`)} />
+            ))}
+          </div>
+
         ) : (
-          <div className="bg-surface-container-lowest rounded-3xl overflow-hidden">
+          <div className="bg-surface-container-lowest rounded-3xl overflow-hidden border border-outline-variant/10 pb-10">
             <table className="w-full">
-              <thead className="bg-surface-container-low">
+              <thead className="bg-surface-container-low sticky top-0 z-10">
                 <tr>
-                  <th className="text-left px-6 py-4 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">İlan</th>
-                  <th className="text-left px-6 py-4 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Tip</th>
-                  <th className="text-left px-6 py-4 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Fiyat</th>
-                  <th className="text-left px-6 py-4 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Konum</th>
-                  <th className="text-left px-6 py-4 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Durum</th>
-                  <th className="text-left px-6 py-4 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Danışman</th>
+                  {[
+                    { label: "İlan", field: null },
+                    { label: "Tip", field: null },
+                    { label: "Fiyat", field: "price" },
+                    { label: "Konum", field: "city" },
+                    { label: "Durum", field: "status" },
+                    { label: "Danışman", field: null },
+                  ].map(({ label, field }) => (
+                    <th key={label} className="text-left px-5 py-4 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">
+                      {field ? (
+                        <button onClick={() => toggleSort(field)} className="flex items-center gap-1 hover:text-primary transition-colors">
+                          {label}
+                          <ArrowUpDown className={cn("w-3 h-3", sortBy === field && "text-primary")} />
+                        </button>
+                      ) : label}
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
                 {properties.map((p) => (
-                  <tr
-                    key={p.id}
-                    onClick={() => handleSelectProperty(p)}
-                    className="hover:bg-surface-container-low transition-all cursor-pointer"
-                  >
-                    <td className="px-6 py-5">
-                      <span className="text-sm font-semibold text-primary">{p.title}</span>
+                  <tr key={p.id} onClick={() => handleSelectProperty(p)}
+                    className={cn("border-t border-outline-variant/10 hover:bg-surface-container-low transition-all cursor-pointer",
+                      selectedProperty?.id === p.id && "bg-primary/5"
+                    )}>
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl overflow-hidden bg-surface-container shrink-0">
+                          {p.images[0] ? (
+                            <img src={p.images[0].url} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-on-surface-variant/30">
+                              <Home className="w-4 h-4" />
+                            </div>
+                          )}
+                        </div>
+                        <span className="text-sm font-semibold text-primary hover:underline">{p.title}</span>
+                      </div>
                     </td>
-                    <td className="px-6 py-5 text-sm text-on-surface-variant">
-                      {listingLabels[p.listingType]} - {propertyTypeLabels[p.propertyType]}
+                    <td className="px-5 py-4 text-sm text-on-surface-variant">
+                      {listingLabels[p.listingType]} · {propertyTypeLabels[p.propertyType]}
                     </td>
-                    <td className="px-6 py-5 text-sm font-bold text-on-surface">
-                      {formatPrice(p.price, p.currency)}
+                    <td className="px-5 py-4 text-sm font-bold text-on-surface">{formatPrice(p.price, p.currency)}</td>
+                    <td className="px-5 py-4 text-sm text-on-surface-variant">
+                      <span className="flex items-center gap-1">
+                        <MapPin className="w-3 h-3 text-primary" />
+                        {[p.district, p.city].filter(Boolean).join(", ") || "-"}
+                      </span>
                     </td>
-                    <td className="px-6 py-5 text-sm text-on-surface-variant">
-                      {[p.district, p.city].filter(Boolean).join(", ")}
-                    </td>
-                    <td className="px-6 py-5">
+                    <td className="px-5 py-4">
                       <span className={cn("text-[10px] px-2.5 py-1 rounded-lg font-bold uppercase", statusColors[p.status])}>
                         {statusLabels[p.status]}
                       </span>
                     </td>
-                    <td className="px-6 py-5 text-sm text-on-surface-variant">
-                      {p.assignedAgent?.name || "-"}
-                    </td>
+                    <td className="px-5 py-4 text-sm text-on-surface-variant">{p.assignedAgent?.name || "-"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -345,12 +351,61 @@ export default function PropertiesPage() {
       {/* Detail Panel */}
       <AnimatePresence>
         {selectedProperty && (
-          <PropertyDetail
-            property={selectedProperty}
-            onClose={() => setSelectedProperty(null)}
-          />
+          <PropertyDetail property={selectedProperty} onClose={() => setSelectedProperty(null)} />
         )}
       </AnimatePresence>
+    </div>
+  );
+}
+
+function CompactCard({ property: p, isSelected, onClick, onDoubleClick }: {
+  property: PropertyCardData;
+  isSelected?: boolean;
+  onClick: () => void;
+  onDoubleClick?: () => void;
+}) {
+  return (
+    <div onClick={onClick} onDoubleClick={onDoubleClick}
+      className={cn(
+        "group bg-surface-container-lowest rounded-2xl overflow-hidden cursor-pointer transition-all hover:shadow-lg hover:-translate-y-0.5",
+        isSelected && "ring-2 ring-primary/30 shadow-md"
+      )}>
+      <div className="relative h-28 overflow-hidden bg-surface-container-high">
+        {p.images[0] ? (
+          <img src={p.images[0].url} alt={p.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-on-surface-variant/20">
+            <Home className="w-8 h-8" />
+          </div>
+        )}
+        <span className={cn("absolute top-2 right-2 text-[9px] px-1.5 py-0.5 rounded font-bold uppercase", statusColors[p.status])}>
+          {statusLabels[p.status]}
+        </span>
+        <span className="absolute bottom-2 left-2 glass-badge text-[9px] px-1.5 py-0.5 rounded font-bold text-primary">
+          {p.listingType === "SATILIK" ? "Satılık" : "Kiralık"}
+        </span>
+      </div>
+      <div className="p-3">
+        <p className="text-xs font-bold text-on-surface truncate group-hover:text-primary transition-colors">{p.title}</p>
+        <p className="text-[10px] font-black text-primary mt-1">{formatPrice(p.price, p.currency)}</p>
+        <div className="flex items-center gap-2 mt-1.5 text-[9px] text-on-surface-variant">
+          {p.rooms && (
+            <span className="flex items-center gap-0.5">
+              <DoorOpen className="w-2.5 h-2.5" />{p.rooms}
+            </span>
+          )}
+          {p.area && (
+            <span className="flex items-center gap-0.5">
+              <Maximize className="w-2.5 h-2.5" />{p.area}m²
+            </span>
+          )}
+          {(p.district || p.city) && (
+            <span className="flex items-center gap-0.5 truncate">
+              <MapPin className="w-2.5 h-2.5 shrink-0" />{p.district || p.city}
+            </span>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

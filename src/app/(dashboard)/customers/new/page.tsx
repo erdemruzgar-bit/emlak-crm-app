@@ -222,7 +222,7 @@ export default function NewCustomerPage() {
               <input type="checkbox" name="aydinlatma" className="mt-0.5 w-4 h-4 text-primary rounded-md" />
               <div>
                 <p className="text-sm font-bold text-on-surface">Aydınlatma Metni *</p>
-                <p className="text-xs text-on-surface-variant mt-1">KVKK aydınlatma metnini okudum ve anladım.</p>
+                <p className="text-xs text-on-surface-variant mt-1">KVKK aydınlatma metnini okudum ve anladım. Verilerimin grubumuzun tüm şubelerindeki yetkili danışmanlar tarafından hizmet amacıyla görüntülenebileceğini kabul ediyorum.</p>
               </div>
             </label>
             <label className="flex items-start gap-4 p-5 rounded-2xl bg-surface-container-low hover:bg-surface-container transition-all cursor-pointer">

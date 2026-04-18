@@ -77,6 +77,12 @@ enum InteractionType {
   WHATSAPP
 }
 
+enum MatchStatus {
+  SUGGESTED   // Sistem önerisi (otomatik)
+  INTERESTED  // Danışman "ilgileniyor" olarak işaretledi
+  REJECTED    // Danışman reddetti, bir daha gösterme
+}
+
 // ─── Kullanıcı & Şube ───
 
 model Branch {
@@ -98,8 +104,11 @@ model User {
   passwordHash String
   name         String
   phone        String?
+  photoUrl     String?
   role         Role     @default(AGENT)
   isActive     Boolean  @default(true)
+  canExport    Boolean  @default(false)  // Excel dışa aktarma yetkisi (ADMIN her zaman yapabilir)
+  canImport    Boolean  @default(false)  // Excel içe aktarma yetkisi
   branchId     String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -147,6 +156,7 @@ model Customer {
   address        String?
   customerType   CustomerType @default(BUYER)
   source         String?      // Referans, İnternet, vs.
+  photoUrl       String?
   isAnonymized   Boolean      @default(false)
   assignedAgentId String?
   branchId       String?
@@ -296,17 +306,20 @@ model PropertyImage {
 }
 
 model PropertyMatch {
-  id         String   @id @default(cuid())
+  id         String      @id @default(cuid())
   propertyId String
   customerId String
   matchScore Float?
-  isNotified Boolean  @default(false)
-  createdAt  DateTime @default(now())
+  status     MatchStatus @default(SUGGESTED)
+  isNotified Boolean     @default(false)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @default(now()) @updatedAt
 
   property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
 
   @@unique([propertyId, customerId])
+  @@index([status])
 }
 
 // ─── Randevu & Görev ───

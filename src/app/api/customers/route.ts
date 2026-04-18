@@ -33,12 +33,7 @@ export async function GET(req: NextRequest) {
   const user = session.user as unknown as Record<string, unknown>;
   const where: Record<string, unknown> = {};
 
-  // RBAC filtering
-  if (user.role === "AGENT") {
-    where.assignedAgentId = user.id;
-  } else if (user.role === "MANAGER") {
-    where.branchId = user.branchId;
-  }
+  // Müşteriler tüm şubelerde ortak; ek rol filtresi yok
 
   // Search
   if (search) {
@@ -121,6 +116,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  try {
   const body = await req.json();
   const parsed = customerCreateSchema.safeParse(body);
 
@@ -177,4 +173,7 @@ export async function POST(req: NextRequest) {
   });
 
   return NextResponse.json(customer, { status: 201 });
+  } catch {
+    return NextResponse.json({ error: "Sunucu hatası" }, { status: 500 });
+  }
 }

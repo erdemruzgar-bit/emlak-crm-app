@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { createAuditLog } from "@/lib/audit";
 import { appointmentCreateSchema } from "@/lib/validations/appointment";
+import { appointmentListFilter, extractActor } from "@/lib/rbac";
 
 // GET /api/appointments
 export async function GET(req: NextRequest) {
@@ -14,17 +15,18 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const start = searchParams.get("start");
   const end = searchParams.get("end");
+  const customerId = searchParams.get("customerId");
 
-  const user = session.user as unknown as Record<string, unknown>;
-  const where: Record<string, unknown> = {};
-
-  if (user.role === "AGENT") {
-    where.userId = user.id;
-  }
+  const actor = extractActor(session);
+  const where: Record<string, unknown> = { ...appointmentListFilter(actor) };
 
   if (start && end) {
     where.startDate = { gte: new Date(start) };
     where.endDate = { lte: new Date(end) };
+  }
+
+  if (customerId) {
+    where.customerId = customerId;
   }
 
   const appointments = await prisma.appointment.findMany({

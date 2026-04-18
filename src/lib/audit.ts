@@ -2,7 +2,7 @@ import { prisma } from "./prisma";
 
 interface AuditLogParams {
   userId?: string;
-  action: "CREATE" | "READ" | "UPDATE" | "DELETE";
+  action: "CREATE" | "READ" | "UPDATE" | "DELETE" | "DENIED_EDIT";
   entity: string;
   entityId?: string;
   oldValue?: Record<string, unknown> | null;

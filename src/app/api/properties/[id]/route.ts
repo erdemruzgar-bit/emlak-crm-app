@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { createAuditLog } from "@/lib/audit";
+import { propertyUpdateSchema } from "@/lib/validations/property";
+import { runPropertyMatching } from "@/lib/matching";
+import { canEditProperty, canViewProperty, extractActor } from "@/lib/rbac";
 
 export async function GET(
   _req: NextRequest,
@@ -13,22 +17,162 @@ export async function GET(
 
   const { id } = await params;
 
-  const property = await prisma.property.findUnique({
-    where: { id },
-    include: {
-      images: { orderBy: { order: "asc" } },
-      assignedAgent: { select: { name: true } },
-      owner: { select: { id: true, firstName: true, lastName: true } },
-      branch: { select: { name: true } },
-      matches: {
-        include: { customer: { select: { id: true, firstName: true, lastName: true } } },
+  try {
+    const property = await prisma.property.findUnique({
+      where: { id },
+      include: {
+        images: { orderBy: { order: "asc" } },
+        assignedAgent: { select: { name: true } },
+        owner: { select: { id: true, firstName: true, lastName: true, phone: true, email: true } },
+        branch: { select: { name: true } },
+        matches: {
+          include: { customer: { select: { id: true, firstName: true, lastName: true } } },
+        },
       },
-    },
-  });
+    });
 
-  if (!property) {
-    return NextResponse.json({ error: "İlan bulunamadı" }, { status: 404 });
+    if (!property) {
+      return NextResponse.json({ error: "İlan bulunamadı" }, { status: 404 });
+    }
+
+    const actor = extractActor(session);
+    if (!canViewProperty(actor, property)) {
+      return NextResponse.json({ error: "Bu ilanı görüntüleme yetkiniz yok" }, { status: 403 });
+    }
+
+    return NextResponse.json(property);
+  } catch {
+    return NextResponse.json({ error: "Sunucu hatası" }, { status: 500 });
+  }
+}
+
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await auth();
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  return NextResponse.json(property);
+  const { id } = await params;
+
+  try {
+    const body = await req.json();
+    const parsed = propertyUpdateSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error.issues }, { status: 400 });
+    }
+
+    const old = await prisma.property.findUnique({ where: { id } });
+    if (!old) {
+      return NextResponse.json({ error: "İlan bulunamadı" }, { status: 404 });
+    }
+
+    const actor = extractActor(session);
+    if (!canEditProperty(actor, old)) {
+      await createAuditLog({
+        userId: actor?.id,
+        action: "DENIED_EDIT",
+        entity: "Property",
+        entityId: id,
+        ipAddress: req.headers.get("x-forwarded-for") || undefined,
+      });
+      return NextResponse.json({ error: "Bu ilanı düzenleme yetkiniz yok" }, { status: 403 });
+    }
+
+    // Danışman değişimi: sadece MANAGER+ADMIN yetkili; MANAGER aynı şubeden seçebilir
+    if (parsed.data.assignedAgentId !== undefined && parsed.data.assignedAgentId !== old.assignedAgentId) {
+      if (actor?.role === "AGENT") {
+        return NextResponse.json({ error: "Danışman atama yetkiniz yok" }, { status: 403 });
+      }
+      if (parsed.data.assignedAgentId) {
+        const newAgent = await prisma.user.findUnique({
+          where: { id: parsed.data.assignedAgentId },
+          select: { id: true, isActive: true, branchId: true },
+        });
+        if (!newAgent || !newAgent.isActive) {
+          return NextResponse.json({ error: "Seçilen danışman geçersiz" }, { status: 400 });
+        }
+        if (actor?.role === "MANAGER" && newAgent.branchId !== actor.branchId) {
+          return NextResponse.json({ error: "Yalnızca kendi şubenizdeki danışmana atayabilirsiniz" }, { status: 403 });
+        }
+      }
+    }
+
+    const property = await prisma.property.update({
+      where: { id },
+      data: parsed.data,
+    });
+
+    const user = session.user as unknown as Record<string, unknown>;
+    await createAuditLog({
+      userId: user.id as string,
+      action: "UPDATE",
+      entity: "Property",
+      entityId: id,
+      oldValue: { title: old.title, status: old.status },
+      newValue: { title: property.title, status: property.status },
+      ipAddress: req.headers.get("x-forwarded-for") || undefined,
+    });
+
+    runPropertyMatching(id).catch(() => {});
+
+    return NextResponse.json(property);
+  } catch {
+    return NextResponse.json({ error: "Sunucu hatası" }, { status: 500 });
+  }
+}
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await auth();
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const user = session.user as unknown as Record<string, unknown>;
+  const { id } = await params;
+
+  try {
+    const existing = await prisma.property.findUnique({
+      where: { id },
+      select: { assignedAgentId: true, branchId: true },
+    });
+    if (!existing) {
+      return NextResponse.json({ error: "İlan bulunamadı" }, { status: 404 });
+    }
+
+    const actor = extractActor(session);
+    if (!canEditProperty(actor, existing)) {
+      await createAuditLog({
+        userId: actor?.id,
+        action: "DENIED_EDIT",
+        entity: "Property",
+        entityId: id,
+        ipAddress: req.headers.get("x-forwarded-for") || undefined,
+      });
+      return NextResponse.json({ error: "Bu ilanı pasife alma yetkiniz yok" }, { status: 403 });
+    }
+
+    await prisma.property.update({
+      where: { id },
+      data: { status: "INACTIVE" },
+    });
+
+    await createAuditLog({
+      userId: user.id as string,
+      action: "DELETE",
+      entity: "Property",
+      entityId: id,
+      ipAddress: req.headers.get("x-forwarded-for") || undefined,
+    });
+
+    return NextResponse.json({ message: "İlan pasife alındı" });
+  } catch {
+    return NextResponse.json({ error: "Sunucu hatası" }, { status: 500 });
+  }
 }

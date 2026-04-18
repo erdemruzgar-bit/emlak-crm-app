@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { createAuditLog } from "@/lib/audit";
 import { propertyCreateSchema } from "@/lib/validations/property";
+import { runPropertyMatching } from "@/lib/matching";
+import { extractActor, propertyListFilter } from "@/lib/rbac";
 
 // GET /api/properties
 export async function GET(req: NextRequest) {
@@ -25,14 +27,8 @@ export async function GET(req: NextRequest) {
   const minArea = searchParams.get("minArea") || "";
   const maxArea = searchParams.get("maxArea") || "";
 
-  const user = session.user as unknown as Record<string, unknown>;
-  const where: Record<string, unknown> = {};
-
-  if (user.role === "AGENT") {
-    where.assignedAgentId = user.id;
-  } else if (user.role === "MANAGER") {
-    where.branchId = user.branchId;
-  }
+  const actor = extractActor(session);
+  const where: Record<string, unknown> = { ...propertyListFilter(actor) };
 
   if (search) {
     where.OR = [
@@ -61,15 +57,20 @@ export async function GET(req: NextRequest) {
     };
   }
 
+  const sortBy = searchParams.get("sortBy") || "createdAt";
+  const sortOrder = (searchParams.get("sortOrder") || "desc") as "asc" | "desc";
+  const allowedSort = ["createdAt", "price", "area"];
+  const orderField = allowedSort.includes(sortBy) ? sortBy : "createdAt";
+
   const [properties, total] = await Promise.all([
     prisma.property.findMany({
       where,
       include: {
-        images: { where: { isPrimary: true }, take: 1 },
+        images: { orderBy: { order: "asc" }, take: 1 },
         assignedAgent: { select: { name: true } },
         branch: { select: { name: true } },
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: { [orderField]: sortOrder },
       skip: (page - 1) * limit,
       take: limit,
     }),
@@ -114,6 +115,9 @@ export async function POST(req: NextRequest) {
     newValue: { title: property.title, price: property.price },
     ipAddress: req.headers.get("x-forwarded-for") || undefined,
   });
+
+  // Run matching in background (don't await)
+  runPropertyMatching(property.id).catch(() => {});
 
   return NextResponse.json(property, { status: 201 });
 }

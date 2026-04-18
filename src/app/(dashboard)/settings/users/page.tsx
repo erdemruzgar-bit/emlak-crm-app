@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { UserPlus, Loader2, Users } from "lucide-react";
-import { motion } from "motion/react";
+import { useSession } from "next-auth/react";
+import { UserPlus, Loader2, X, AlertCircle, Pencil, UserX, ShieldAlert, Camera } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
 
 interface User {
@@ -11,9 +12,19 @@ interface User {
   email: string;
   role: string;
   isActive: boolean;
+  photoUrl: string | null;
+  canExport: boolean;
+  canImport: boolean;
   branch: { name: string } | null;
   createdAt: string;
 }
+
+interface Branch {
+  id: string;
+  name: string;
+}
+
+const ROLE_RANK: Record<string, number> = { ADMIN: 3, MANAGER: 2, AGENT: 1 };
 
 const roleLabels: Record<string, string> = { ADMIN: "Yönetici", MANAGER: "Şube Müdürü", AGENT: "Danışman" };
 const roleColors: Record<string, string> = {
@@ -22,16 +33,126 @@ const roleColors: Record<string, string> = {
   AGENT: "bg-secondary-container text-on-secondary-container",
 };
 
+const inputClass = "w-full px-4 py-3 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/20 outline-none text-sm";
+
+// Returns the role options a user with `sessionRole` is allowed to assign
+function allowedRoles(sessionRole: string) {
+  if (sessionRole === "ADMIN") return [
+    { value: "AGENT", label: "Danışman" },
+    { value: "MANAGER", label: "Şube Müdürü" },
+    { value: "ADMIN", label: "Yönetici" },
+  ];
+  // MANAGER can only assign AGENT
+  return [{ value: "AGENT", label: "Danışman" }];
+}
+
 export default function UsersSettingsPage() {
+  const { data: session } = useSession();
+  const sessionRole = (session?.user as Record<string, unknown> | undefined)?.role as string | undefined;
+  const sessionId = (session?.user as Record<string, unknown> | undefined)?.id as string | undefined;
+
   const [users, setUsers] = useState<User[]>([]);
+  const [branches, setBranches] = useState<Branch[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [editUser, setEditUser] = useState<User | null>(null);
+  const [formError, setFormError] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const [form, setForm] = useState({ name: "", email: "", password: "", role: "AGENT", branchId: "", phone: "", photoUrl: "", canExport: false, canImport: false });
 
   useEffect(() => {
-    fetch("/api/users")
-      .then((res) => res.json())
-      .then((data) => { setUsers(Array.isArray(data) ? data : []); setLoading(false); })
-      .catch(() => setLoading(false));
+    Promise.all([
+      fetch("/api/users").then((r) => r.json()),
+      fetch("/api/branches").then((r) => r.json()),
+    ]).then(([u, b]) => {
+      setUsers(Array.isArray(u) ? u : []);
+      setBranches(Array.isArray(b) ? b : []);
+      setLoading(false);
+    }).catch(() => setLoading(false));
   }, []);
+
+  // Can the current session user edit the target user?
+  function canEdit(target: User) {
+    if (!sessionRole) return false;
+    if (target.id === sessionId) return true; // can edit own profile (but not own role)
+    return ROLE_RANK[sessionRole] > ROLE_RANK[target.role];
+  }
+
+  // Can the current session user deactivate the target user?
+  function canDeactivate(target: User) {
+    if (!sessionRole) return false;
+    if (target.id === sessionId) return false; // cannot deactivate yourself
+    return ROLE_RANK[sessionRole] > ROLE_RANK[target.role];
+  }
+
+  function openCreate() {
+    setEditUser(null);
+    setForm({ name: "", email: "", password: "", role: "AGENT", branchId: "", phone: "", photoUrl: "", canExport: false, canImport: false });
+    setFormError("");
+    setShowModal(true);
+  }
+
+  function openEdit(u: User) {
+    setEditUser(u);
+    setForm({ name: u.name, email: u.email, password: "", role: u.role, branchId: "", phone: "", photoUrl: u.photoUrl || "", canExport: u.canExport, canImport: u.canImport });
+    setFormError("");
+    setShowModal(true);
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    setFormError("");
+
+    const body: Record<string, unknown> = { name: form.name, email: form.email, role: form.role };
+    if (form.branchId) body.branchId = form.branchId;
+    if (form.phone) body.phone = form.phone;
+    if (!editUser || form.password) body.password = form.password;
+    body.photoUrl = form.photoUrl || null;
+    // Yalnız ADMIN bu bayrakları göndermeli (API de filtreler ama UI'da da kısıtlayalım)
+    if (sessionRole === "ADMIN") {
+      body.canExport = form.canExport;
+      body.canImport = form.canImport;
+    }
+
+    const res = await fetch(editUser ? `/api/users/${editUser.id}` : "/api/users", {
+      method: editUser ? "PUT" : "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    const data = await res.json();
+    setSaving(false);
+
+    if (!res.ok) {
+      setFormError(typeof data.error === "string" ? data.error : "Bir hata oluştu");
+      return;
+    }
+
+    if (editUser) {
+      setUsers(users.map((u) => u.id === editUser.id ? { ...u, ...data } : u));
+    } else {
+      setUsers([data, ...users]);
+    }
+    setShowModal(false);
+  }
+
+  async function deactivate(id: string) {
+    if (!confirm("Bu kullanıcıyı pasife almak istiyor musunuz?")) return;
+    const res = await fetch(`/api/users/${id}`, { method: "DELETE" });
+    const data = await res.json();
+    if (res.ok) {
+      setUsers(users.map((u) => u.id === id ? { ...u, isActive: false } : u));
+    } else {
+      alert(data.error || "İşlem başarısız");
+    }
+  }
+
+  const roleOptions = sessionRole ? allowedRoles(sessionRole) : [];
+  // Is the edit modal showing for own profile or a lower-rank user?
+  const isEditingSelf = editUser?.id === sessionId;
+  const canChangeRole = editUser ? (!isEditingSelf && sessionRole && ROLE_RANK[sessionRole] > ROLE_RANK[editUser.role]) : true;
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
@@ -40,48 +161,91 @@ export default function UsersSettingsPage() {
           <h1 className="text-3xl font-black tracking-tighter text-on-surface">Kullanıcı Yönetimi</h1>
           <p className="text-sm text-on-surface-variant mt-1 font-medium">Sistem kullanıcılarını yönetin</p>
         </div>
-        <button className="primary-gradient text-white px-6 py-3 rounded-xl text-sm font-bold shadow-xl shadow-primary/10 hover:opacity-90 transition-all flex items-center gap-2">
-          <UserPlus className="w-4 h-4" />
-          Yeni Kullanıcı
+        <button onClick={openCreate}
+          className="primary-gradient text-white px-6 py-3 rounded-xl text-sm font-bold shadow-xl shadow-primary/10 hover:opacity-90 transition-all flex items-center gap-2">
+          <UserPlus className="w-4 h-4" />Yeni Kullanıcı
         </button>
       </div>
+
+      {sessionRole === "MANAGER" && (
+        <div className="flex items-center gap-2 text-sm text-on-surface-variant bg-surface-container-low px-4 py-3 rounded-xl">
+          <ShieldAlert className="w-4 h-4 text-primary shrink-0" />
+          Şube Müdürü olarak yalnızca kendi şubenizdeki <strong className="text-on-surface mx-1">Danışman</strong> rolünde kullanıcı oluşturabilir ve düzenleyebilirsiniz.
+        </div>
+      )}
 
       <div className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] overflow-hidden border border-outline-variant/10">
         <table className="w-full">
           <thead className="bg-surface-container-low">
             <tr>
-              <th className="text-left px-6 py-4 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Ad Soyad</th>
-              <th className="text-left px-6 py-4 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">E-posta</th>
-              <th className="text-left px-6 py-4 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Rol</th>
-              <th className="text-left px-6 py-4 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Şube</th>
-              <th className="text-left px-6 py-4 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Durum</th>
+              {["Ad Soyad", "E-posta", "Rol", "Şube", "Durum", "İşlem"].map((h) => (
+                <th key={h} className="text-left px-6 py-4 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">{h}</th>
+              ))}
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={5} className="px-6 py-12 text-center text-on-surface-variant">
+              <tr><td colSpan={6} className="text-center py-12 text-on-surface-variant">
                 <Loader2 className="w-5 h-5 animate-spin inline mr-2" />Yükleniyor...
               </td></tr>
             ) : users.length === 0 ? (
-              <tr><td colSpan={5} className="px-6 py-12 text-center text-on-surface-variant">
-                <Users className="w-10 h-10 opacity-30 mx-auto mb-2" />
-                Kullanıcı bulunamadı
-              </td></tr>
+              <tr><td colSpan={6} className="text-center py-12 text-on-surface-variant">Kullanıcı bulunamadı</td></tr>
             ) : (
               users.map((u) => (
-                <tr key={u.id} className="hover:bg-surface-container-low transition-all">
-                  <td className="px-6 py-5 text-sm font-semibold text-on-surface">{u.name}</td>
-                  <td className="px-6 py-5 text-sm text-on-surface-variant">{u.email}</td>
-                  <td className="px-6 py-5">
-                    <span className={cn("text-[10px] px-2.5 py-1 rounded-lg font-bold uppercase tracking-wider", roleColors[u.role])}>
+                <tr key={u.id} className="border-t border-outline-variant/10 hover:bg-surface-container-low/50 transition-colors">
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      {u.photoUrl ? (
+                        <img src={u.photoUrl} alt={u.name}
+                          className="w-10 h-10 rounded-xl object-cover object-top shrink-0" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-xl bg-primary-container flex items-center justify-center text-on-primary-container font-bold text-sm shrink-0">
+                          {u.name.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <div>
+                        <p className="text-sm font-bold text-on-surface">
+                          {u.name}
+                          {u.id === sessionId && <span className="ml-2 text-[10px] text-primary font-black">(Siz)</span>}
+                        </p>
+                        <p className="text-xs text-on-surface-variant">{new Date(u.createdAt).toLocaleDateString("tr-TR")}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-sm text-on-surface-variant">{u.email}</td>
+                  <td className="px-6 py-4">
+                    <span className={cn("text-[10px] px-2.5 py-1 rounded-lg font-bold uppercase", roleColors[u.role])}>
                       {roleLabels[u.role]}
                     </span>
                   </td>
-                  <td className="px-6 py-5 text-sm text-on-surface-variant">{u.branch?.name || "-"}</td>
-                  <td className="px-6 py-5">
-                    <span className={cn("text-[10px] px-2.5 py-1 rounded-lg font-bold uppercase", u.isActive ? "bg-green-100 text-green-700" : "bg-surface-container-high text-on-surface-variant")}>
+                  <td className="px-6 py-4 text-sm text-on-surface-variant">{u.branch?.name || "-"}</td>
+                  <td className="px-6 py-4">
+                    <span className={cn("text-[10px] px-2.5 py-1 rounded-lg font-bold uppercase",
+                      u.isActive ? "bg-green-100 text-green-700" : "bg-surface-container text-on-surface-variant")}>
                       {u.isActive ? "Aktif" : "Pasif"}
                     </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-2">
+                      {canEdit(u) ? (
+                        <button onClick={() => openEdit(u)}
+                          className="p-2 hover:bg-surface-container rounded-lg transition-colors text-on-surface-variant hover:text-primary"
+                          title="Düzenle">
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                      ) : (
+                        <span className="p-2 text-on-surface-variant/20 cursor-not-allowed" title="Bu kullanıcıyı düzenleme yetkiniz yok">
+                          <Pencil className="w-4 h-4" />
+                        </span>
+                      )}
+                      {u.isActive && canDeactivate(u) && (
+                        <button onClick={() => deactivate(u.id)}
+                          className="p-2 hover:bg-error-container/30 rounded-lg transition-colors text-on-surface-variant hover:text-error"
+                          title="Pasife Al">
+                          <UserX className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))
@@ -89,6 +253,158 @@ export default function UsersSettingsPage() {
           </tbody>
         </table>
       </div>
+
+      <AnimatePresence>
+        {showModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={(e) => e.target === e.currentTarget && setShowModal(false)}>
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-surface-container-lowest rounded-3xl shadow-2xl w-full max-w-md p-8 space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-black text-on-surface">{editUser ? "Kullanıcıyı Düzenle" : "Yeni Kullanıcı"}</h2>
+                <button onClick={() => setShowModal(false)} className="p-2 hover:bg-surface-container rounded-xl text-on-surface-variant">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {formError && (
+                <div className="bg-error-container text-on-error-container text-sm p-3 rounded-xl flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />{formError}
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Fotoğraf yükleme */}
+                <div className="flex items-center gap-4 p-4 bg-surface-container-low rounded-2xl">
+                  {form.photoUrl ? (
+                    <img src={form.photoUrl} alt="" className="w-16 h-16 rounded-2xl object-cover object-top shrink-0" />
+                  ) : (
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/40 to-primary/70 flex items-center justify-center shrink-0">
+                      <span className="text-xl font-black text-white select-none">
+                        {form.name ? form.name.charAt(0).toUpperCase() : "?"}
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex flex-col gap-2">
+                    <label className="cursor-pointer px-4 py-2 bg-white rounded-xl text-sm font-bold hover:bg-surface-container transition-all flex items-center gap-2 shadow-sm">
+                      {photoUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
+                      {photoUploading ? "Yükleniyor..." : "Fotoğraf Yükle"}
+                      <input type="file" accept="image/*" className="hidden" disabled={photoUploading}
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          setPhotoUploading(true);
+                          const fd = new FormData();
+                          fd.append("file", file);
+                          const res = await fetch("/api/upload", { method: "POST", body: fd });
+                          if (res.ok) {
+                            const data = await res.json();
+                            setForm({ ...form, photoUrl: data.url });
+                          }
+                          setPhotoUploading(false);
+                        }} />
+                    </label>
+                    {form.photoUrl && (
+                      <button type="button" onClick={() => setForm({ ...form, photoUrl: "" })}
+                        className="text-xs text-on-surface-variant hover:text-error transition-colors flex items-center gap-1">
+                        <X className="w-3 h-3" /> Kaldır
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Ad Soyad *</label>
+                  <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required className={inputClass} />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">E-posta *</label>
+                  <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required className={inputClass} />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">
+                    {editUser ? "Yeni Şifre (boş bırakılırsa değişmez)" : "Şifre *"}
+                  </label>
+                  <input type="password" value={form.password}
+                    onChange={(e) => setForm({ ...form, password: e.target.value })}
+                    required={!editUser} minLength={6} className={inputClass} />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Rol</label>
+                    {canChangeRole ? (
+                      <select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} className={inputClass}>
+                        {roleOptions.map((r) => (
+                          <option key={r.value} value={r.value}>{r.label}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <div className={cn("px-4 py-3 rounded-xl text-sm flex items-center gap-2 bg-surface-container-low text-on-surface-variant")}>
+                        <span className={cn("text-[10px] px-2 py-0.5 rounded font-bold uppercase", roleColors[form.role])}>
+                          {roleLabels[form.role]}
+                        </span>
+                        <span className="text-xs opacity-60">değiştirilemez</span>
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Şube</label>
+                    <select value={form.branchId} onChange={(e) => setForm({ ...form, branchId: e.target.value })} className={inputClass}>
+                      <option value="">Seçiniz</option>
+                      {branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Telefon</label>
+                  <input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className={inputClass} />
+                </div>
+
+                {/* Excel izinleri — sadece ADMIN düzenleyebilir */}
+                {sessionRole === "ADMIN" && form.role !== "ADMIN" && (
+                  <div className="bg-surface-container-low rounded-xl p-4 space-y-3">
+                    <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Excel İzinleri</p>
+                    <label className="flex items-start gap-3 cursor-pointer">
+                      <input type="checkbox" checked={form.canExport}
+                        onChange={(e) => setForm({ ...form, canExport: e.target.checked })}
+                        className="mt-0.5 w-4 h-4 accent-primary rounded" />
+                      <div>
+                        <p className="text-sm font-bold text-on-surface">Dışa Aktarma (Excel'e Al)</p>
+                        <p className="text-xs text-on-surface-variant">Müşteri/portföy/görev/randevu listelerini Excel olarak indirebilir.</p>
+                      </div>
+                    </label>
+                    <label className="flex items-start gap-3 cursor-pointer">
+                      <input type="checkbox" checked={form.canImport}
+                        onChange={(e) => setForm({ ...form, canImport: e.target.checked })}
+                        className="mt-0.5 w-4 h-4 accent-primary rounded" />
+                      <div>
+                        <p className="text-sm font-bold text-on-surface">İçe Aktarma (Excel'den Yükle)</p>
+                        <p className="text-xs text-on-surface-variant">Excel dosyası yükleyerek toplu müşteri/portföy ekleyebilir. Riskli — güvenilir kişilere verin.</p>
+                      </div>
+                    </label>
+                  </div>
+                )}
+                {sessionRole === "ADMIN" && form.role === "ADMIN" && (
+                  <div className="bg-primary-fixed/60 rounded-xl p-3 text-xs text-on-surface-variant">
+                    <strong className="text-primary">Yöneticiler</strong> Excel dışa/içe aktarma yetkilerine otomatik sahiptir.
+                  </div>
+                )}
+
+                <div className="flex gap-3 pt-2">
+                  <button type="button" onClick={() => setShowModal(false)}
+                    className="flex-1 py-3 text-sm font-bold bg-surface-container-low hover:bg-surface-container rounded-xl transition-all">İptal</button>
+                  <button type="submit" disabled={saving}
+                    className="flex-1 primary-gradient text-white py-3 rounded-xl text-sm font-bold disabled:opacity-50 flex items-center justify-center gap-2">
+                    {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                    {editUser ? "Güncelle" : "Oluştur"}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

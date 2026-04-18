@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -16,11 +17,43 @@ import {
   MapPin,
   Home,
   Loader2,
-  Heart,
   Send,
+  Pencil,
+  ChevronLeft,
+  ChevronRight,
+  X,
+  Video,
+  Image as ImageIcon,
+  Check,
+  Info,
+  UserPlus,
+  Search,
 } from "lucide-react";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
+
+interface MatchEntry {
+  id: string;
+  matchScore: number | null;
+  status: "SUGGESTED" | "INTERESTED" | "REJECTED";
+  customer: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    phone: string | null;
+    email: string | null;
+    stage: string | null;
+    customerType: string;
+    photoUrl: string | null;
+  };
+}
+
+interface CustomerSearchResult {
+  id: string;
+  firstName: string;
+  lastName: string;
+  phone: string | null;
+}
 
 interface Property {
   id: string;
@@ -42,18 +75,17 @@ interface Property {
   neighborhood: string | null;
   description: string | null;
   status: string;
+  assignedAgentId: string | null;
+  branchId: string | null;
   assignedAgent: { name: string } | null;
   owner: {
     id: string;
     firstName: string;
     lastName: string;
+    phone: string | null;
+    email: string | null;
   } | null;
   images: { id: string; url: string; isPrimary: boolean }[];
-  matches: {
-    id: string;
-    customer: { id: string; firstName: string; lastName: string };
-    matchScore: number | null;
-  }[];
   createdAt: string;
 }
 
@@ -90,18 +122,94 @@ function formatPrice(price: number, currency: string) {
 
 export default function PropertyDetailPage() {
   const params = useParams();
+  const { data: session } = useSession();
   const [property, setProperty] = useState<Property | null>(null);
   const [loading, setLoading] = useState(true);
+  const [activeImg, setActiveImg] = useState(0);
+  const [lightbox, setLightbox] = useState(false);
+  const [matches, setMatches] = useState<MatchEntry[]>([]);
+  const [matchesLoading, setMatchesLoading] = useState(true);
+  const [matchInfoOpen, setMatchInfoOpen] = useState(false);
+  const [showAddCustomer, setShowAddCustomer] = useState(false);
+  const [addQuery, setAddQuery] = useState("");
+  const [addResults, setAddResults] = useState<CustomerSearchResult[]>([]);
+  const addTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     fetch(`/api/properties/${params.id}`)
       .then((res) => res.json())
-      .then((data) => {
-        setProperty(data);
-        setLoading(false);
-      })
+      .then((data) => { setProperty(data); setLoading(false); })
       .catch(() => setLoading(false));
+    reloadMatches();
   }, [params.id]);
+
+  function reloadMatches() {
+    setMatchesLoading(true);
+    fetch(`/api/properties/${params.id}/matches`)
+      .then((r) => r.json())
+      .then((data) => { setMatches(Array.isArray(data) ? data : []); setMatchesLoading(false); })
+      .catch(() => setMatchesLoading(false));
+  }
+
+  async function updateMatchStatus(matchId: string, status: "INTERESTED" | "REJECTED" | "SUGGESTED") {
+    // Optimistic update
+    setMatches((prev) => prev.map((m) => m.id === matchId ? { ...m, status } : m));
+    const res = await fetch(`/api/matches/${matchId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+    if (!res.ok) reloadMatches();
+    // Rejected'ları listeden düşür (UI'da zaten default filtre)
+    if (status === "REJECTED") {
+      setMatches((prev) => prev.filter((m) => m.id !== matchId));
+    }
+  }
+
+  function searchCustomers(q: string) {
+    setAddQuery(q);
+    if (addTimer.current) clearTimeout(addTimer.current);
+    addTimer.current = setTimeout(async () => {
+      const url = q.length >= 2
+        ? `/api/customers?search=${encodeURIComponent(q)}&limit=10`
+        : `/api/customers?sortBy=createdAt&sortOrder=desc&limit=10`;
+      const res = await fetch(url);
+      const data = await res.json();
+      setAddResults(Array.isArray(data.customers) ? data.customers : []);
+    }, 200);
+  }
+
+  async function openAddCustomer() {
+    const willOpen = !showAddCustomer;
+    setShowAddCustomer(willOpen);
+    if (willOpen) {
+      setAddQuery("");
+      // açılır açılmaz son eklenen müşterileri göster
+      const res = await fetch(`/api/customers?sortBy=createdAt&sortOrder=desc&limit=10`);
+      const data = await res.json();
+      setAddResults(Array.isArray(data.customers) ? data.customers : []);
+    }
+  }
+
+  async function addCustomerManually(customerId: string) {
+    await fetch(`/api/properties/${params.id}/matches`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ customerId }),
+    });
+    setShowAddCustomer(false);
+    setAddQuery("");
+    setAddResults([]);
+    reloadMatches();
+  }
+
+  const sessionUser = session?.user as unknown as { id?: string; role?: string; branchId?: string | null } | undefined;
+  const canEdit = useMemo(() => {
+    if (!sessionUser || !property) return false;
+    if (sessionUser.role === "ADMIN") return true;
+    if (sessionUser.role === "MANAGER") return sessionUser.branchId === property.branchId;
+    return property.assignedAgentId === sessionUser.id;
+  }, [sessionUser, property]);
 
   if (loading)
     return (
@@ -187,10 +295,26 @@ export default function PropertyDetailPage() {
           <span className="glass-badge px-4 py-2 rounded-lg text-xs font-extrabold uppercase tracking-widest text-primary">
             {listingLabels[property.listingType]}
           </span>
-          <button className="p-2 hover:bg-surface-container rounded-full text-on-surface-variant transition-colors">
-            <Heart className="w-5 h-5" />
-          </button>
-          <button className="p-2 hover:bg-surface-container rounded-full text-on-surface-variant transition-colors">
+          {canEdit && (
+            <Link href={`/properties/${property.id}/edit`}
+              className="p-2 hover:bg-primary-fixed rounded-full text-on-surface-variant hover:text-primary transition-colors"
+              title="Düzenle">
+              <Pencil className="w-5 h-5" />
+            </Link>
+          )}
+          <button
+            onClick={async () => {
+              const url = window.location.href;
+              const title = property.title;
+              if (navigator.share) {
+                try { await navigator.share({ title, url }); } catch { /* cancelled */ }
+              } else {
+                await navigator.clipboard.writeText(url);
+                alert("İlan bağlantısı panoya kopyalandı.");
+              }
+            }}
+            className="p-2 hover:bg-surface-container rounded-full text-on-surface-variant transition-colors"
+            title="Paylaş">
             <Share2 className="w-5 h-5" />
           </button>
         </div>
@@ -198,13 +322,16 @@ export default function PropertyDetailPage() {
 
       {/* Gallery */}
       <div className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] overflow-hidden">
-        <div className="h-80 bg-surface-container-high flex items-center justify-center relative group">
-          {property.images[0] ? (
-            <img
-              src={property.images[0].url}
-              alt={property.title}
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-            />
+        {/* Main image */}
+        <div className="h-80 bg-surface-container-high flex items-center justify-center relative group cursor-pointer"
+          onClick={() => property.images.length > 0 && setLightbox(true)}>
+          {property.images[activeImg] ? (
+            property.images[activeImg].url.match(/\.(mp4|webm|mov)(\?|$)/i) ? (
+              <video src={property.images[activeImg].url} className="w-full h-full object-cover" controls />
+            ) : (
+              <img src={property.images[activeImg].url} alt={property.title}
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+            )
           ) : (
             <div className="flex flex-col items-center text-on-surface-variant/30">
               <Home className="w-16 h-16" />
@@ -213,8 +340,71 @@ export default function PropertyDetailPage() {
           <div className="absolute top-4 left-4 glass-badge px-3 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-widest text-primary">
             {typeLabels[property.propertyType]}
           </div>
+          {property.images.length > 1 && (
+            <>
+              <button onClick={(e) => { e.stopPropagation(); setActiveImg((activeImg - 1 + property.images.length) % property.images.length); }}
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              <button onClick={(e) => { e.stopPropagation(); setActiveImg((activeImg + 1) % property.images.length); }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <ChevronRight className="w-5 h-5" />
+              </button>
+              <span className="absolute bottom-3 right-3 bg-black/50 text-white text-xs px-2.5 py-1 rounded-full font-medium">
+                {activeImg + 1} / {property.images.length}
+              </span>
+            </>
+          )}
         </div>
+        {/* Thumbnails */}
+        {property.images.length > 1 && (
+          <div className="flex gap-2 p-3 overflow-x-auto no-scrollbar bg-surface-container-low/50">
+            {property.images.map((img, i) => (
+              <button key={img.id} onClick={() => setActiveImg(i)}
+                className={cn("shrink-0 w-16 h-12 rounded-lg overflow-hidden border-2 transition-all",
+                  i === activeImg ? "border-primary shadow-md scale-105" : "border-transparent opacity-60 hover:opacity-100"
+                )}>
+                {img.url.match(/\.(mp4|webm|mov)(\?|$)/i) ? (
+                  <div className="w-full h-full bg-surface-container flex items-center justify-center">
+                    <Video className="w-4 h-4 text-primary" />
+                  </div>
+                ) : (
+                  <img src={img.url} alt="" className="w-full h-full object-cover" />
+                )}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
+
+      {/* Lightbox */}
+      <AnimatePresence>
+        {lightbox && property.images[activeImg] && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+            onClick={() => setLightbox(false)}>
+            <button className="absolute top-4 right-4 text-white/70 hover:text-white" onClick={() => setLightbox(false)}>
+              <X className="w-8 h-8" />
+            </button>
+            {property.images.length > 1 && (
+              <>
+                <button onClick={(e) => { e.stopPropagation(); setActiveImg((activeImg - 1 + property.images.length) % property.images.length); }}
+                  className="absolute left-4 text-white/70 hover:text-white">
+                  <ChevronLeft className="w-10 h-10" />
+                </button>
+                <button onClick={(e) => { e.stopPropagation(); setActiveImg((activeImg + 1) % property.images.length); }}
+                  className="absolute right-4 text-white/70 hover:text-white">
+                  <ChevronRight className="w-10 h-10" />
+                </button>
+              </>
+            )}
+            <img src={property.images[activeImg].url} alt={property.title}
+              onClick={(e) => e.stopPropagation()}
+              className="max-h-[85vh] max-w-[90vw] object-contain rounded-2xl" />
+            <span className="absolute bottom-4 text-white/60 text-sm">{activeImg + 1} / {property.images.length}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Left Column */}
@@ -284,16 +474,44 @@ export default function PropertyDetailPage() {
                 {formatPrice(property.price, property.currency)}
               </div>
 
-              <div className="space-y-3 mt-6">
-                <button className="w-full primary-gradient text-white font-bold py-4 rounded-2xl shadow-lg shadow-primary/10 hover:opacity-90 transition-all flex items-center justify-center gap-2 active:scale-[0.98]">
-                  <Send className="w-4 h-4" />
-                  İletişime Geç
-                </button>
-                <button className="w-full bg-surface-container-low text-on-surface font-bold py-4 rounded-2xl hover:bg-surface-container transition-all flex items-center justify-center gap-2">
-                  <Phone className="w-4 h-4" />
-                  Ara
-                </button>
-              </div>
+              {property.owner ? (
+                <div className="space-y-3 mt-6">
+                  <div className="bg-surface-container-low p-4 rounded-2xl">
+                    <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-1">İlan Sahibi</p>
+                    <Link href={`/customers/${property.owner.id}`}
+                      className="text-sm font-bold text-primary hover:underline">
+                      {property.owner.firstName} {property.owner.lastName}
+                    </Link>
+                    {property.owner.phone && <p className="text-xs text-on-surface-variant mt-0.5">{property.owner.phone}</p>}
+                  </div>
+                  {property.owner.phone ? (
+                    <a href={`tel:${property.owner.phone}`}
+                      className="w-full primary-gradient text-white font-bold py-4 rounded-2xl shadow-lg shadow-primary/10 hover:opacity-90 transition-all flex items-center justify-center gap-2 active:scale-[0.98]">
+                      <Phone className="w-4 h-4" />
+                      Sahibini Ara
+                    </a>
+                  ) : (
+                    <div className="w-full bg-surface-container-low text-on-surface-variant font-medium py-4 rounded-2xl text-center text-sm">
+                      Sahibin telefon numarası yok
+                    </div>
+                  )}
+                  {property.owner.email && (
+                    <a href={`mailto:${property.owner.email}?subject=${encodeURIComponent(property.title)}`}
+                      className="w-full bg-surface-container-low text-on-surface font-bold py-4 rounded-2xl hover:bg-surface-container transition-all flex items-center justify-center gap-2">
+                      <Send className="w-4 h-4" />
+                      E-posta Gönder
+                    </a>
+                  )}
+                </div>
+              ) : (
+                <div className="mt-6 p-4 bg-surface-container-low rounded-2xl text-center">
+                  <p className="text-xs text-on-surface-variant mb-2">Bu ilana sahip atanmamış</p>
+                  <Link href={`/properties/${property.id}/edit`}
+                    className="text-xs font-bold text-primary hover:underline">
+                    Düzenle → Sahip ata
+                  </Link>
+                </div>
+              )}
 
               {property.assignedAgent && (
                 <div className="mt-8 pt-6 border-t border-outline-variant/10 flex items-center gap-4">
@@ -336,30 +554,131 @@ export default function PropertyDetailPage() {
 
             {/* Matched Customers */}
             <div className="bg-surface-container-lowest p-6 rounded-3xl border border-outline-variant/10">
-              <h3 className="font-bold text-on-surface mb-4">
-                Eşleşen Müşteriler
-              </h3>
-              {property.matches.length === 0 ? (
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-bold text-on-surface flex items-center gap-2">
+                  İlgili Müşteriler
+                  {matches.length > 0 && (
+                    <span className="text-[10px] font-black bg-primary text-white px-2 py-0.5 rounded-full">{matches.length}</span>
+                  )}
+                  <button onClick={() => setMatchInfoOpen(!matchInfoOpen)} className="text-on-surface-variant hover:text-primary transition-colors" title="Nasıl çalışır?">
+                    <Info className="w-4 h-4" />
+                  </button>
+                </h3>
+                {canEdit && (
+                  <button onClick={openAddCustomer}
+                    className="text-xs font-bold text-primary hover:bg-primary-fixed px-2 py-1 rounded-lg transition-colors flex items-center gap-1">
+                    <UserPlus className="w-3 h-3" />Ekle
+                  </button>
+                )}
+              </div>
+
+              {matchInfoOpen && (
+                <div className="bg-primary-fixed/60 p-3 rounded-xl text-xs text-on-surface-variant mb-3 leading-relaxed">
+                  <strong className="text-primary">Öneriler (⚡) otomatiktir:</strong> Müşterilerin talep profiline göre (bütçe, şehir, tip, m²) skorlanır.
+                  <br />✓ <strong>İlgileniyor</strong> olarak işaretlediklerinizi yukarı taşır. ✗ ile reddettikleriniz bir daha önerilmez.
+                </div>
+              )}
+
+              {showAddCustomer && (
+                <div className="bg-surface-container-low p-3 rounded-xl mb-3 space-y-2">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-on-surface-variant" />
+                    <input
+                      value={addQuery}
+                      onChange={(e) => searchCustomers(e.target.value)}
+                      placeholder="Müşteri ara (ad, telefon)..."
+                      autoFocus
+                      className="w-full pl-9 pr-3 py-2 bg-white rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20"
+                    />
+                  </div>
+                  {addResults.length > 0 && (
+                    <div className="max-h-56 overflow-y-auto space-y-1">
+                      {addResults.map((c) => (
+                        <button key={c.id} onClick={() => addCustomerManually(c.id)}
+                          className="w-full text-left p-2 hover:bg-white rounded-lg text-xs font-medium transition-colors">
+                          {c.firstName} {c.lastName}
+                          {c.phone && <span className="text-on-surface-variant ml-2">· {c.phone}</span>}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {addQuery.length < 2 && addResults.length > 0 && (
+                    <p className="text-[10px] text-on-surface-variant text-center pt-1">Son eklenen müşteriler · aramak için yazın</p>
+                  )}
+                  {addQuery.length >= 2 && addResults.length === 0 && (
+                    <p className="text-xs text-on-surface-variant text-center py-2">Bu aramaya uygun müşteri bulunamadı</p>
+                  )}
+                </div>
+              )}
+
+              {matchesLoading ? (
+                <p className="text-sm text-on-surface-variant flex items-center gap-2">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" /> Hesaplanıyor...
+                </p>
+              ) : matches.length === 0 ? (
                 <p className="text-sm text-on-surface-variant">
-                  Henüz eşleşme yok
+                  Talep profiline uygun müşteri bulunamadı. Manuel eklemek için <strong>Ekle</strong> butonunu kullanın.
                 </p>
               ) : (
                 <div className="space-y-2">
-                  {property.matches.map((m) => (
-                    <Link
-                      key={m.id}
-                      href={`/customers/${m.customer.id}`}
-                      className="flex items-center justify-between p-3 bg-surface-container-low rounded-2xl hover:bg-surface-container transition-all"
-                    >
-                      <span className="text-sm font-semibold text-primary">
-                        {m.customer.firstName} {m.customer.lastName}
-                      </span>
-                      {m.matchScore && (
-                        <span className="text-xs text-on-surface-variant font-bold">
-                          %{m.matchScore}
-                        </span>
+                  {matches.map((m) => (
+                    <div key={m.id}
+                      className={cn("p-3 rounded-2xl transition-all group",
+                        m.status === "INTERESTED" ? "bg-green-50 border border-green-200" : "bg-surface-container-low hover:bg-surface-container"
+                      )}>
+                      <div className="flex items-center gap-3">
+                        {m.customer.photoUrl ? (
+                          <img src={m.customer.photoUrl} alt="" className="w-9 h-9 rounded-xl object-cover object-top shrink-0" />
+                        ) : (
+                          <div className="w-9 h-9 rounded-xl bg-primary-container flex items-center justify-center text-on-primary-container text-xs font-bold shrink-0">
+                            {m.customer.firstName.charAt(0)}{m.customer.lastName.charAt(0)}
+                          </div>
+                        )}
+                        <Link href={`/customers/${m.customer.id}`} className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-sm font-semibold text-primary hover:underline truncate">
+                              {m.customer.firstName} {m.customer.lastName}
+                            </span>
+                            {m.status === "INTERESTED" && (
+                              <span className="text-[9px] px-1.5 py-0.5 bg-green-600 text-white rounded font-black uppercase tracking-wider">✓ İlgileniyor</span>
+                            )}
+                            {m.status === "SUGGESTED" && m.matchScore != null && (
+                              <span className="text-[9px] text-on-surface-variant">⚡ Öneri</span>
+                            )}
+                          </div>
+                          {m.customer.phone && (
+                            <span className="text-xs text-on-surface-variant">{m.customer.phone}</span>
+                          )}
+                        </Link>
+                        {m.matchScore != null && (
+                          <span className={cn("text-[10px] font-black px-2 py-0.5 rounded-lg shrink-0",
+                            m.matchScore >= 70 ? "bg-green-100 text-green-700" :
+                            m.matchScore >= 50 ? "bg-tertiary-fixed text-tertiary" :
+                            "bg-surface-container text-on-surface-variant"
+                          )}>%{Math.round(m.matchScore)}</span>
+                        )}
+                      </div>
+                      {canEdit && (
+                        <div className="flex gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          {m.status !== "INTERESTED" && (
+                            <button onClick={() => updateMatchStatus(m.id, "INTERESTED")}
+                              className="flex-1 text-[10px] font-bold py-1.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 flex items-center justify-center gap-1">
+                              <Check className="w-3 h-3" /> İlgileniyor
+                            </button>
+                          )}
+                          {m.status === "INTERESTED" && (
+                            <button onClick={() => updateMatchStatus(m.id, "SUGGESTED")}
+                              className="flex-1 text-[10px] font-bold py-1.5 bg-surface-container text-on-surface-variant rounded-lg hover:bg-surface-container-high">
+                              Geri Al
+                            </button>
+                          )}
+                          <button onClick={() => updateMatchStatus(m.id, "REJECTED")}
+                            className="flex-1 text-[10px] font-bold py-1.5 bg-error-container/30 text-error rounded-lg hover:bg-error-container/50 flex items-center justify-center gap-1">
+                            <X className="w-3 h-3" /> Reddet
+                          </button>
+                        </div>
                       )}
-                    </Link>
+                    </div>
                   ))}
                 </div>
               )}

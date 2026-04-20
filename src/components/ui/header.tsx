@@ -1,7 +1,8 @@
 "use client";
 
 import { useSession, signOut } from "next-auth/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Search, Bell, LogOut } from "lucide-react";
 
@@ -14,6 +15,30 @@ export default function Header() {
   const [searchType, setSearchType] = useState<"customers" | "properties">("customers");
 
   const user = session?.user;
+  const [pendingCount, setPendingCount] = useState(0);
+
+  useEffect(() => {
+    if (!user) return;
+    let mounted = true;
+    async function refresh() {
+      try {
+        const res = await fetch("/api/reminders?scope=me&done=false&countOnly=1");
+        if (!res.ok) return;
+        const data = await res.json();
+        if (mounted && typeof data.count === "number") setPendingCount(data.count);
+      } catch {
+        /* noop */
+      }
+    }
+    refresh();
+    // Her 60 saniyede bir yenile
+    const t = setInterval(refresh, 60000);
+    return () => {
+      mounted = false;
+      clearInterval(t);
+    };
+  }, [user]);
+
   const roleLabels: Record<string, string> = {
     ADMIN: "Yönetici",
     MANAGER: "Şube Müdürü",
@@ -60,10 +85,20 @@ export default function Header() {
 
       {/* Right: Notifications + User */}
       <div className="flex items-center gap-4">
-        <button className="p-2 text-on-surface-variant hover:bg-surface-container rounded-lg transition-colors relative">
+        <Link
+          href="/reminders"
+          title={pendingCount > 0 ? `${pendingCount} bekleyen hatırlatma` : "Hatırlatmalar"}
+          className="p-2 text-on-surface-variant hover:bg-surface-container rounded-lg transition-colors relative"
+        >
           <Bell className="w-5 h-5" />
-          <span className="absolute top-2 right-2 w-2 h-2 bg-tertiary rounded-full border-2 border-background"></span>
-        </button>
+          {pendingCount > 0 ? (
+            <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 bg-error text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-background">
+              {pendingCount > 99 ? "99+" : pendingCount}
+            </span>
+          ) : (
+            <span className="absolute top-2 right-2 w-2 h-2 bg-tertiary rounded-full border-2 border-background"></span>
+          )}
+        </Link>
 
         <div className="relative">
           <button

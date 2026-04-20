@@ -145,6 +145,20 @@ enum FacingDirection {
   GUNEY_BATI
 }
 
+enum ReminderTargetType {
+  CUSTOMER
+  PROPERTY
+  APPOINTMENT
+  CONTRACT
+  GENERAL
+}
+
+enum ReminderPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
 // ─── Kullanıcı & Şube ───
 
 model Branch {
@@ -187,6 +201,7 @@ model User {
   auditLogs           AuditLog[]
   contractsCreated    Contract[]
   contractAttachmentsUploaded ContractAttachment[]
+  reminders           Reminder[]
 }
 
 // ─── KVKK Audit Log ───
@@ -551,4 +566,28 @@ model ContractAttachment {
   uploadedBy User     @relation(fields: [uploadedById], references: [id])
 
   @@index([contractId])
+}
+
+// ─── Hatırlatmalar ───
+
+model Reminder {
+  id          String             @id @default(cuid())
+  userId      String             // Sahibi (kime ait)
+  title       String
+  description String?            @db.Text
+  dueDate     DateTime
+  priority    ReminderPriority   @default(MEDIUM)
+  isDone      Boolean            @default(false)
+  doneAt      DateTime?
+  targetType  ReminderTargetType @default(GENERAL)
+  targetId    String?            // Customer/Property/Appointment/Contract ID'si (GENERAL için null)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isDone])
+  @@index([dueDate])
+  @@index([targetType, targetId])
 }

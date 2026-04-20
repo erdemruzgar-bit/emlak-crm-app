@@ -17,6 +17,7 @@ import {
   FileSignature,
   Wallet,
   Zap,
+  Bell,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -29,6 +30,7 @@ const navigation = [
   { name: "Finans", href: "/finance", icon: Wallet, badge: "Yeni" },
   { name: "Görevler", href: "/tasks", icon: CheckSquare },
   { name: "Takvim", href: "/calendar", icon: CalendarIcon },
+  { name: "Hatırlatmalar", href: "/reminders", icon: Bell },
   { name: "Otomasyon", href: "/automation", icon: Zap, badge: "Yeni" },
   { name: "Raporlar", href: "/reports", icon: BarChart3 },
   { name: "Ayarlar", href: "/settings/users", icon: Settings },

@@ -26,6 +26,13 @@ export async function GET(req: NextRequest) {
   const rooms = searchParams.get("rooms") || "";
   const minArea = searchParams.get("minArea") || "";
   const maxArea = searchParams.get("maxArea") || "";
+  // Track B: yeni filtreler
+  const projectId = searchParams.get("projectId") || "";
+  const blockId = searchParams.get("blockId") || "";
+  const usageType = searchParams.get("usageType") || "";
+  const occupancyStatus = searchParams.get("occupancyStatus") || "";
+  const ownerCitizenship = searchParams.get("ownerCitizenship") || "";
+  const assignedAgentId = searchParams.get("assignedAgentId") || "";
 
   const actor = extractActor(session);
   const where: Record<string, unknown> = { ...propertyListFilter(actor) };
@@ -56,6 +63,12 @@ export async function GET(req: NextRequest) {
       ...(maxArea ? { lte: parseFloat(maxArea) } : {}),
     };
   }
+  if (projectId) where.projectId = projectId;
+  if (blockId) where.blockId = blockId;
+  if (usageType) where.usageType = usageType;
+  if (occupancyStatus) where.occupancyStatus = occupancyStatus;
+  if (ownerCitizenship) where.ownerCitizenship = ownerCitizenship;
+  if (assignedAgentId) where.assignedAgentId = assignedAgentId;
 
   const sortBy = searchParams.get("sortBy") || "createdAt";
   const sortOrder = (searchParams.get("sortOrder") || "desc") as "asc" | "desc";
@@ -67,8 +80,11 @@ export async function GET(req: NextRequest) {
       where,
       include: {
         images: { orderBy: { order: "asc" }, take: 1 },
-        assignedAgent: { select: { name: true } },
+        assignedAgent: { select: { id: true, name: true } },
         branch: { select: { name: true } },
+        project: { select: { id: true, name: true } },
+        block: { select: { id: true, name: true } },
+        _count: { select: { appointments: true } },
       },
       orderBy: { [orderField]: sortOrder },
       skip: (page - 1) * limit,

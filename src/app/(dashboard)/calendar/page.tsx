@@ -156,6 +156,25 @@ export default function CalendarPage() {
 
   useEffect(() => { fetchAppointments(); }, [currentDate]);
 
+  // URL'den ?newPropertyId=xxx ile geldiyse modal'ı aç ve mülkü preset et
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const sp = new URLSearchParams(window.location.search);
+    const preId = sp.get("newPropertyId");
+    if (!preId) return;
+    (async () => {
+      try {
+        const res = await fetch(`/api/properties/${preId}`);
+        if (!res.ok) return;
+        const p = await res.json();
+        setSelectedProperty({ id: p.id, label: `${p.title}${p.city ? ` · ${p.city}` : ""}` });
+        setShowModal(true);
+      } catch {
+        /* noop */
+      }
+    })();
+  }, []);
+
   async function fetchAppointments() {
     setLoading(true);
     const start = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).toISOString();

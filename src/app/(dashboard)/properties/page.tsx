@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   Search, SlidersHorizontal, Plus, LayoutGrid, List, Loader2, Home,
-  X, MapPin, DoorOpen, Maximize, ArrowUpDown, LayoutList
+  X, MapPin, DoorOpen, Maximize, ArrowUpDown, LayoutList, CalendarPlus, MessageSquare
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { PropertyCard, type PropertyCardData, formatPrice } from "@/components/ui/property-card";
@@ -64,17 +64,42 @@ function PropertiesPageInner() {
   const [minArea, setMinArea] = useState("");
   const [maxArea, setMaxArea] = useState("");
   const [city, setCity] = useState("");
+  // Track B yeni filtreler
+  const [projectId, setProjectId] = useState("");
+  const [blockId, setBlockId] = useState("");
+  const [usageType, setUsageType] = useState("");
+  const [occupancyStatus, setOccupancyStatus] = useState("");
+  const [ownerCitizenship, setOwnerCitizenship] = useState("");
+  const [assignedAgentId, setAssignedAgentId] = useState("");
+  const [projects, setProjects] = useState<{ id: string; name: string; blocks: { id: string; name: string }[] }[]>([]);
+  const [users, setUsers] = useState<{ id: string; name: string; role: string }[]>([]);
+
   const [sortBy, setSortBy] = useState("createdAt");
   const [sortOrder, setSortOrder] = useState("desc");
   const [showFilters, setShowFilters] = useState(false);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
 
-  const activeFilterCount = [propertyType, status, minPrice, maxPrice, rooms, minArea, maxArea, city].filter(Boolean).length;
+  const activeFilterCount = [
+    propertyType, status, minPrice, maxPrice, rooms, minArea, maxArea, city,
+    projectId, blockId, usageType, occupancyStatus, ownerCitizenship, assignedAgentId,
+  ].filter(Boolean).length;
+
+  const selectedProjectBlocks = projects.find((p) => p.id === projectId)?.blocks ?? [];
+
+  useEffect(() => {
+    fetch("/api/projects").then((r) => r.ok ? r.json() : []).then((data) => {
+      if (Array.isArray(data)) setProjects(data);
+    }).catch(() => {});
+    fetch("/api/users").then((r) => r.ok ? r.json() : []).then((data) => {
+      if (Array.isArray(data)) setUsers(data.filter((u: { isActive: boolean }) => u.isActive));
+    }).catch(() => {});
+  }, []);
 
   useEffect(() => {
     fetchProperties();
-  }, [search, listingType, propertyType, status, minPrice, maxPrice, rooms, minArea, maxArea, city, sortBy, sortOrder]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search, listingType, propertyType, status, minPrice, maxPrice, rooms, minArea, maxArea, city, projectId, blockId, usageType, occupancyStatus, ownerCitizenship, assignedAgentId, sortBy, sortOrder]);
 
   async function fetchProperties() {
     setLoading(true);
@@ -89,6 +114,12 @@ function PropertiesPageInner() {
       ...(minArea && { minArea }),
       ...(maxArea && { maxArea }),
       ...(city && { city }),
+      ...(projectId && { projectId }),
+      ...(blockId && { blockId }),
+      ...(usageType && { usageType }),
+      ...(occupancyStatus && { occupancyStatus }),
+      ...(ownerCitizenship && { ownerCitizenship }),
+      ...(assignedAgentId && { assignedAgentId }),
       sortBy,
       sortOrder,
     });
@@ -101,6 +132,8 @@ function PropertiesPageInner() {
   function clearFilters() {
     setPropertyType(""); setStatus(""); setMinPrice(""); setMaxPrice("");
     setRooms(""); setMinArea(""); setMaxArea(""); setCity("");
+    setProjectId(""); setBlockId(""); setUsageType(""); setOccupancyStatus("");
+    setOwnerCitizenship(""); setAssignedAgentId("");
   }
 
   async function handleSelectProperty(p: PropertyCardData) {
@@ -237,8 +270,17 @@ function PropertiesPageInner() {
                     </select>
                     <input type="text" placeholder="Şehir" value={city} onChange={(e) => setCity(e.target.value)}
                       className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm" />
-                    <input type="text" placeholder="Oda (3+1)" value={rooms} onChange={(e) => setRooms(e.target.value)}
-                      className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm" />
+                    <select value={rooms} onChange={(e) => setRooms(e.target.value)}
+                      className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm">
+                      <option value="">Oda Türü</option>
+                      <option value="1+0">1+0</option>
+                      <option value="1+1">1+1</option>
+                      <option value="2+1">2+1</option>
+                      <option value="3+1">3+1</option>
+                      <option value="4+1">4+1</option>
+                      <option value="5+1">5+1</option>
+                      <option value="6+1">6+1</option>
+                    </select>
                     <input type="number" placeholder="Min Fiyat" value={minPrice} onChange={(e) => setMinPrice(e.target.value)}
                       className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm" />
                     <input type="number" placeholder="Max Fiyat" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)}
@@ -247,6 +289,53 @@ function PropertiesPageInner() {
                       className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm" />
                     <input type="number" placeholder="Max m²" value={maxArea} onChange={(e) => setMaxArea(e.target.value)}
                       className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm" />
+
+                    {/* Track B yeni filtreler */}
+                    <select value={projectId} onChange={(e) => { setProjectId(e.target.value); setBlockId(""); }}
+                      className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm">
+                      <option value="">Proje</option>
+                      {projects.map((p) => (
+                        <option key={p.id} value={p.id}>{p.name}</option>
+                      ))}
+                    </select>
+                    <select value={blockId} onChange={(e) => setBlockId(e.target.value)}
+                      disabled={!projectId || selectedProjectBlocks.length === 0}
+                      className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm disabled:opacity-50">
+                      <option value="">Blok</option>
+                      {selectedProjectBlocks.map((b) => (
+                        <option key={b.id} value={b.id}>{b.name}</option>
+                      ))}
+                    </select>
+                    <select value={usageType} onChange={(e) => setUsageType(e.target.value)}
+                      className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm">
+                      <option value="">Kullanım</option>
+                      <option value="KONUT">Konut</option>
+                      <option value="ISYERI">İşyeri</option>
+                      <option value="KARMA">Karma</option>
+                      <option value="ARSA_IMARLI">Arsa (İmarlı)</option>
+                      <option value="ARSA_IMARSIZ">Arsa (İmarsız)</option>
+                    </select>
+                    <select value={occupancyStatus} onChange={(e) => setOccupancyStatus(e.target.value)}
+                      className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm">
+                      <option value="">Sakin Durumu</option>
+                      <option value="SAHIBI_OTURUYOR">Sahibi Oturuyor</option>
+                      <option value="KIRACILI">Kiracılı</option>
+                      <option value="BOS">Boş</option>
+                      <option value="ARSIV">Arşiv</option>
+                    </select>
+                    <select value={ownerCitizenship} onChange={(e) => setOwnerCitizenship(e.target.value)}
+                      className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm">
+                      <option value="">Vatandaşlık</option>
+                      <option value="TC">TC</option>
+                      <option value="YABANCI">Yabancı</option>
+                    </select>
+                    <select value={assignedAgentId} onChange={(e) => setAssignedAgentId(e.target.value)}
+                      className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm">
+                      <option value="">Personel</option>
+                      {users.map((u) => (
+                        <option key={u.id} value={u.id}>{u.name}</option>
+                      ))}
+                    </select>
                   </div>
                 </div>
               </motion.div>
@@ -287,13 +376,15 @@ function PropertiesPageInner() {
                 <tr>
                   {[
                     { label: "İlan", field: null },
+                    { label: "Proje/Blok/Daire", field: null },
                     { label: "Tip", field: null },
                     { label: "Fiyat", field: "price" },
                     { label: "Konum", field: "city" },
-                    { label: "Durum", field: "status" },
+                    { label: "Durum", field: null },
+                    { label: "Grş.", field: null },
                     { label: "Danışman", field: null },
                   ].map(({ label, field }) => (
-                    <th key={label} className="text-left px-5 py-4 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">
+                    <th key={label} className="text-left px-4 py-4 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">
                       {field ? (
                         <button onClick={() => toggleSort(field)} className="flex items-center gap-1 hover:text-primary transition-colors">
                           {label}
@@ -305,43 +396,69 @@ function PropertiesPageInner() {
                 </tr>
               </thead>
               <tbody>
-                {properties.map((p) => (
-                  <tr key={p.id} onClick={() => handleSelectProperty(p)}
-                    className={cn("border-t border-outline-variant/10 hover:bg-surface-container-low transition-all cursor-pointer",
-                      selectedProperty?.id === p.id && "bg-primary/5"
-                    )}>
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl overflow-hidden bg-surface-container shrink-0">
-                          {p.images[0] ? (
-                            <img src={p.images[0].url} alt="" className="w-full h-full object-cover" />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-on-surface-variant/30">
-                              <Home className="w-4 h-4" />
-                            </div>
-                          )}
+                {properties.map((p) => {
+                  const projBlock = [p.project?.name, p.block?.name, p.unitNumber].filter(Boolean).join(" / ");
+                  return (
+                    <tr key={p.id} onClick={() => handleSelectProperty(p)}
+                      className={cn("border-t border-outline-variant/10 hover:bg-surface-container-low transition-all cursor-pointer",
+                        selectedProperty?.id === p.id && "bg-primary/5"
+                      )}>
+                      <td className="px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl overflow-hidden bg-surface-container shrink-0">
+                            {p.images[0] ? (
+                              <img src={p.images[0].url} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-on-surface-variant/30">
+                                <Home className="w-4 h-4" />
+                              </div>
+                            )}
+                          </div>
+                          <span className="text-sm font-semibold text-primary hover:underline">{p.title}</span>
                         </div>
-                        <span className="text-sm font-semibold text-primary hover:underline">{p.title}</span>
-                      </div>
-                    </td>
-                    <td className="px-5 py-4 text-sm text-on-surface-variant">
-                      {listingLabels[p.listingType]} · {propertyTypeLabels[p.propertyType]}
-                    </td>
-                    <td className="px-5 py-4 text-sm font-bold text-on-surface">{formatPrice(p.price, p.currency)}</td>
-                    <td className="px-5 py-4 text-sm text-on-surface-variant">
-                      <span className="flex items-center gap-1">
-                        <MapPin className="w-3 h-3 text-primary" />
-                        {[p.district, p.city].filter(Boolean).join(", ") || "-"}
-                      </span>
-                    </td>
-                    <td className="px-5 py-4">
-                      <span className={cn("text-[10px] px-2.5 py-1 rounded-lg font-bold uppercase", statusColors[p.status])}>
-                        {statusLabels[p.status]}
-                      </span>
-                    </td>
-                    <td className="px-5 py-4 text-sm text-on-surface-variant">{p.assignedAgent?.name || "-"}</td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className="px-4 py-4 text-xs text-on-surface-variant">
+                        {projBlock || <span className="text-on-surface-variant/40">—</span>}
+                      </td>
+                      <td className="px-4 py-4 text-sm text-on-surface-variant">
+                        {listingLabels[p.listingType]} · {propertyTypeLabels[p.propertyType]}
+                      </td>
+                      <td className="px-4 py-4 text-sm font-bold text-on-surface">{formatPrice(p.price, p.currency)}</td>
+                      <td className="px-4 py-4 text-sm text-on-surface-variant">
+                        <span className="flex items-center gap-1">
+                          <MapPin className="w-3 h-3 text-primary" />
+                          {[p.district, p.city].filter(Boolean).join(", ") || "-"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4">
+                        <span className={cn("text-[10px] px-2.5 py-1 rounded-lg font-bold uppercase", statusColors[p.status])}>
+                          {statusLabels[p.status]}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="flex items-center gap-2">
+                          {p._count && p._count.appointments > 0 && (
+                            <span className="inline-flex items-center gap-1 text-xs font-bold text-primary" title={`${p._count.appointments} görüşme`}>
+                              <MessageSquare className="w-3 h-3" />
+                              {p._count.appointments}
+                            </span>
+                          )}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push(`/calendar?newPropertyId=${p.id}`);
+                            }}
+                            title="Görüşme ekle"
+                            className="w-7 h-7 rounded-lg bg-primary-fixed text-primary hover:bg-primary hover:text-white flex items-center justify-center transition-colors"
+                          >
+                            <CalendarPlus className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 text-sm text-on-surface-variant">{p.assignedAgent?.name || "-"}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

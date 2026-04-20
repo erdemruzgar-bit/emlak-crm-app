@@ -16,8 +16,13 @@ export interface PropertyCardData {
   city: string | null;
   district: string | null;
   status: string;
-  assignedAgent: { name: string } | null;
+  assignedAgent: { id?: string; name: string } | null;
   images: { url: string }[];
+  project?: { id: string; name: string } | null;
+  block?: { id: string; name: string } | null;
+  unitNumber?: string | null;
+  occupancyStatus?: string | null;
+  _count?: { appointments: number };
 }
 
 const propertyTypeLabels: Record<string, string> = {

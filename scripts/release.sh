@@ -60,20 +60,20 @@ bold "  Yedek:      $BACKUP_DIR"
 bold "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 # ─── Hata halinde önceki state'e dön ───
-PREV_HEAD=$(git rev-parse HEAD)
+PREV_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
 ROLLBACK_ON_FAIL=0
 
 cleanup_on_fail() {
   if [ "$ROLLBACK_ON_FAIL" = "1" ]; then
     red ""
-    red "✗ HATA — Önceki state'e dönülüyor..."
-    git checkout "$PREV_HEAD" 2>/dev/null || true
+    red "✗ HATA — Başarısız sürüm temizleniyor..."
+    # Tag'i sil (branch HEAD'e dokunulmuyor, çünkü yeni commit yapılmadı)
     git tag -d "$TAG" 2>/dev/null || true
     if [ -d "$BACKUP_DIR" ]; then
       rm -rf "$BACKUP_DIR"
       echo "  Eksik backup silindi: $BACKUP_DIR"
     fi
-    red "✗ Sürüm $TAG iptal edildi. Önceki sürüm aktif."
+    red "✗ Sürüm $TAG iptal edildi. Branch: ${PREV_BRANCH:-?}"
   fi
 }
 trap cleanup_on_fail ERR

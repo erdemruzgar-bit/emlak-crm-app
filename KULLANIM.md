@@ -2,7 +2,7 @@
 
 ## Giriş
 
-Sisteme giriş adresi: **https://emlak-crm.ornek.com** *(kurulum sonrası burası güncellenecek)*
+Sisteme giriş adresi: **https://crm.artinvertsment.com**
 
 İlk giriş için varsayılan yönetici hesabı:
 - **E-posta:** `admin@emlakcrm.com`

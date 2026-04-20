@@ -34,3 +34,7 @@ dev-server.log
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# uploaded files (backed up by release script)
+/public/uploads/*
+!/public/uploads/.gitkeep

@@ -156,8 +156,8 @@ export async function DELETE(
   }
 
   const user = session.user as unknown as Record<string, unknown>;
-  if (user.role === "AGENT") {
-    return NextResponse.json({ error: "Yetkiniz yok" }, { status: 403 });
+  if (user.role !== "ADMIN") {
+    return NextResponse.json({ error: "Sadece sistem yöneticisi müşteri silebilir" }, { status: 403 });
   }
 
   const { id } = await params;

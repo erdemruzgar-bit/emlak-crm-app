@@ -129,13 +129,12 @@ export async function DELETE(
   const sessionRole = sessionUser.role as string;
   const sessionId = sessionUser.id as string;
 
-  if (sessionRole === "AGENT") {
-    return NextResponse.json({ error: "Yetkiniz yok" }, { status: 403 });
+  if (sessionRole !== "ADMIN") {
+    return NextResponse.json({ error: "Sadece sistem yöneticisi kullanıcı silebilir" }, { status: 403 });
   }
 
   const { id } = await params;
 
-  // Cannot deactivate yourself
   if (id === sessionId) {
     return NextResponse.json({ error: "Kendi hesabınızı pasife alamazsınız" }, { status: 403 });
   }
@@ -143,27 +142,11 @@ export async function DELETE(
   try {
     const targetUser = await prisma.user.findUnique({
       where: { id },
-      select: { role: true, branchId: true },
+      select: { role: true },
     });
 
     if (!targetUser) {
       return NextResponse.json({ error: "Kullanıcı bulunamadı" }, { status: 404 });
-    }
-
-    // MANAGER can only deactivate AGENT users in their own branch
-    if (sessionRole === "MANAGER") {
-      if (ROLE_RANK[targetUser.role] >= ROLE_RANK[sessionRole]) {
-        return NextResponse.json(
-          { error: "Bu kullanıcıyı pasife alma yetkiniz yok" },
-          { status: 403 }
-        );
-      }
-      if (targetUser.branchId !== (sessionUser.branchId as string)) {
-        return NextResponse.json(
-          { error: "Yalnızca kendi şubenizdeki kullanıcıları pasife alabilirsiniz" },
-          { status: 403 }
-        );
-      }
     }
 
     await prisma.user.update({

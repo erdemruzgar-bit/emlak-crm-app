@@ -81,9 +81,9 @@ export default function UsersSettingsPage() {
 
   // Can the current session user deactivate the target user?
   function canDeactivate(target: User) {
-    if (!sessionRole) return false;
+    if (sessionRole !== "ADMIN") return false;
     if (target.id === sessionId) return false; // cannot deactivate yourself
-    return ROLE_RANK[sessionRole] > ROLE_RANK[target.role];
+    return true;
   }
 
   function openCreate() {

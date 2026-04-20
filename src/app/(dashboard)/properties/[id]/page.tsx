@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import {
@@ -19,6 +19,7 @@ import {
   Loader2,
   Send,
   Pencil,
+  Trash2,
   ChevronLeft,
   ChevronRight,
   X,
@@ -122,6 +123,7 @@ function formatPrice(price: number, currency: string) {
 
 export default function PropertyDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const { data: session } = useSession();
   const [property, setProperty] = useState<Property | null>(null);
   const [loading, setLoading] = useState(true);
@@ -210,6 +212,20 @@ export default function PropertyDetailPage() {
     if (sessionUser.role === "MANAGER") return sessionUser.branchId === property.branchId;
     return property.assignedAgentId === sessionUser.id;
   }, [sessionUser, property]);
+  const canDelete = sessionUser?.role === "ADMIN";
+
+  async function handleDelete() {
+    if (!property) return;
+    const confirmText = `"${property.title}" ilanı kalıcı olarak silinecek. Bu işlem geri alınamaz. Devam edilsin mi?`;
+    if (!window.confirm(confirmText)) return;
+    const res = await fetch(`/api/properties/${property.id}`, { method: "DELETE" });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      alert(data.error || "İlan silinemedi");
+      return;
+    }
+    router.push("/properties");
+  }
 
   if (loading)
     return (
@@ -317,6 +333,14 @@ export default function PropertyDetailPage() {
             title="Paylaş">
             <Share2 className="w-5 h-5" />
           </button>
+          {canDelete && (
+            <button
+              onClick={handleDelete}
+              className="p-2 hover:bg-error-container rounded-full text-on-surface-variant hover:text-error transition-colors"
+              title="Sil">
+              <Trash2 className="w-5 h-5" />
+            </button>
+          )}
         </div>
       </div>
 

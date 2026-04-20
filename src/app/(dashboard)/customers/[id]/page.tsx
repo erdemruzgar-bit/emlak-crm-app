@@ -187,8 +187,8 @@ export default function CustomerDetailPage() {
     if (sessionUser.role === "ADMIN" || sessionUser.role === "MANAGER") return true;
     return customer.assignedAgent?.id === sessionUser.id;
   }, [sessionUser, customer]);
-  const canAnonymize = sessionUser?.role === "ADMIN" || sessionUser?.role === "MANAGER";
-  const canReassign = canAnonymize; // sadece m\u00fcd\u00fcr + admin
+  const canAnonymize = sessionUser?.role === "ADMIN";
+  const canReassign = sessionUser?.role === "ADMIN" || sessionUser?.role === "MANAGER"; // sadece m\u00fcd\u00fcr + admin
 
   useEffect(() => {
     if (canReassign && editingInfo && users.length === 0) {

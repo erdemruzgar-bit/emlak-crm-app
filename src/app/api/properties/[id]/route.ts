@@ -134,44 +134,43 @@ export async function DELETE(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const user = session.user as unknown as Record<string, unknown>;
+  const actor = extractActor(session);
+  if (actor?.role !== "ADMIN") {
+    await createAuditLog({
+      userId: actor?.id,
+      action: "DENIED_EDIT",
+      entity: "Property",
+      entityId: (await params).id,
+      ipAddress: req.headers.get("x-forwarded-for") || undefined,
+    });
+    return NextResponse.json({ error: "Sadece sistem yöneticisi ilan silebilir" }, { status: 403 });
+  }
+
   const { id } = await params;
 
   try {
     const existing = await prisma.property.findUnique({
       where: { id },
-      select: { assignedAgentId: true, branchId: true },
+      select: { id: true },
     });
     if (!existing) {
       return NextResponse.json({ error: "İlan bulunamadı" }, { status: 404 });
     }
 
-    const actor = extractActor(session);
-    if (!canEditProperty(actor, existing)) {
-      await createAuditLog({
-        userId: actor?.id,
-        action: "DENIED_EDIT",
-        entity: "Property",
-        entityId: id,
-        ipAddress: req.headers.get("x-forwarded-for") || undefined,
-      });
-      return NextResponse.json({ error: "Bu ilanı pasife alma yetkiniz yok" }, { status: 403 });
-    }
-
-    await prisma.property.update({
-      where: { id },
-      data: { status: "INACTIVE" },
-    });
+    await prisma.$transaction([
+      prisma.appointment.updateMany({ where: { propertyId: id }, data: { propertyId: null } }),
+      prisma.property.delete({ where: { id } }),
+    ]);
 
     await createAuditLog({
-      userId: user.id as string,
+      userId: actor.id,
       action: "DELETE",
       entity: "Property",
       entityId: id,
       ipAddress: req.headers.get("x-forwarded-for") || undefined,
     });
 
-    return NextResponse.json({ message: "İlan pasife alındı" });
+    return NextResponse.json({ message: "İlan silindi" });
   } catch {
     return NextResponse.json({ error: "Sunucu hatası" }, { status: 500 });
   }

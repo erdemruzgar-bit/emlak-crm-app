@@ -8,6 +8,7 @@ import {
   ArrowLeft, User, StickyNote, MessageCircle, ShieldCheck, Trash2, Loader2, UserX,
   Phone, Mail, Fingerprint, Tag, Globe, Headphones, Building2, MapPin, Calendar, Info,
   Send, PlusCircle, Target, Save, X, Pencil, CheckCircle, Clock, Home, Camera, Search,
+  FileSignature, Plus, Paperclip,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
@@ -120,8 +121,22 @@ const tabs = [
   { key: "interactions", label: "İletişim", icon: MessageCircle },
   { key: "appointments", label: "Randevular", icon: Calendar },
   { key: "matches", label: "İlgili İlanlar", icon: Home },
+  { key: "contracts", label: "Sözleşmeler", icon: FileSignature },
   { key: "kvkk", label: "KVKK Rızaları", icon: ShieldCheck },
 ] as const;
+
+interface CustomerContract {
+  id: string;
+  contractType: "KIRA" | "SATIS" | "KOMISYON";
+  title: string;
+  amount: number;
+  currency: string;
+  status: "DRAFT" | "ACTIVE" | "EXPIRED" | "RENEWED" | "TERMINATED";
+  startDate: string;
+  endDate: string | null;
+  property: { id: string; title: string } | null;
+  _count: { attachments: number };
+}
 
 const stageLabels: Record<string, string> = { LEAD: "Aday", QUALIFIED: "Nitelikli", ACTIVE: "Aktif Takip", SHOWING: "Gösterimde", OFFER: "Teklif Aşaması", CONTRACT: "Sözleşme Aşaması", CLOSED: "Kazanıldı", LOST: "Kaybedildi" };
 const stageColors: Record<string, string> = { LEAD: "bg-surface-container text-on-surface-variant", QUALIFIED: "bg-secondary-container text-on-secondary-container", ACTIVE: "bg-primary-fixed text-primary", SHOWING: "bg-tertiary-fixed text-tertiary", OFFER: "bg-tertiary-container text-on-tertiary-container", CONTRACT: "bg-primary-container text-on-primary-container", CLOSED: "bg-green-100 text-green-700", LOST: "bg-error-container text-on-error-container" };
@@ -137,7 +152,9 @@ export default function CustomerDetailPage() {
   const { data: session } = useSession();
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"info" | "demand" | "notes" | "interactions" | "appointments" | "matches" | "kvkk">("info");
+  const [activeTab, setActiveTab] = useState<"info" | "demand" | "notes" | "interactions" | "appointments" | "matches" | "contracts" | "kvkk">("info");
+  const [contracts, setContracts] = useState<CustomerContract[]>([]);
+  const [contractsLoading, setContractsLoading] = useState(false);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [appointmentsLoading, setAppointmentsLoading] = useState(false);
   const [propertyMatches, setPropertyMatches] = useState<PropertyMatchResult[]>([]);
@@ -160,24 +177,29 @@ export default function CustomerDetailPage() {
   const [interactionSaving, setInteractionSaving] = useState(false);
 
   useEffect(() => {
-    // Paralel: müşteri detay + randevular + eşleşmeler (sekme sayıları anında doğru olsun)
+    // Paralel: müşteri detay + randevular + eşleşmeler + sözleşmeler
     setMatchesLoading(true);
     setAppointmentsLoading(true);
+    setContractsLoading(true);
     Promise.all([
       fetch(`/api/customers/${params.id}`).then((r) => r.json()),
       fetch(`/api/appointments?customerId=${params.id}`).then((r) => r.json()).catch(() => []),
       fetch(`/api/customers/${params.id}/matches`).then((r) => r.json()).catch(() => []),
-    ]).then(([cust, appts, matches]) => {
+      fetch(`/api/contracts?customerId=${params.id}`).then((r) => (r.ok ? r.json() : [])).catch(() => []),
+    ]).then(([cust, appts, matches, ctrs]) => {
       setCustomer(cust);
       setAppointments(Array.isArray(appts) ? appts : []);
       setPropertyMatches(Array.isArray(matches) ? matches : []);
+      setContracts(Array.isArray(ctrs) ? ctrs : []);
       setLoading(false);
       setAppointmentsLoading(false);
       setMatchesLoading(false);
+      setContractsLoading(false);
     }).catch(() => {
       setLoading(false);
       setAppointmentsLoading(false);
       setMatchesLoading(false);
+      setContractsLoading(false);
     });
   }, [params.id]);
 
@@ -252,7 +274,7 @@ export default function CustomerDetailPage() {
       <div className="flex bg-surface-container-low p-1 rounded-xl w-fit">
         {tabs.map((tab) => {
           const Icon = tab.icon;
-          const count = tab.key === "notes" ? customer.notes.length : tab.key === "interactions" ? customer.interactions.length : tab.key === "appointments" ? appointments.length : tab.key === "matches" ? propertyMatches.length : null;
+          const count = tab.key === "notes" ? customer.notes.length : tab.key === "interactions" ? customer.interactions.length : tab.key === "appointments" ? appointments.length : tab.key === "matches" ? propertyMatches.length : tab.key === "contracts" ? contracts.length : null;
           return (
             <button
               key={tab.key}
@@ -1047,6 +1069,69 @@ export default function CustomerDetailPage() {
                   );
                 })}
               </div>
+            )}
+          </motion.div>
+        )}
+
+        {activeTab === "contracts" && (
+          <motion.div key="contracts" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+            className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-8 space-y-5 border border-outline-variant/10"
+          >
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <h2 className="text-lg font-bold text-on-surface">Sözleşmeler</h2>
+              <Link
+                href={`/contracts/new?customerId=${customer.id}`}
+                className="primary-gradient text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2"
+              >
+                <Plus className="w-4 h-4" /> Yeni Sözleşme
+              </Link>
+            </div>
+            {contractsLoading ? (
+              <div className="flex items-center justify-center py-10">
+                <Loader2 className="w-5 h-5 animate-spin text-primary" />
+              </div>
+            ) : contracts.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-on-surface-variant">
+                <FileSignature className="w-10 h-10 opacity-30 mb-2" />
+                <p className="text-sm">Bu müşteri için sözleşme yok</p>
+              </div>
+            ) : (
+              <ul className="space-y-2">
+                {contracts.map((c) => (
+                  <li key={c.id}>
+                    <Link
+                      href={`/contracts/${c.id}`}
+                      className="flex items-center justify-between gap-3 p-4 bg-surface-container-low hover:bg-surface-container rounded-2xl transition-colors"
+                    >
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-sm font-bold text-on-surface truncate">{c.title}</span>
+                          <span className="text-[9px] px-1.5 py-0.5 bg-primary-fixed text-primary rounded font-black uppercase">
+                            {c.contractType === "KIRA" ? "Kira" : c.contractType === "SATIS" ? "Satış" : "Komisyon"}
+                          </span>
+                          <span className={cn(
+                            "text-[9px] px-1.5 py-0.5 rounded font-black uppercase",
+                            c.status === "ACTIVE" ? "bg-green-100 text-green-700" :
+                            c.status === "EXPIRED" ? "bg-error-container text-on-error-container" :
+                            "bg-surface-container text-on-surface-variant"
+                          )}>
+                            {c.status === "ACTIVE" ? "Aktif" : c.status === "DRAFT" ? "Taslak" : c.status === "EXPIRED" ? "Süresi Doldu" : c.status === "RENEWED" ? "Yenilendi" : "Feshedildi"}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-on-surface-variant mt-1">
+                          {c.property ? `${c.property.title} · ` : ""}
+                          {c.amount.toLocaleString("tr-TR")} {c.currency}
+                          {c._count.attachments > 0 && (
+                            <span className="inline-flex items-center gap-1 ml-2 text-primary font-bold">
+                              <Paperclip className="w-3 h-3" /> {c._count.attachments}
+                            </span>
+                          )}
+                        </p>
+                      </div>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             )}
           </motion.div>
         )}

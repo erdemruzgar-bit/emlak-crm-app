@@ -18,6 +18,7 @@ import {
   Wallet,
   Zap,
   Bell,
+  Calculator,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -33,6 +34,7 @@ const navigation = [
   { name: "Hatırlatmalar", href: "/reminders", icon: Bell },
   { name: "Otomasyon", href: "/automation", icon: Zap, badge: "Yeni" },
   { name: "Raporlar", href: "/reports", icon: BarChart3 },
+  { name: "Komisyon Hesapla", href: "/tools/commission-calculator", icon: Calculator },
   { name: "Ayarlar", href: "/settings/users", icon: Settings },
 ];
 

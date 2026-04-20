@@ -29,6 +29,7 @@ import {
   Info,
   UserPlus,
   Search,
+  Plus,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
@@ -47,6 +48,19 @@ interface MatchEntry {
     customerType: string;
     photoUrl: string | null;
   };
+}
+
+interface PropertyContract {
+  id: string;
+  contractType: "KIRA" | "SATIS" | "KOMISYON";
+  title: string;
+  amount: number;
+  currency: string;
+  status: "DRAFT" | "ACTIVE" | "EXPIRED" | "RENEWED" | "TERMINATED";
+  startDate: string;
+  endDate: string | null;
+  customer: { firstName: string; lastName: string } | null;
+  _count: { attachments: number };
 }
 
 interface CustomerSearchResult {
@@ -137,12 +151,18 @@ export default function PropertyDetailPage() {
   const [addResults, setAddResults] = useState<CustomerSearchResult[]>([]);
   const addTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const [contracts, setContracts] = useState<PropertyContract[]>([]);
+
   useEffect(() => {
     fetch(`/api/properties/${params.id}`)
       .then((res) => res.json())
       .then((data) => { setProperty(data); setLoading(false); })
       .catch(() => setLoading(false));
     reloadMatches();
+    fetch(`/api/contracts?propertyId=${params.id}`)
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => setContracts(Array.isArray(data) ? data : []))
+      .catch(() => setContracts([]));
   }, [params.id]);
 
   function reloadMatches() {
@@ -705,6 +725,65 @@ export default function PropertyDetailPage() {
                     </div>
                   ))}
                 </div>
+              )}
+            </div>
+
+            {/* Sözleşmeler */}
+            <div className="bg-surface-container-lowest p-6 rounded-3xl border border-outline-variant/10">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-bold text-on-surface flex items-center gap-2">
+                  Sözleşmeler
+                  {contracts.length > 0 && (
+                    <span className="text-[10px] font-black bg-primary text-white px-2 py-0.5 rounded-full">{contracts.length}</span>
+                  )}
+                </h3>
+                <Link
+                  href={`/contracts/new?propertyId=${params.id}`}
+                  className="text-xs font-bold text-primary hover:bg-primary-fixed px-2 py-1 rounded-lg transition-colors flex items-center gap-1"
+                >
+                  <Plus className="w-3 h-3" /> Yeni
+                </Link>
+              </div>
+              {contracts.length === 0 ? (
+                <p className="text-sm text-on-surface-variant">
+                  Bu mülk için sözleşme yok.{" "}
+                  <Link href={`/contracts/new?propertyId=${params.id}`} className="text-primary font-bold hover:underline">
+                    Sözleşme oluştur →
+                  </Link>
+                </p>
+              ) : (
+                <ul className="space-y-2">
+                  {contracts.map((c) => (
+                    <li key={c.id}>
+                      <Link
+                        href={`/contracts/${c.id}`}
+                        className="flex items-center justify-between gap-3 p-3 bg-surface-container-low hover:bg-surface-container rounded-2xl transition-colors"
+                      >
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-sm font-bold text-on-surface truncate">{c.title}</span>
+                            <span className="text-[9px] px-1.5 py-0.5 bg-primary-fixed text-primary rounded font-black uppercase">
+                              {c.contractType === "KIRA" ? "Kira" : c.contractType === "SATIS" ? "Satış" : "Komisyon"}
+                            </span>
+                            <span className={cn(
+                              "text-[9px] px-1.5 py-0.5 rounded font-black uppercase",
+                              c.status === "ACTIVE" ? "bg-green-100 text-green-700" :
+                              c.status === "EXPIRED" ? "bg-error-container text-on-error-container" :
+                              "bg-surface-container text-on-surface-variant"
+                            )}>
+                              {c.status === "ACTIVE" ? "Aktif" : c.status === "DRAFT" ? "Taslak" : c.status === "EXPIRED" ? "Süresi Doldu" : c.status === "RENEWED" ? "Yenilendi" : "Feshedildi"}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-on-surface-variant mt-0.5">
+                            {c.customer ? `${c.customer.firstName} ${c.customer.lastName} · ` : ""}
+                            {c.amount.toLocaleString("tr-TR")} {c.currency}
+                            {c._count.attachments > 0 && ` · ${c._count.attachments} ek`}
+                          </p>
+                        </div>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
               )}
             </div>
           </div>

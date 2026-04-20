@@ -87,6 +87,24 @@ export default function NewContractPage() {
       .catch(() => setCustomers([]));
   }, []);
 
+  // URL query: ?propertyId=xxx veya ?customerId=xxx ile preset
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const sp = new URLSearchParams(window.location.search);
+    const pId = sp.get("propertyId");
+    const cId = sp.get("customerId");
+    if (pId) setPropertyId(pId);
+    if (cId) setCustomerId(cId);
+  }, []);
+
+  // Property listesi geldiğinde, preset propertyId varsa sahibini otomatik doldur
+  useEffect(() => {
+    if (!propertyId || properties.length === 0 || ownerCustomerId) return;
+    const prop = properties.find((p) => p.id === propertyId);
+    if (prop?.ownerId) setOwnerCustomerId(prop.ownerId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [propertyId, properties]);
+
   // Müşteri tipine göre kiracı/alıcı vs sahip listesi
   const tenantCandidates = customers.filter((c) =>
     ["BUYER", "TENANT"].includes(c.customerType)

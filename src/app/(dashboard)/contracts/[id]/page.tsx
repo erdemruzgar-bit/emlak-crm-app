@@ -460,7 +460,7 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
                   </p>
                 </div>
                 <a
-                  href={att.fileUrl}
+                  href={`/api/contracts/${id}/attachments/${att.id}/download`}
                   target="_blank"
                   rel="noreferrer"
                   className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-surface-container"

@@ -5,6 +5,11 @@ import { auth } from "@/lib/auth";
 
 const ALLOWED_IMAGE = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"];
 const ALLOWED_VIDEO = ["video/mp4", "video/webm", "video/quicktime", "video/x-msvideo"];
+const ALLOWED_DOCUMENT = [
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+];
 const MAX_SIZE = 100 * 1024 * 1024; // 100MB
 
 export async function POST(req: NextRequest) {
@@ -27,28 +32,39 @@ export async function POST(req: NextRequest) {
 
     const isImage = ALLOWED_IMAGE.includes(file.type);
     const isVideo = ALLOWED_VIDEO.includes(file.type);
+    const isDocument = ALLOWED_DOCUMENT.includes(file.type);
 
-    if (!isImage && !isVideo) {
+    if (!isImage && !isVideo && !isDocument) {
       return NextResponse.json({
-        error: "Desteklenmeyen dosya türü. JPG, PNG, WEBP, MP4 veya MOV yükleyebilirsiniz."
+        error: "Desteklenmeyen dosya türü. JPG, PNG, WEBP, MP4, MOV, PDF veya Word belgesi yükleyebilirsiniz."
       }, { status: 400 });
     }
 
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    const uploadDir = join(process.cwd(), "public", "uploads");
+    const subfolder = formData.get("folder")?.toString() || "";
+    const safeSubfolder = subfolder.replace(/[^a-zA-Z0-9_-]/g, "");
+    const uploadDir = safeSubfolder
+      ? join(process.cwd(), "public", "uploads", safeSubfolder)
+      : join(process.cwd(), "public", "uploads");
     await mkdir(uploadDir, { recursive: true });
 
-    const safeExt = extname(file.name).toLowerCase() || (isVideo ? ".mp4" : ".jpg");
+    const defaultExt = isVideo ? ".mp4" : isDocument ? ".pdf" : ".jpg";
+    const safeExt = extname(file.name).toLowerCase() || defaultExt;
     const filename = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}${safeExt}`;
     const filepath = join(uploadDir, filename);
 
     await writeFile(filepath, buffer);
 
+    const publicPath = safeSubfolder
+      ? `/uploads/${safeSubfolder}/${filename}`
+      : `/uploads/${filename}`;
+
     return NextResponse.json({
-      url: `/uploads/${filename}`,
-      mediaType: isVideo ? "video" : "image",
+      url: publicPath,
+      mediaType: isVideo ? "video" : isDocument ? "document" : "image",
+      mimeType: file.type,
       name: file.name,
       size: file.size,
     });

@@ -83,6 +83,29 @@ enum MatchStatus {
   REJECTED    // Danışman reddetti, bir daha gösterme
 }
 
+enum ContractType {
+  KIRA        // Kira sözleşmesi
+  SATIS       // Satış vaat sözleşmesi
+  KOMISYON    // Komisyon / aracılık sözleşmesi
+}
+
+enum ContractStatus {
+  DRAFT       // Taslak
+  ACTIVE      // Aktif / yürürlükte
+  EXPIRED     // Süresi doldu
+  RENEWED     // Yenilendi (yeni kontrat oluştu)
+  TERMINATED  // Feshedildi
+}
+
+enum ContractAttachmentCategory {
+  KONTRAT_PDF
+  KOMISYON_SOZLESMESI
+  TAPU
+  KIMLIK
+  DEPOZITO_DEKONTU
+  EK_DOKUMAN
+}
+
 // ─── Kullanıcı & Şube ───
 
 model Branch {
@@ -96,6 +119,7 @@ model Branch {
   users      User[]
   customers  Customer[]
   properties Property[]
+  contracts  Contract[]
 }
 
 model User {
@@ -122,6 +146,8 @@ model User {
   customerNotes       CustomerNote[]
   customerInteractions CustomerInteraction[]
   auditLogs           AuditLog[]
+  contractsCreated    Contract[]
+  contractAttachmentsUploaded ContractAttachment[]
 }
 
 // ─── KVKK Audit Log ───
@@ -204,6 +230,8 @@ model Customer {
   propertyMatches PropertyMatch[]
   ownedProperties Property[]          @relation("PropertyOwner")
   appointments   Appointment[]
+  contracts      Contract[]          @relation("ContractCustomer")
+  ownedContracts Contract[]          @relation("ContractOwner")
 
   @@index([assignedAgentId])
   @@index([branchId])
@@ -288,6 +316,7 @@ model Property {
   images        PropertyImage[]
   matches       PropertyMatch[]
   appointments  Appointment[]
+  contracts     Contract[]
 
   @@index([status])
   @@index([listingType])
@@ -364,4 +393,60 @@ model Task {
 
   @@index([userId])
   @@index([status])
+}
+
+// ─── Sözleşme Yönetimi ───
+
+model Contract {
+  id              String          @id @default(cuid())
+  contractType    ContractType
+  propertyId      String?
+  customerId      String?         // kiracı / alıcı
+  ownerCustomerId String?         // mülk sahibi (opsiyonel)
+  title           String          // kısa başlık
+  startDate       DateTime
+  endDate         DateTime?       // kira için zorunlu; satışta null olabilir
+  amount          Float           // kira tutarı / satış bedeli / hizmet bedeli
+  currency        String          @default("TRY")
+  depositAmount   Float?          // kira depozitosu
+  commissionRate  Float?          // % komisyon oranı
+  commissionAmount Float?         // hesaplanmış komisyon tutarı
+  commissionSplit String?         @db.Text // JSON: { agentId: 50, partnerAgencyId: 50 }
+  status          ContractStatus  @default(DRAFT)
+  signedAt        DateTime?
+  notes           String?         @db.Text
+  createdById     String
+  branchId        String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  property    Property?            @relation(fields: [propertyId], references: [id])
+  customer    Customer?            @relation("ContractCustomer", fields: [customerId], references: [id])
+  ownerCustomer Customer?          @relation("ContractOwner", fields: [ownerCustomerId], references: [id])
+  createdBy   User                 @relation(fields: [createdById], references: [id])
+  branch      Branch?              @relation(fields: [branchId], references: [id])
+  attachments ContractAttachment[]
+
+  @@index([propertyId])
+  @@index([customerId])
+  @@index([status])
+  @@index([endDate])
+  @@index([contractType])
+}
+
+model ContractAttachment {
+  id         String                       @id @default(cuid())
+  contractId String
+  fileName   String
+  fileUrl    String
+  fileSize   Int
+  mimeType   String
+  category   ContractAttachmentCategory   @default(EK_DOKUMAN)
+  uploadedById String
+  uploadedAt DateTime                     @default(now())
+
+  contract   Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  uploadedBy User     @relation(fields: [uploadedById], references: [id])
+
+  @@index([contractId])
 }

@@ -13,6 +13,7 @@ interface PropertyOption {
   address: string | null;
   city: string | null;
   listingType: string;
+  ownerId: string | null;
 }
 
 interface CustomerOption {
@@ -20,7 +21,7 @@ interface CustomerOption {
   firstName: string;
   lastName: string;
   phone: string | null;
-  customerType: string;
+  customerType: "BUYER" | "SELLER" | "TENANT" | "LANDLORD";
 }
 
 const attachmentCategoryOptions = [
@@ -31,6 +32,13 @@ const attachmentCategoryOptions = [
   { value: "DEPOZITO_DEKONTU", label: "Depozito Dekontu" },
   { value: "EK_DOKUMAN", label: "Ek Doküman" },
 ];
+
+const customerTypeLabels: Record<string, string> = {
+  BUYER: "Alıcı",
+  SELLER: "Satıcı",
+  TENANT: "Kiracı",
+  LANDLORD: "Mülk Sahibi",
+};
 
 export default function NewContractPage() {
   const router = useRouter();
@@ -55,17 +63,47 @@ export default function NewContractPage() {
   const [customers, setCustomers] = useState<CustomerOption[]>([]);
 
   useEffect(() => {
-    fetch("/api/properties")
+    fetch("/api/properties?limit=1000")
       .then((r) => r.json())
       .then((data) => {
-        if (Array.isArray(data)) setProperties(data);
-      });
-    fetch("/api/customers")
+        const list = Array.isArray(data?.properties)
+          ? data.properties
+          : Array.isArray(data)
+          ? data
+          : [];
+        setProperties(list);
+      })
+      .catch(() => setProperties([]));
+    fetch("/api/customers?limit=1000")
       .then((r) => r.json())
       .then((data) => {
-        if (Array.isArray(data)) setCustomers(data);
-      });
+        const list = Array.isArray(data?.customers)
+          ? data.customers
+          : Array.isArray(data)
+          ? data
+          : [];
+        setCustomers(list);
+      })
+      .catch(() => setCustomers([]));
   }, []);
+
+  // Müşteri tipine göre kiracı/alıcı vs sahip listesi
+  const tenantCandidates = customers.filter((c) =>
+    ["BUYER", "TENANT"].includes(c.customerType)
+  );
+  const ownerCandidates = customers.filter((c) =>
+    ["SELLER", "LANDLORD"].includes(c.customerType)
+  );
+
+  // Mülk seçilince, mülkün kayıtlı sahibini otomatik doldur
+  function handlePropertyChange(newId: string) {
+    setPropertyId(newId);
+    if (!newId) return;
+    const prop = properties.find((p) => p.id === newId);
+    if (prop?.ownerId && !ownerCustomerId) {
+      setOwnerCustomerId(prop.ownerId);
+    }
+  }
 
   // Komisyon otomatik hesaplama
   const calculatedCommission =
@@ -206,55 +244,83 @@ export default function NewContractPage() {
               <label className="block text-xs font-black uppercase tracking-wider text-on-surface-variant mb-2">
                 Mülk
               </label>
-              <select
-                value={propertyId}
-                onChange={(e) => setPropertyId(e.target.value)}
-                className="w-full px-4 py-3 bg-surface-container-low rounded-xl text-sm border-none outline-none focus:ring-2 focus:ring-primary/20"
-              >
-                <option value="">Seçiniz</option>
-                {properties.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.title}
-                  </option>
-                ))}
-              </select>
+              {properties.length === 0 ? (
+                <div className="px-4 py-3 bg-surface-container-low rounded-xl text-sm text-on-surface-variant">
+                  Kayıtlı mülk yok.{" "}
+                  <Link href="/properties/new" className="text-primary font-bold hover:underline">
+                    Yeni mülk ekle →
+                  </Link>
+                </div>
+              ) : (
+                <select
+                  value={propertyId}
+                  onChange={(e) => handlePropertyChange(e.target.value)}
+                  className="w-full px-4 py-3 bg-surface-container-low rounded-xl text-sm border-none outline-none focus:ring-2 focus:ring-primary/20"
+                >
+                  <option value="">Seçiniz</option>
+                  {properties.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.title}
+                      {p.city ? ` · ${p.city}` : ""}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
 
             <div>
               <label className="block text-xs font-black uppercase tracking-wider text-on-surface-variant mb-2">
                 {contractType === "KIRA" ? "Kiracı" : contractType === "SATIS" ? "Alıcı" : "Müşteri"}
               </label>
-              <select
-                value={customerId}
-                onChange={(e) => setCustomerId(e.target.value)}
-                className="w-full px-4 py-3 bg-surface-container-low rounded-xl text-sm border-none outline-none focus:ring-2 focus:ring-primary/20"
-              >
-                <option value="">Seçiniz</option>
-                {customers.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.firstName} {c.lastName}
-                    {c.phone ? ` · ${c.phone}` : ""}
-                  </option>
-                ))}
-              </select>
+              {tenantCandidates.length === 0 ? (
+                <div className="px-4 py-3 bg-surface-container-low rounded-xl text-sm text-on-surface-variant">
+                  {contractType === "KIRA" ? "Kiracı" : "Alıcı"} tipinde müşteri yok.{" "}
+                  <Link href="/customers/new" className="text-primary font-bold hover:underline">
+                    Yeni müşteri ekle →
+                  </Link>
+                </div>
+              ) : (
+                <select
+                  value={customerId}
+                  onChange={(e) => setCustomerId(e.target.value)}
+                  className="w-full px-4 py-3 bg-surface-container-low rounded-xl text-sm border-none outline-none focus:ring-2 focus:ring-primary/20"
+                >
+                  <option value="">Seçiniz</option>
+                  {tenantCandidates.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.firstName} {c.lastName} · {customerTypeLabels[c.customerType]}
+                      {c.phone ? ` · ${c.phone}` : ""}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
 
             <div>
               <label className="block text-xs font-black uppercase tracking-wider text-on-surface-variant mb-2">
                 Mülk Sahibi (opsiyonel)
               </label>
-              <select
-                value={ownerCustomerId}
-                onChange={(e) => setOwnerCustomerId(e.target.value)}
-                className="w-full px-4 py-3 bg-surface-container-low rounded-xl text-sm border-none outline-none focus:ring-2 focus:ring-primary/20"
-              >
-                <option value="">Seçiniz</option>
-                {customers.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.firstName} {c.lastName}
-                  </option>
-                ))}
-              </select>
+              {ownerCandidates.length === 0 ? (
+                <div className="px-4 py-3 bg-surface-container-low rounded-xl text-sm text-on-surface-variant">
+                  Sahip/Satıcı tipinde müşteri yok.{" "}
+                  <Link href="/customers/new" className="text-primary font-bold hover:underline">
+                    Yeni müşteri ekle →
+                  </Link>
+                </div>
+              ) : (
+                <select
+                  value={ownerCustomerId}
+                  onChange={(e) => setOwnerCustomerId(e.target.value)}
+                  className="w-full px-4 py-3 bg-surface-container-low rounded-xl text-sm border-none outline-none focus:ring-2 focus:ring-primary/20"
+                >
+                  <option value="">Seçiniz</option>
+                  {ownerCandidates.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.firstName} {c.lastName} · {customerTypeLabels[c.customerType]}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
           </div>
         </div>

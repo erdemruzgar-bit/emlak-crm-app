@@ -25,6 +25,8 @@ export async function GET(
         assignedAgent: { select: { name: true } },
         owner: { select: { id: true, firstName: true, lastName: true, phone: true, email: true } },
         branch: { select: { name: true } },
+        project: { select: { id: true, name: true } },
+        block: { select: { id: true, name: true } },
         matches: {
           include: { customer: { select: { id: true, firstName: true, lastName: true } } },
         },

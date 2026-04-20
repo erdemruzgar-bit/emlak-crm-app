@@ -45,6 +45,23 @@ interface PropertyDetailData {
   status: string;
   assignedAgent: { name: string } | null;
   images: { url: string }[];
+
+  // Proje / Blok / Tapu / Sakin
+  project?: { id: string; name: string } | null;
+  block?: { id: string; name: string } | null;
+  unitNumber?: string | null;
+  ada?: string | null;
+  pafta?: string | null;
+  parsel?: string | null;
+  bagimsizBolumNo?: string | null;
+  katMulkiyetiTipi?: string | null;
+  occupancyStatus?: string | null;
+  ownerCitizenship?: string | null;
+  usageType?: string | null;
+  hasElevator?: boolean | null;
+  hasParking?: boolean | null;
+  hasBalcony?: boolean | null;
+  facingDirection?: string | null;
 }
 
 const propertyTypeLabels: Record<string, string> = {
@@ -61,6 +78,40 @@ const heatingLabels: Record<string, string> = {
   SOBA: "Soba",
   KLIMA: "Klima",
   YERDEN: "Yerden Isıtma",
+};
+
+const occupancyLabels: Record<string, string> = {
+  SAHIBI_OTURUYOR: "Sahibi Oturuyor",
+  KIRACILI: "Kiracılı",
+  BOS: "Boş",
+  ARSIV: "Arşiv",
+};
+
+const usageLabels: Record<string, string> = {
+  KONUT: "Konut",
+  ISYERI: "İşyeri",
+  KARMA: "Karma",
+  ARSA_IMARLI: "Arsa (İmarlı)",
+  ARSA_IMARSIZ: "Arsa (İmarsız)",
+};
+
+const katMulkiyetiLabels: Record<string, string> = {
+  KAT_MULKIYETI: "Kat Mülkiyeti",
+  KAT_IRTIFAKI: "Kat İrtifakı",
+  ARSA_PAYLI: "Arsa Paylı",
+  HISSELI: "Hisseli",
+  BAGIMSIZ_BOLUMSUZ: "Bağımsız Bölümsüz",
+};
+
+const facingLabels: Record<string, string> = {
+  KUZEY: "Kuzey",
+  GUNEY: "Güney",
+  DOGU: "Doğu",
+  BATI: "Batı",
+  KUZEY_DOGU: "Kuzey-Doğu",
+  KUZEY_BATI: "Kuzey-Batı",
+  GUNEY_DOGU: "Güney-Doğu",
+  GUNEY_BATI: "Güney-Batı",
 };
 
 interface PropertyDetailProps {
@@ -274,6 +325,48 @@ export function PropertyDetail({ property, onClose }: PropertyDetailProps) {
                 {property.floor != null && <InfoRow label="Kat" value={`${property.floor}/${property.totalFloors || "?"}`} />}
                 {property.age != null && <InfoRow label="Bina Yaşı" value={String(property.age)} />}
                 {property.heating && <InfoRow label="Isıtma" value={heatingLabels[property.heating] || property.heating} />}
+
+                {(property.project || property.block || property.unitNumber) && (
+                  <InfoRow
+                    label="Proje / Blok / Daire"
+                    value={[property.project?.name, property.block?.name, property.unitNumber]
+                      .filter(Boolean)
+                      .join(" / ")}
+                  />
+                )}
+                {property.occupancyStatus && (
+                  <InfoRow label="Sakin" value={occupancyLabels[property.occupancyStatus] || property.occupancyStatus} />
+                )}
+                {property.usageType && (
+                  <InfoRow label="Kullanım" value={usageLabels[property.usageType] || property.usageType} />
+                )}
+                {property.ownerCitizenship && (
+                  <InfoRow label="Sahip Vatandaşlığı" value={property.ownerCitizenship === "TC" ? "TC" : "Yabancı"} />
+                )}
+                {(property.ada || property.pafta || property.parsel) && (
+                  <InfoRow
+                    label="Ada / Pafta / Parsel"
+                    value={[property.ada, property.pafta, property.parsel].filter(Boolean).join(" / ")}
+                  />
+                )}
+                {property.bagimsizBolumNo && (
+                  <InfoRow label="Bağımsız Bölüm No" value={property.bagimsizBolumNo} />
+                )}
+                {property.katMulkiyetiTipi && (
+                  <InfoRow label="Kat Mülkiyeti" value={katMulkiyetiLabels[property.katMulkiyetiTipi] || property.katMulkiyetiTipi} />
+                )}
+                {property.facingDirection && (
+                  <InfoRow label="Cephe" value={facingLabels[property.facingDirection] || property.facingDirection} />
+                )}
+                {property.hasElevator != null && (
+                  <InfoRow label="Asansör" value={property.hasElevator ? "Var" : "Yok"} />
+                )}
+                {property.hasParking != null && (
+                  <InfoRow label="Otopark" value={property.hasParking ? "Var" : "Yok"} />
+                )}
+                {property.hasBalcony != null && (
+                  <InfoRow label="Balkon" value={property.hasBalcony ? "Var" : "Yok"} />
+                )}
               </motion.div>
             )}
 

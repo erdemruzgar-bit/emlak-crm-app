@@ -106,6 +106,45 @@ enum ContractAttachmentCategory {
   EK_DOKUMAN
 }
 
+enum OccupancyStatus {
+  SAHIBI_OTURUYOR
+  KIRACILI
+  BOS
+  ARSIV
+}
+
+enum OwnerCitizenship {
+  TC
+  YABANCI
+}
+
+enum UsageType {
+  KONUT
+  ISYERI
+  KARMA
+  ARSA_IMARLI
+  ARSA_IMARSIZ
+}
+
+enum KatMulkiyetiTipi {
+  KAT_MULKIYETI
+  KAT_IRTIFAKI
+  ARSA_PAYLI
+  HISSELI
+  BAGIMSIZ_BOLUMSUZ
+}
+
+enum FacingDirection {
+  KUZEY
+  GUNEY
+  DOGU
+  BATI
+  KUZEY_DOGU
+  KUZEY_BATI
+  GUNEY_DOGU
+  GUNEY_BATI
+}
+
 // ─── Kullanıcı & Şube ───
 
 model Branch {
@@ -307,12 +346,38 @@ model Property {
   ownerId        String?
   assignedAgentId String?
   branchId       String?
+
+  // ─── Proje / Blok hiyerarşisi (opsiyonel, toplu konut projeleri için) ───
+  projectId      String?
+  blockId        String?
+  unitNumber     String?         // Daire no (örn: "026", "D/01-071")
+
+  // ─── Tapu bilgileri (Türkiye-spesifik) ───
+  ada               String?
+  pafta             String?
+  parsel            String?
+  bagimsizBolumNo   String?
+  katMulkiyetiTipi  KatMulkiyetiTipi?
+
+  // ─── Sakin, vatandaşlık, kullanım ───
+  occupancyStatus   OccupancyStatus?
+  ownerCitizenship  OwnerCitizenship?
+  usageType         UsageType?
+
+  // ─── Ek özellikler ───
+  hasElevator       Boolean?
+  hasParking        Boolean?
+  hasBalcony        Boolean?
+  facingDirection   FacingDirection?
+
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
 
   owner         Customer?       @relation("PropertyOwner", fields: [ownerId], references: [id])
   assignedAgent User?           @relation("AssignedAgent", fields: [assignedAgentId], references: [id])
   branch        Branch?         @relation(fields: [branchId], references: [id])
+  project       Project?        @relation(fields: [projectId], references: [id])
+  block         Block?          @relation(fields: [blockId], references: [id])
   images        PropertyImage[]
   matches       PropertyMatch[]
   appointments  Appointment[]
@@ -322,6 +387,43 @@ model Property {
   @@index([listingType])
   @@index([city, district])
   @@index([assignedAgentId])
+  @@index([projectId])
+  @@index([blockId])
+  @@index([occupancyStatus])
+}
+
+// ─── Toplu Konut Projesi / Blok ───
+
+model Project {
+  id          String   @id @default(cuid())
+  name        String
+  city        String?
+  district    String?
+  address     String?
+  developer   String?  // Müteahhit
+  description String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  blocks     Block[]
+  properties Property[]
+
+  @@index([name])
+  @@index([city, district])
+}
+
+model Block {
+  id         String   @id @default(cuid())
+  projectId  String
+  name       String   // "A", "B-1", "D/02"
+  totalUnits Int?
+  createdAt  DateTime @default(now())
+
+  project    Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  properties Property[]
+
+  @@unique([projectId, name])
+  @@index([projectId])
 }
 
 model PropertyImage {

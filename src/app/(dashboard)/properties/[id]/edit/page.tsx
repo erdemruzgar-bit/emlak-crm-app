@@ -10,6 +10,11 @@ import { cn } from "@/lib/utils";
 import { MediaUploader, type MediaItem } from "@/components/ui/media-uploader";
 
 interface CustomerResult { id: string; label: string; }
+interface ProjectOption {
+  id: string;
+  name: string;
+  blocks: { id: string; name: string }[];
+}
 
 const inputClass = "w-full px-4 py-3 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/20 outline-none text-sm";
 
@@ -87,7 +92,37 @@ export default function EditPropertyPage() {
     neighborhood: "",
     address: "",
     description: "",
+    // Yeni alanlar (Track B)
+    unitNumber: "",
+    ada: "",
+    pafta: "",
+    parsel: "",
+    bagimsizBolumNo: "",
+    katMulkiyetiTipi: "",
+    occupancyStatus: "",
+    ownerCitizenship: "",
+    usageType: "",
+    hasElevator: "",
+    hasParking: "",
+    hasBalcony: "",
+    facingDirection: "",
   });
+
+  // Proje / Blok cascading
+  const [projects, setProjects] = useState<ProjectOption[]>([]);
+  const [projectId, setProjectId] = useState("");
+  const [blockId, setBlockId] = useState("");
+  const selectedProjectBlocks =
+    projects.find((p) => p.id === projectId)?.blocks ?? [];
+
+  useEffect(() => {
+    fetch("/api/projects")
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) setProjects(data);
+      })
+      .catch(() => setProjects([]));
+  }, []);
 
   useEffect(() => {
     fetch(`/api/properties/${params.id}`)
@@ -110,7 +145,23 @@ export default function EditPropertyPage() {
           neighborhood: data.neighborhood || "",
           address: data.address || "",
           description: data.description || "",
+          // Yeni alanlar
+          unitNumber: data.unitNumber || "",
+          ada: data.ada || "",
+          pafta: data.pafta || "",
+          parsel: data.parsel || "",
+          bagimsizBolumNo: data.bagimsizBolumNo || "",
+          katMulkiyetiTipi: data.katMulkiyetiTipi || "",
+          occupancyStatus: data.occupancyStatus || "",
+          ownerCitizenship: data.ownerCitizenship || "",
+          usageType: data.usageType || "",
+          hasElevator: data.hasElevator === true ? "true" : data.hasElevator === false ? "false" : "",
+          hasParking: data.hasParking === true ? "true" : data.hasParking === false ? "false" : "",
+          hasBalcony: data.hasBalcony === true ? "true" : data.hasBalcony === false ? "false" : "",
+          facingDirection: data.facingDirection || "",
         });
+        setProjectId(data.projectId || "");
+        setBlockId(data.blockId || "");
         setPropertyType(data.propertyType || "DAIRE");
         setStatus(data.status || "ACTIVE");
         setAssignedAgentId(data.assignedAgentId || null);
@@ -139,6 +190,8 @@ export default function EditPropertyPage() {
     setSaving(true);
     setError("");
 
+    const boolOrNull = (v: string) => (v === "true" ? true : v === "false" ? false : null);
+
     const body = {
       title: form.title,
       listingType: form.listingType,
@@ -160,6 +213,29 @@ export default function EditPropertyPage() {
       description: form.description || undefined,
       ownerId: selectedOwner?.id ?? null,
       ...(canReassign ? { assignedAgentId } : {}),
+
+      // Proje / Blok
+      projectId: projectId || null,
+      blockId: blockId || null,
+      unitNumber: form.unitNumber || undefined,
+
+      // Tapu
+      ada: form.ada || undefined,
+      pafta: form.pafta || undefined,
+      parsel: form.parsel || undefined,
+      bagimsizBolumNo: form.bagimsizBolumNo || undefined,
+      katMulkiyetiTipi: form.katMulkiyetiTipi || null,
+
+      // Sakin / kullanım
+      occupancyStatus: form.occupancyStatus || null,
+      ownerCitizenship: form.ownerCitizenship || null,
+      usageType: form.usageType || null,
+
+      // Ek özellikler
+      hasElevator: boolOrNull(form.hasElevator),
+      hasParking: boolOrNull(form.hasParking),
+      hasBalcony: boolOrNull(form.hasBalcony),
+      facingDirection: form.facingDirection || null,
     };
 
     const res = await fetch(`/api/properties/${params.id}`, {
@@ -284,6 +360,163 @@ export default function EditPropertyPage() {
                 )}
               </div>
             )}
+          </div>
+        </div>
+
+        {/* Proje / Blok / Daire */}
+        <div className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-8 space-y-4 border border-outline-variant/10">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <h2 className="text-lg font-bold text-on-surface">Proje / Blok / Daire</h2>
+            <Link href="/settings/projects" target="_blank" className="text-xs font-bold text-primary hover:underline">
+              Projeleri yönet →
+            </Link>
+          </div>
+          {projects.length === 0 ? (
+            <p className="text-sm text-on-surface-variant">
+              Kayıtlı proje yok.{" "}
+              <Link href="/settings/projects" target="_blank" className="text-primary font-bold hover:underline">
+                Proje ekle →
+              </Link>
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Proje</label>
+                <select
+                  value={projectId}
+                  onChange={(e) => { setProjectId(e.target.value); setBlockId(""); }}
+                  className={inputClass}
+                >
+                  <option value="">Seçiniz</option>
+                  {projects.map((p) => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Blok</label>
+                <select
+                  value={blockId}
+                  onChange={(e) => setBlockId(e.target.value)}
+                  disabled={!projectId || selectedProjectBlocks.length === 0}
+                  className={cn(inputClass, "disabled:opacity-50")}
+                >
+                  <option value="">{!projectId ? "Önce proje seç" : selectedProjectBlocks.length === 0 ? "Blok yok" : "Seçiniz"}</option>
+                  {selectedProjectBlocks.map((b) => (
+                    <option key={b.id} value={b.id}>{b.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Daire No</label>
+                <input value={form.unitNumber} onChange={(e) => set("unitNumber", e.target.value)} placeholder="örn: 026" className={inputClass} />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Tapu Bilgileri */}
+        <div className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-8 space-y-5 border border-outline-variant/10">
+          <h2 className="text-lg font-bold text-on-surface">Tapu Bilgileri</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div>
+              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Ada</label>
+              <input value={form.ada} onChange={(e) => set("ada", e.target.value)} className={inputClass} />
+            </div>
+            <div>
+              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Pafta</label>
+              <input value={form.pafta} onChange={(e) => set("pafta", e.target.value)} className={inputClass} />
+            </div>
+            <div>
+              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Parsel</label>
+              <input value={form.parsel} onChange={(e) => set("parsel", e.target.value)} className={inputClass} />
+            </div>
+            <div>
+              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Bağımsız Bölüm No</label>
+              <input value={form.bagimsizBolumNo} onChange={(e) => set("bagimsizBolumNo", e.target.value)} className={inputClass} />
+            </div>
+            <div className="col-span-2">
+              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Kat Mülkiyeti Tipi</label>
+              <select value={form.katMulkiyetiTipi} onChange={(e) => set("katMulkiyetiTipi", e.target.value)} className={inputClass}>
+                <option value="">Seçiniz</option>
+                <option value="KAT_MULKIYETI">Kat Mülkiyeti</option>
+                <option value="KAT_IRTIFAKI">Kat İrtifakı</option>
+                <option value="ARSA_PAYLI">Arsa Paylı</option>
+                <option value="HISSELI">Hisseli</option>
+                <option value="BAGIMSIZ_BOLUMSUZ">Bağımsız Bölümsüz</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Sakin / Kullanım */}
+        <div className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-8 space-y-5 border border-outline-variant/10">
+          <h2 className="text-lg font-bold text-on-surface">Sakin ve Kullanım</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Sakin Durumu</label>
+              <select value={form.occupancyStatus} onChange={(e) => set("occupancyStatus", e.target.value)} className={inputClass}>
+                <option value="">Seçiniz</option>
+                <option value="SAHIBI_OTURUYOR">Sahibi Oturuyor</option>
+                <option value="KIRACILI">Kiracılı</option>
+                <option value="BOS">Boş</option>
+                <option value="ARSIV">Arşiv</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Kullanım Türü</label>
+              <select value={form.usageType} onChange={(e) => set("usageType", e.target.value)} className={inputClass}>
+                <option value="">Seçiniz</option>
+                <option value="KONUT">Konut</option>
+                <option value="ISYERI">İşyeri</option>
+                <option value="KARMA">Karma</option>
+                <option value="ARSA_IMARLI">Arsa (İmarlı)</option>
+                <option value="ARSA_IMARSIZ">Arsa (İmarsız)</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Sahip Vatandaşlığı</label>
+              <select value={form.ownerCitizenship} onChange={(e) => set("ownerCitizenship", e.target.value)} className={inputClass}>
+                <option value="">Seçiniz</option>
+                <option value="TC">TC</option>
+                <option value="YABANCI">Yabancı</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Ek Özellikler */}
+        <div className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-8 space-y-5 border border-outline-variant/10">
+          <h2 className="text-lg font-bold text-on-surface">Ek Özellikler</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {[
+              { name: "hasElevator", label: "Asansör" },
+              { name: "hasParking", label: "Otopark" },
+              { name: "hasBalcony", label: "Balkon" },
+            ].map((f) => (
+              <div key={f.name}>
+                <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">{f.label}</label>
+                <select value={form[f.name]} onChange={(e) => set(f.name, e.target.value)} className={inputClass}>
+                  <option value="">—</option>
+                  <option value="true">Var</option>
+                  <option value="false">Yok</option>
+                </select>
+              </div>
+            ))}
+            <div>
+              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Cephe</label>
+              <select value={form.facingDirection} onChange={(e) => set("facingDirection", e.target.value)} className={inputClass}>
+                <option value="">Seçiniz</option>
+                <option value="KUZEY">Kuzey</option>
+                <option value="GUNEY">Güney</option>
+                <option value="DOGU">Doğu</option>
+                <option value="BATI">Batı</option>
+                <option value="KUZEY_DOGU">Kuzey-Doğu</option>
+                <option value="KUZEY_BATI">Kuzey-Batı</option>
+                <option value="GUNEY_DOGU">Güney-Doğu</option>
+                <option value="GUNEY_BATI">Güney-Batı</option>
+              </select>
+            </div>
           </div>
         </div>
 

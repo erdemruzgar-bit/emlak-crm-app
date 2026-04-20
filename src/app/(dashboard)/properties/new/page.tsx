@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, AlertCircle, Loader2, User, X } from "lucide-react";
@@ -9,6 +9,11 @@ import { cn } from "@/lib/utils";
 import { MediaUploader, type MediaItem } from "@/components/ui/media-uploader";
 
 interface CustomerResult { id: string; label: string; }
+interface ProjectOption {
+  id: string;
+  name: string;
+  blocks: { id: string; name: string }[];
+}
 
 export default function NewPropertyPage() {
   const router = useRouter();
@@ -24,6 +29,23 @@ export default function NewPropertyPage() {
   const [ownerOpen, setOwnerOpen] = useState(false);
   const ownerTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const ownerRef = useRef<HTMLDivElement>(null);
+
+  // Proje / Blok cascading
+  const [projects, setProjects] = useState<ProjectOption[]>([]);
+  const [projectId, setProjectId] = useState("");
+  const [blockId, setBlockId] = useState("");
+
+  useEffect(() => {
+    fetch("/api/projects")
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) setProjects(data);
+      })
+      .catch(() => setProjects([]));
+  }, []);
+
+  const selectedProjectBlocks =
+    projects.find((p) => p.id === projectId)?.blocks ?? [];
 
   function searchOwner(q: string) {
     setOwnerQuery(q);
@@ -50,6 +72,15 @@ export default function NewPropertyPage() {
 
     const fd = new FormData(e.currentTarget);
 
+    const optStr = (k: string) => {
+      const v = fd.get(k);
+      return v && String(v).trim() ? String(v) : undefined;
+    };
+    const optBool = (k: string) => {
+      const v = fd.get(k);
+      return v === "true" ? true : v === "false" ? false : undefined;
+    };
+
     const body = {
       title: fd.get("title"),
       listingType: fd.get("listingType"),
@@ -57,18 +88,41 @@ export default function NewPropertyPage() {
       price: parseFloat(fd.get("price") as string),
       currency: fd.get("currency") || "TRY",
       area: fd.get("area") ? parseFloat(fd.get("area") as string) : undefined,
-      rooms: fd.get("rooms") || undefined,
+      rooms: optStr("rooms"),
       bathrooms: fd.get("bathrooms") ? parseInt(fd.get("bathrooms") as string) : undefined,
       floor: fd.get("floor") ? parseInt(fd.get("floor") as string) : undefined,
       totalFloors: fd.get("totalFloors") ? parseInt(fd.get("totalFloors") as string) : undefined,
       age: fd.get("age") ? parseInt(fd.get("age") as string) : undefined,
-      heating: fd.get("heating") || undefined,
-      city: fd.get("city") || undefined,
-      district: fd.get("district") || undefined,
-      neighborhood: fd.get("neighborhood") || undefined,
-      address: fd.get("address") || undefined,
-      description: fd.get("description") || undefined,
+      heating: optStr("heating"),
+      city: optStr("city"),
+      district: optStr("district"),
+      neighborhood: optStr("neighborhood"),
+      address: optStr("address"),
+      description: optStr("description"),
       ownerId: selectedOwner?.id ?? undefined,
+
+      // Proje/Blok/Daire
+      projectId: projectId || undefined,
+      blockId: blockId || undefined,
+      unitNumber: optStr("unitNumber"),
+
+      // Tapu bilgileri
+      ada: optStr("ada"),
+      pafta: optStr("pafta"),
+      parsel: optStr("parsel"),
+      bagimsizBolumNo: optStr("bagimsizBolumNo"),
+      katMulkiyetiTipi: optStr("katMulkiyetiTipi"),
+
+      // Sakin / kullanım / vatandaşlık
+      occupancyStatus: optStr("occupancyStatus"),
+      ownerCitizenship: optStr("ownerCitizenship"),
+      usageType: optStr("usageType"),
+
+      // Ek özellikler
+      hasElevator: optBool("hasElevator"),
+      hasParking: optBool("hasParking"),
+      hasBalcony: optBool("hasBalcony"),
+      facingDirection: optStr("facingDirection"),
     };
 
     const res = await fetch("/api/properties", {
@@ -193,6 +247,167 @@ export default function NewPropertyPage() {
                 )}
               </div>
             )}
+          </div>
+        </div>
+
+        {/* Proje / Blok / Daire */}
+        <div className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-8 space-y-4 border border-outline-variant/10">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <h2 className="text-lg font-bold text-on-surface tracking-tight">Proje / Blok / Daire</h2>
+            <Link
+              href="/settings/projects"
+              target="_blank"
+              className="text-xs font-bold text-primary hover:underline"
+            >
+              Projeleri yönet →
+            </Link>
+          </div>
+          {projects.length === 0 ? (
+            <p className="text-sm text-on-surface-variant">
+              Kayıtlı proje yok.{" "}
+              <Link href="/settings/projects" target="_blank" className="text-primary font-bold hover:underline">
+                Proje ekle →
+              </Link>
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Proje</label>
+                <select
+                  value={projectId}
+                  onChange={(e) => { setProjectId(e.target.value); setBlockId(""); }}
+                  className={inputClass}
+                >
+                  <option value="">Seçiniz</option>
+                  {projects.map((p) => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Blok</label>
+                <select
+                  value={blockId}
+                  onChange={(e) => setBlockId(e.target.value)}
+                  disabled={!projectId || selectedProjectBlocks.length === 0}
+                  className={cn(inputClass, "disabled:opacity-50")}
+                >
+                  <option value="">{!projectId ? "Önce proje seç" : selectedProjectBlocks.length === 0 ? "Blok yok" : "Seçiniz"}</option>
+                  {selectedProjectBlocks.map((b) => (
+                    <option key={b.id} value={b.id}>{b.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Daire No</label>
+                <input name="unitNumber" placeholder="örn: 026" className={inputClass} />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Tapu Bilgileri */}
+        <div className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-8 space-y-5 border border-outline-variant/10">
+          <h2 className="text-lg font-bold text-on-surface tracking-tight">Tapu Bilgileri</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div>
+              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Ada</label>
+              <input name="ada" className={inputClass} />
+            </div>
+            <div>
+              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Pafta</label>
+              <input name="pafta" className={inputClass} />
+            </div>
+            <div>
+              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Parsel</label>
+              <input name="parsel" className={inputClass} />
+            </div>
+            <div>
+              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Bağımsız Bölüm No</label>
+              <input name="bagimsizBolumNo" className={inputClass} />
+            </div>
+            <div className="col-span-2">
+              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Kat Mülkiyeti Tipi</label>
+              <select name="katMulkiyetiTipi" className={inputClass} defaultValue="">
+                <option value="">Seçiniz</option>
+                <option value="KAT_MULKIYETI">Kat Mülkiyeti</option>
+                <option value="KAT_IRTIFAKI">Kat İrtifakı</option>
+                <option value="ARSA_PAYLI">Arsa Paylı</option>
+                <option value="HISSELI">Hisseli</option>
+                <option value="BAGIMSIZ_BOLUMSUZ">Bağımsız Bölümsüz</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Sakin / Kullanım / Vatandaşlık */}
+        <div className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-8 space-y-5 border border-outline-variant/10">
+          <h2 className="text-lg font-bold text-on-surface tracking-tight">Sakin ve Kullanım</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Sakin Durumu</label>
+              <select name="occupancyStatus" className={inputClass} defaultValue="">
+                <option value="">Seçiniz</option>
+                <option value="SAHIBI_OTURUYOR">Sahibi Oturuyor</option>
+                <option value="KIRACILI">Kiracılı</option>
+                <option value="BOS">Boş</option>
+                <option value="ARSIV">Arşiv</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Kullanım Türü</label>
+              <select name="usageType" className={inputClass} defaultValue="">
+                <option value="">Seçiniz</option>
+                <option value="KONUT">Konut</option>
+                <option value="ISYERI">İşyeri</option>
+                <option value="KARMA">Karma</option>
+                <option value="ARSA_IMARLI">Arsa (İmarlı)</option>
+                <option value="ARSA_IMARSIZ">Arsa (İmarsız)</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Sahip Vatandaşlığı</label>
+              <select name="ownerCitizenship" className={inputClass} defaultValue="">
+                <option value="">Seçiniz</option>
+                <option value="TC">TC</option>
+                <option value="YABANCI">Yabancı</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Ek Özellikler */}
+        <div className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-8 space-y-5 border border-outline-variant/10">
+          <h2 className="text-lg font-bold text-on-surface tracking-tight">Ek Özellikler</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {[
+              { name: "hasElevator", label: "Asansör" },
+              { name: "hasParking", label: "Otopark" },
+              { name: "hasBalcony", label: "Balkon" },
+            ].map((f) => (
+              <div key={f.name}>
+                <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">{f.label}</label>
+                <select name={f.name} className={inputClass} defaultValue="">
+                  <option value="">—</option>
+                  <option value="true">Var</option>
+                  <option value="false">Yok</option>
+                </select>
+              </div>
+            ))}
+            <div>
+              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Cephe</label>
+              <select name="facingDirection" className={inputClass} defaultValue="">
+                <option value="">Seçiniz</option>
+                <option value="KUZEY">Kuzey</option>
+                <option value="GUNEY">Güney</option>
+                <option value="DOGU">Doğu</option>
+                <option value="BATI">Batı</option>
+                <option value="KUZEY_DOGU">Kuzey-Doğu</option>
+                <option value="KUZEY_BATI">Kuzey-Batı</option>
+                <option value="GUNEY_DOGU">Güney-Doğu</option>
+                <option value="GUNEY_BATI">Güney-Batı</option>
+              </select>
+            </div>
           </div>
         </div>
 

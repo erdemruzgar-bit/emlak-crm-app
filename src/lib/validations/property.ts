@@ -24,6 +24,41 @@ export const propertyCreateSchema = z.object({
   ownerId: z.string().nullable().optional(),
   assignedAgentId: z.string().nullable().optional(),
   branchId: z.string().optional(),
+
+  // Proje/Blok hiyerarşisi
+  projectId: z.string().nullable().optional(),
+  blockId: z.string().nullable().optional(),
+  unitNumber: z.string().optional(),
+
+  // Tapu bilgileri
+  ada: z.string().optional(),
+  pafta: z.string().optional(),
+  parsel: z.string().optional(),
+  bagimsizBolumNo: z.string().optional(),
+  katMulkiyetiTipi: z
+    .enum(["KAT_MULKIYETI", "KAT_IRTIFAKI", "ARSA_PAYLI", "HISSELI", "BAGIMSIZ_BOLUMSUZ"])
+    .nullable()
+    .optional(),
+
+  // Sakin / vatandaşlık / kullanım
+  occupancyStatus: z
+    .enum(["SAHIBI_OTURUYOR", "KIRACILI", "BOS", "ARSIV"])
+    .nullable()
+    .optional(),
+  ownerCitizenship: z.enum(["TC", "YABANCI"]).nullable().optional(),
+  usageType: z
+    .enum(["KONUT", "ISYERI", "KARMA", "ARSA_IMARLI", "ARSA_IMARSIZ"])
+    .nullable()
+    .optional(),
+
+  // Ek özellikler
+  hasElevator: z.boolean().nullable().optional(),
+  hasParking: z.boolean().nullable().optional(),
+  hasBalcony: z.boolean().nullable().optional(),
+  facingDirection: z
+    .enum(["KUZEY", "GUNEY", "DOGU", "BATI", "KUZEY_DOGU", "KUZEY_BATI", "GUNEY_DOGU", "GUNEY_BATI"])
+    .nullable()
+    .optional(),
 });
 
 export const propertyUpdateSchema = propertyCreateSchema.partial();

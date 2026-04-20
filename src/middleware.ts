@@ -9,6 +9,15 @@ const publicPaths = ["/login", "/forgot-password"];
 export default auth((req) => {
   const { pathname } = req.nextUrl;
 
+  // /uploads/* isteklerini /api/uploads/* rotasına yönlendir.
+  // Next.js prod modunda public/ dosyaları runtime'da dinamik serve etmiyor;
+  // API rotası disk'ten okuyup döner. DB'deki URL'ler değişmez.
+  if (pathname.startsWith("/uploads/")) {
+    const url = req.nextUrl.clone();
+    url.pathname = "/api" + pathname;
+    return NextResponse.rewrite(url);
+  }
+
   if (publicPaths.some((p) => pathname.startsWith(p))) {
     return NextResponse.next();
   }
@@ -41,5 +50,6 @@ export default auth((req) => {
 });
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|uploads/).*)"],
+  // /uploads/ dahil — rewrite için middleware'in buraya da girmesi gerekiyor
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };

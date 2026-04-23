@@ -68,6 +68,9 @@ export const propertyCreateSchema = z.object({
     .nullable()
     .optional(),
   hasTitleDeed: z.boolean().nullable().optional(),
+
+  // Mutfak tipi
+  kitchenType: z.enum(["ACIK", "KAPALI"]).nullable().optional(),
 });
 
 export const propertyUpdateSchema = propertyCreateSchema.partial();

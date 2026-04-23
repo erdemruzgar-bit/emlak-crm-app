@@ -105,6 +105,7 @@ interface Property {
 
   constructionStatus: "INSAAT_HALINDE" | "OTURUMA_HAZIR" | null;
   hasTitleDeed: boolean | null;
+  kitchenType: "ACIK" | "KAPALI" | null;
 }
 
 const listingLabels: Record<string, string> = {
@@ -564,6 +565,10 @@ export default function PropertyDetailPage() {
               <DetailItem
                 label="Tapu Kaydı"
                 value={property.hasTitleDeed == null ? null : property.hasTitleDeed ? "Var" : "Yok"}
+              />
+              <DetailItem
+                label="Mutfak"
+                value={property.kitchenType === "ACIK" ? "Açık" : property.kitchenType === "KAPALI" ? "Kapalı" : null}
               />
             </div>
           </section>

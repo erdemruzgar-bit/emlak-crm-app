@@ -155,6 +155,11 @@ enum ConstructionStatus {
   OTURUMA_HAZIR
 }
 
+enum KitchenType {
+  ACIK
+  KAPALI
+}
+
 enum ReminderTargetType {
   CUSTOMER
   PROPERTY
@@ -400,6 +405,9 @@ model Property {
   // İnşaat durumu + tapu
   constructionStatus ConstructionStatus?  // Oturuma hazır / İnşaat halinde (age=0 durumu için)
   hasTitleDeed       Boolean?             // Tapu kaydı var/yok
+
+  // Mutfak tipi
+  kitchenType        KitchenType?         // Açık / Kapalı
 
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt

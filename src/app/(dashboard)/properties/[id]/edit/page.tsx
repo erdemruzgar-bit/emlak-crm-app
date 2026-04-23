@@ -109,6 +109,7 @@ export default function EditPropertyPage() {
     facingDirection: "",
     hasTitleDeed: "",
     constructionStatus: "",
+    kitchenType: "",
   });
 
   // Proje / Blok cascading
@@ -164,6 +165,7 @@ export default function EditPropertyPage() {
           facingDirection: data.facingDirection || "",
           hasTitleDeed: data.hasTitleDeed === true ? "true" : data.hasTitleDeed === false ? "false" : "",
           constructionStatus: data.constructionStatus || "",
+          kitchenType: data.kitchenType || "",
         });
         setProjectId(data.projectId || "");
         setBlockId(data.blockId || "");
@@ -243,6 +245,7 @@ export default function EditPropertyPage() {
       facingDirection: form.facingDirection || null,
       hasTitleDeed: boolOrNull(form.hasTitleDeed),
       constructionStatus: form.constructionStatus || null,
+      kitchenType: form.kitchenType || null,
     };
 
     const res = await fetch(`/api/properties/${params.id}`, {
@@ -538,6 +541,14 @@ export default function EditPropertyPage() {
                 <option value="KUZEY_BATI">Kuzey-Batı</option>
                 <option value="GUNEY_DOGU">Güney-Doğu</option>
                 <option value="GUNEY_BATI">Güney-Batı</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Mutfak</label>
+              <select value={form.kitchenType} onChange={(e) => set("kitchenType", e.target.value)} className={inputClass}>
+                <option value="">Seçiniz</option>
+                <option value="ACIK">Açık</option>
+                <option value="KAPALI">Kapalı</option>
               </select>
             </div>
           </div>

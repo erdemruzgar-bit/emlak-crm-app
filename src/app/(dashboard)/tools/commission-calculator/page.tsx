@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Calculator, ArrowLeft, Divide } from "lucide-react";
+import { Calculator, ArrowLeft, Divide, User, Home } from "lucide-react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 
@@ -15,20 +15,43 @@ function formatTRY(v: number) {
 export default function CommissionCalculatorPage() {
   const [txType, setTxType] = useState<TxType>("SATIS");
   const [amountStr, setAmountStr] = useState("");
-  const [rateStr, setRateStr] = useState(txType === "SATIS" ? "2" : "10"); // satış %2, kira 1 ay'ın %10'u varsayılan değil — aslında kira komisyonu genelde 1 kira bedeli
+
+  // Satış: alıcı + satıcı ayrı oranlar
+  const [buyerRateStr, setBuyerRateStr] = useState("2");
+  const [sellerRateStr, setSellerRateStr] = useState("2");
+
+  // Kira: tek oran (genelde 1 aylık kira = %100)
+  const [kiraRateStr, setKiraRateStr] = useState("100");
+
   const [includeVAT, setIncludeVAT] = useState(false);
   const [agencyShareStr, setAgencyShareStr] = useState("100");
 
   const amount = parseFloat(amountStr) || 0;
-  const rate = parseFloat(rateStr) || 0;
+  const buyerRate = parseFloat(buyerRateStr) || 0;
+  const sellerRate = parseFloat(sellerRateStr) || 0;
+  const kiraRate = parseFloat(kiraRateStr) || 0;
   const agencyShare = parseFloat(agencyShareStr) || 100;
 
-  // Komisyon: satışta oran % tutar, kirada da oran % (kullanıcı "100" girerse bir kira bedeli)
-  const grossCommission = (amount * rate) / 100;
-  const vat = includeVAT ? grossCommission * 0.2 : 0;
-  const totalWithVat = grossCommission + vat;
-  const agencyPortion = (totalWithVat * agencyShare) / 100;
-  const partnerPortion = totalWithVat - agencyPortion;
+  // Satış: iki taraf ayrı hesaplanır
+  const buyerGross = (amount * buyerRate) / 100;
+  const sellerGross = (amount * sellerRate) / 100;
+  const buyerVat = includeVAT ? buyerGross * 0.2 : 0;
+  const sellerVat = includeVAT ? sellerGross * 0.2 : 0;
+  const buyerTotal = buyerGross + buyerVat;
+  const sellerTotal = sellerGross + sellerVat;
+
+  // Kira: tek taraf
+  const kiraGross = (amount * kiraRate) / 100;
+  const kiraVat = includeVAT ? kiraGross * 0.2 : 0;
+  const kiraTotal = kiraGross + kiraVat;
+
+  // Genel toplam
+  const grandGross = txType === "SATIS" ? buyerGross + sellerGross : kiraGross;
+  const grandVat = txType === "SATIS" ? buyerVat + sellerVat : kiraVat;
+  const grandTotal = txType === "SATIS" ? buyerTotal + sellerTotal : kiraTotal;
+
+  const agencyPortion = (grandTotal * agencyShare) / 100;
+  const partnerPortion = grandTotal - agencyPortion;
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="max-w-3xl mx-auto space-y-6">
@@ -55,10 +78,7 @@ export default function CommissionCalculatorPage() {
           {(["SATIS", "KIRA"] as const).map((t) => (
             <button
               key={t}
-              onClick={() => {
-                setTxType(t);
-                setRateStr(t === "SATIS" ? "2" : "100");
-              }}
+              onClick={() => setTxType(t)}
               className={cn(
                 "px-4 py-3 rounded-xl text-sm font-bold transition-all",
                 txType === t
@@ -72,26 +92,54 @@ export default function CommissionCalculatorPage() {
         </div>
         <p className="text-xs text-on-surface-variant">
           {txType === "SATIS"
-            ? "Satış bedelinin % oranıdır (tipik: %2)"
+            ? "Satışta alıcı ve satıcı ayrı komisyon öder (tipik: her taraftan %2)"
             : "Kira bedelinin % oranıdır (tipik: %100 = 1 aylık kira)"}
         </p>
       </div>
 
       {/* Girdiler */}
       <div className="bg-surface-container-lowest rounded-3xl p-6 shadow-[0_8px_24px_rgba(25,28,30,0.04)] space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-black uppercase tracking-wider text-on-surface-variant mb-2">
-              {txType === "SATIS" ? "Satış Bedeli" : "Aylık Kira"} (₺)
-            </label>
-            <input
-              type="number"
-              value={amountStr}
-              onChange={(e) => setAmountStr(e.target.value)}
-              placeholder="0"
-              className="w-full px-4 py-3 bg-surface-container-low rounded-xl text-sm border-none outline-none focus:ring-2 focus:ring-primary/20"
-            />
+        <div>
+          <label className="block text-xs font-black uppercase tracking-wider text-on-surface-variant mb-2">
+            {txType === "SATIS" ? "Satış Bedeli" : "Aylık Kira"} (₺)
+          </label>
+          <input
+            type="number"
+            value={amountStr}
+            onChange={(e) => setAmountStr(e.target.value)}
+            placeholder="0"
+            className="w-full px-4 py-3 bg-surface-container-low rounded-xl text-sm border-none outline-none focus:ring-2 focus:ring-primary/20"
+          />
+        </div>
+
+        {txType === "SATIS" ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-black uppercase tracking-wider text-on-surface-variant mb-2 flex items-center gap-1">
+                <User className="w-3 h-3" /> Alıcı Komisyon Oranı (%)
+              </label>
+              <input
+                type="number"
+                step="0.1"
+                value={buyerRateStr}
+                onChange={(e) => setBuyerRateStr(e.target.value)}
+                className="w-full px-4 py-3 bg-surface-container-low rounded-xl text-sm border-none outline-none focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-black uppercase tracking-wider text-on-surface-variant mb-2 flex items-center gap-1">
+                <Home className="w-3 h-3" /> Satıcı Komisyon Oranı (%)
+              </label>
+              <input
+                type="number"
+                step="0.1"
+                value={sellerRateStr}
+                onChange={(e) => setSellerRateStr(e.target.value)}
+                className="w-full px-4 py-3 bg-surface-container-low rounded-xl text-sm border-none outline-none focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
           </div>
+        ) : (
           <div>
             <label className="block text-xs font-black uppercase tracking-wider text-on-surface-variant mb-2">
               Komisyon Oranı (%)
@@ -99,12 +147,12 @@ export default function CommissionCalculatorPage() {
             <input
               type="number"
               step="0.1"
-              value={rateStr}
-              onChange={(e) => setRateStr(e.target.value)}
+              value={kiraRateStr}
+              onChange={(e) => setKiraRateStr(e.target.value)}
               className="w-full px-4 py-3 bg-surface-container-low rounded-xl text-sm border-none outline-none focus:ring-2 focus:ring-primary/20"
             />
           </div>
-        </div>
+        )}
 
         <label className="flex items-center gap-3 cursor-pointer">
           <input
@@ -138,34 +186,90 @@ export default function CommissionCalculatorPage() {
       {/* Sonuç */}
       <div className="bg-primary-fixed rounded-3xl p-6 space-y-4">
         <h3 className="text-xs font-black uppercase tracking-wider text-primary">Hesaplama</h3>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div>
-            <p className="text-xs text-on-surface-variant">Brüt Komisyon</p>
-            <p className="text-xl font-black text-on-surface mt-1">{formatTRY(grossCommission)} ₺</p>
-          </div>
-          {includeVAT && (
-            <div>
-              <p className="text-xs text-on-surface-variant">KDV (%20)</p>
-              <p className="text-xl font-black text-on-surface mt-1">{formatTRY(vat)} ₺</p>
+
+        {txType === "SATIS" && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Alıcı kartı */}
+            <div className="bg-surface-container-lowest rounded-2xl p-4 space-y-2">
+              <div className="flex items-center gap-2 text-primary">
+                <User className="w-4 h-4" />
+                <p className="text-xs font-black uppercase tracking-wider">Alıcı ({buyerRate}%)</p>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-on-surface-variant">Brüt</span>
+                <span className="font-bold text-on-surface">{formatTRY(buyerGross)} ₺</span>
+              </div>
+              {includeVAT && (
+                <div className="flex justify-between text-xs">
+                  <span className="text-on-surface-variant">KDV (%20)</span>
+                  <span className="font-bold text-on-surface">{formatTRY(buyerVat)} ₺</span>
+                </div>
+              )}
+              <div className="flex justify-between pt-2 border-t border-outline-variant/20">
+                <span className="text-xs text-on-surface-variant">Toplam</span>
+                <span className="font-black text-primary">{formatTRY(buyerTotal)} ₺</span>
+              </div>
             </div>
-          )}
-          <div>
-            <p className="text-xs text-on-surface-variant">Toplam</p>
-            <p className="text-xl font-black text-primary mt-1">{formatTRY(totalWithVat)} ₺</p>
+
+            {/* Satıcı kartı */}
+            <div className="bg-surface-container-lowest rounded-2xl p-4 space-y-2">
+              <div className="flex items-center gap-2 text-primary">
+                <Home className="w-4 h-4" />
+                <p className="text-xs font-black uppercase tracking-wider">Satıcı ({sellerRate}%)</p>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-on-surface-variant">Brüt</span>
+                <span className="font-bold text-on-surface">{formatTRY(sellerGross)} ₺</span>
+              </div>
+              {includeVAT && (
+                <div className="flex justify-between text-xs">
+                  <span className="text-on-surface-variant">KDV (%20)</span>
+                  <span className="font-bold text-on-surface">{formatTRY(sellerVat)} ₺</span>
+                </div>
+              )}
+              <div className="flex justify-between pt-2 border-t border-outline-variant/20">
+                <span className="text-xs text-on-surface-variant">Toplam</span>
+                <span className="font-black text-primary">{formatTRY(sellerTotal)} ₺</span>
+              </div>
+            </div>
           </div>
-          {agencyShare < 100 && (
-            <>
+        )}
+
+        {/* Kira veya genel toplam */}
+        <div className="bg-primary text-on-primary rounded-2xl p-4 space-y-2">
+          <p className="text-[10px] font-black uppercase tracking-widest opacity-80">
+            {txType === "SATIS" ? "Toplam (Alıcı + Satıcı)" : "Toplam"}
+          </p>
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <p className="text-[10px] opacity-80">Brüt</p>
+              <p className="text-lg font-black">{formatTRY(grandGross)} ₺</p>
+            </div>
+            {includeVAT && (
               <div>
-                <p className="text-xs text-on-surface-variant">Ofis Payı ({agencyShare}%)</p>
-                <p className="text-xl font-black text-on-surface mt-1">{formatTRY(agencyPortion)} ₺</p>
+                <p className="text-[10px] opacity-80">KDV</p>
+                <p className="text-lg font-black">{formatTRY(grandVat)} ₺</p>
               </div>
-              <div>
-                <p className="text-xs text-on-surface-variant">Partner Payı ({(100 - agencyShare).toFixed(1)}%)</p>
-                <p className="text-xl font-black text-on-surface mt-1">{formatTRY(partnerPortion)} ₺</p>
-              </div>
-            </>
-          )}
+            )}
+            <div>
+              <p className="text-[10px] opacity-80">Genel Toplam</p>
+              <p className="text-lg font-black">{formatTRY(grandTotal)} ₺</p>
+            </div>
+          </div>
         </div>
+
+        {agencyShare < 100 && (
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-surface-container-lowest rounded-2xl p-4">
+              <p className="text-xs text-on-surface-variant">Ofis Payı ({agencyShare}%)</p>
+              <p className="text-xl font-black text-on-surface mt-1">{formatTRY(agencyPortion)} ₺</p>
+            </div>
+            <div className="bg-surface-container-lowest rounded-2xl p-4">
+              <p className="text-xs text-on-surface-variant">Partner Payı ({(100 - agencyShare).toFixed(1)}%)</p>
+              <p className="text-xl font-black text-on-surface mt-1">{formatTRY(partnerPortion)} ₺</p>
+            </div>
+          </div>
+        )}
       </div>
 
       <p className="text-xs text-on-surface-variant text-center">

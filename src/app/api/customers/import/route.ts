@@ -71,6 +71,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Dosyada satır yok" }, { status: 400 });
   }
 
+  // Catalog'dan mevcut tip kodlarını ve Türkçe etiketlerini çek (import doğrulaması için)
+  const catalog = await prisma.customerTypeCatalog.findMany({ where: { isActive: true } });
+  const catalogCodes = new Set(catalog.map((c) => c.code));
+  const catalogLabelMap: Record<string, string> = Object.fromEntries(
+    catalog.map((c) => [c.label, c.code])
+  );
+
   // Mevcut e-posta/telefon eşleşmesi için
   const emails = rawRows.map((r) => r["E-posta"]).filter(Boolean) as string[];
   const phones = rawRows.map((r) => r["Telefon"]).filter(Boolean) as string[];
@@ -99,8 +106,13 @@ export async function POST(req: NextRequest) {
 
     if (firstName.length < 2) errors.push("Ad en az 2 karakter olmalı");
     if (lastName.length < 2) errors.push("Soyad en az 2 karakter olmalı");
-    const customerType = typeLabelRev[typeLabel] || typeLabel.toUpperCase();
-    if (!["BUYER", "SELLER", "TENANT", "LANDLORD", "TENANT_CANDIDATE"].includes(customerType)) errors.push(`Tip geçersiz: "${typeLabel}"`);
+    // Türkçe etiket → kod (built-in + catalog). Yoksa direk büyük-harf kod olarak dene.
+    const customerType: string =
+      typeLabelRev[typeLabel] || catalogLabelMap[typeLabel] || typeLabel.toUpperCase();
+    const valid =
+      catalogCodes.has(customerType) ||
+      ["BUYER", "SELLER", "TENANT", "LANDLORD", "TENANT_CANDIDATE"].includes(customerType);
+    if (!valid) errors.push(`Tip geçersiz: "${typeLabel}" — Ayarlar → Müşteri Tipleri'nden ekleyin`);
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.push("E-posta biçimi geçersiz");
 
     const stage = stageLabel ? stageLabelRev[stageLabel] || null : null;
@@ -171,7 +183,7 @@ export async function POST(req: NextRequest) {
       email: d.email as string | null,
       phone: d.phone as string | null,
       address: d.address as string | null,
-      customerType: d.customerType as "BUYER" | "SELLER" | "TENANT" | "LANDLORD" | "TENANT_CANDIDATE",
+      customerType: d.customerType as string,
       source: d.source as string | null,
       stage: d.stage as string | null,
       urgency: d.urgency as string | null,

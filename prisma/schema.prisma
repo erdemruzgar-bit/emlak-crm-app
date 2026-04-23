@@ -13,13 +13,6 @@ enum Role {
   AGENT
 }
 
-enum CustomerType {
-  BUYER
-  SELLER
-  TENANT
-  LANDLORD
-  TENANT_CANDIDATE  // Kiracı Adayı — henüz sözleşmesi yok, kiralamak için arıyor
-}
 
 enum ConsentType {
   ACIK_RIZA
@@ -250,7 +243,7 @@ model Customer {
   phone          String?
   tcKimlikNo     String?      // AES-256 encrypted
   address        String?
-  customerType   CustomerType @default(BUYER)
+  customerType   String       @default("BUYER") // CustomerTypeCatalog.code referansı
   source         String?      // Referans, İnternet, vs.
   photoUrl       String?
   isAnonymized   Boolean      @default(false)
@@ -475,6 +468,20 @@ model RoomType {
   name      String   @unique  // "1+1", "3+1", "Dubleks" vb.
   sortOrder Int      @default(0)
   createdAt DateTime @default(now())
+
+  @@index([sortOrder])
+}
+
+model CustomerTypeCatalog {
+  id           String   @id @default(cuid())
+  code         String   @unique  // "BUYER", "SELLER", "TENANT", "TENANT_CANDIDATE", "LANDLORD", custom
+  label        String             // Türkçe görünen ad
+  isTenantSide Boolean  @default(false)  // Kira/Satış kontratında "Kiracı/Alıcı" filtresinde görünsün mü
+  isOwnerSide  Boolean  @default(false)  // Kontratında "Mülk Sahibi" filtresinde görünsün mü
+  sortOrder    Int      @default(0)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@index([sortOrder])
 }

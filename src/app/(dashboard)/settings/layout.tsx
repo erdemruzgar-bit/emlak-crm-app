@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Users, Building2, ShieldCheck, ClipboardList, Palette, Blocks, DoorOpen } from "lucide-react";
+import { Users, Building2, ShieldCheck, ClipboardList, Palette, Blocks, DoorOpen, UserCog } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const tabs = [
@@ -10,6 +10,7 @@ const tabs = [
   { href: "/settings/branches", label: "Şubeler", icon: Building2 },
   { href: "/settings/projects", label: "Projeler", icon: Blocks },
   { href: "/settings/room-types", label: "Oda Tipleri", icon: DoorOpen },
+  { href: "/settings/customer-types", label: "Müşteri Tipleri", icon: UserCog },
   { href: "/settings/appearance", label: "Görünüm", icon: Palette },
   { href: "/settings/kvkk", label: "KVKK", icon: ShieldCheck },
   { href: "/settings/audit-log", label: "Denetim Kayıtları", icon: ClipboardList },

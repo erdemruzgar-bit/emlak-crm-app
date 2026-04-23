@@ -109,7 +109,7 @@ interface PropertyMatchResult {
   };
 }
 
-const typeLabels: Record<string, string> = { BUYER: "Alıcı", SELLER: "Satıcı", TENANT: "Kiracı", TENANT_CANDIDATE: "Kiracı Adayı", LANDLORD: "Ev Sahibi" };
+const DEFAULT_TYPE_LABELS: Record<string, string> = { BUYER: "Alıcı", SELLER: "Satıcı", TENANT: "Kiracı", TENANT_CANDIDATE: "Kiracı Adayı", LANDLORD: "Ev Sahibi" };
 const consentLabels: Record<string, string> = { ACIK_RIZA: "Açık Rıza", AYDINLATMA: "Aydınlatma Metni", PAZARLAMA: "Pazarlama İzni" };
 const interactionLabels: Record<string, string> = { CALL: "Telefon", EMAIL: "E-posta", VISIT: "Ziyaret", WHATSAPP: "WhatsApp" };
 const interactionIcons: Record<string, React.ComponentType<{ className?: string }>> = { CALL: Phone, EMAIL: Mail, VISIT: MapPin, WHATSAPP: MessageCircle };
@@ -172,6 +172,12 @@ export default function CustomerDetailPage() {
   const [demandSaved, setDemandSaved] = useState(false);
   const [newNote, setNewNote] = useState("");
   const [noteSaving, setNoteSaving] = useState(false);
+  const [customerTypeOptions, setCustomerTypeOptions] = useState<{ code: string; label: string }[]>([]);
+
+  const typeLabels: Record<string, string> = {
+    ...DEFAULT_TYPE_LABELS,
+    ...Object.fromEntries(customerTypeOptions.map((t) => [t.code, t.label])),
+  };
   const [interactionType, setInteractionType] = useState("CALL");
   const [interactionSummary, setInteractionSummary] = useState("");
   const [interactionSaving, setInteractionSaving] = useState(false);
@@ -219,6 +225,15 @@ export default function CustomerDetailPage() {
       }).catch(() => {});
     }
   }, [canReassign, editingInfo, users.length]);
+
+  useEffect(() => {
+    fetch("/api/customer-types")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => {
+        if (Array.isArray(data)) setCustomerTypeOptions(data);
+      })
+      .catch(() => {});
+  }, []);
 
   if (loading) return (
     <div className="flex items-center justify-center h-64 text-on-surface-variant">
@@ -379,11 +394,7 @@ export default function CustomerDetailPage() {
                 value={customer.customerType}
                 onChange={(v) => setCustomer({ ...customer, customerType: v })}
                 options={[
-                  { value: "BUYER", label: "Alıcı" },
-                  { value: "SELLER", label: "Satıcı" },
-                  { value: "TENANT", label: "Kiracı" },
-                  { value: "TENANT_CANDIDATE", label: "Kiracı Adayı" },
-                  { value: "LANDLORD", label: "Ev Sahibi" },
+                  ...customerTypeOptions.map((t) => ({ value: t.code, label: t.label })),
                 ]} />
               <EditableSelect icon={Globe} label="Kaynak" editing={editingInfo}
                 value={customer.source}

@@ -21,7 +21,7 @@ interface CustomerOption {
   firstName: string;
   lastName: string;
   phone: string | null;
-  customerType: "BUYER" | "SELLER" | "TENANT" | "LANDLORD" | "TENANT_CANDIDATE";
+  customerType: string;
 }
 
 const attachmentCategoryOptions = [
@@ -33,7 +33,7 @@ const attachmentCategoryOptions = [
   { value: "EK_DOKUMAN", label: "Ek Doküman" },
 ];
 
-const customerTypeLabels: Record<string, string> = {
+const DEFAULT_CUSTOMER_TYPE_LABELS: Record<string, string> = {
   BUYER: "Alıcı",
   SELLER: "Satıcı",
   TENANT: "Kiracı",
@@ -62,6 +62,16 @@ export default function NewContractPage() {
 
   const [properties, setProperties] = useState<PropertyOption[]>([]);
   const [customers, setCustomers] = useState<CustomerOption[]>([]);
+  const [typeCatalog, setTypeCatalog] = useState<
+    { code: string; label: string; isTenantSide: boolean; isOwnerSide: boolean }[]
+  >([]);
+
+  const customerTypeLabels: Record<string, string> = {
+    ...DEFAULT_CUSTOMER_TYPE_LABELS,
+    ...Object.fromEntries(typeCatalog.map((t) => [t.code, t.label])),
+  };
+  const tenantSideCodes = new Set(typeCatalog.filter((t) => t.isTenantSide).map((t) => t.code));
+  const ownerSideCodes = new Set(typeCatalog.filter((t) => t.isOwnerSide).map((t) => t.code));
 
   useEffect(() => {
     fetch("/api/properties?limit=1000")
@@ -86,6 +96,12 @@ export default function NewContractPage() {
         setCustomers(list);
       })
       .catch(() => setCustomers([]));
+    fetch("/api/customer-types")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => {
+        if (Array.isArray(data)) setTypeCatalog(data);
+      })
+      .catch(() => setTypeCatalog([]));
   }, []);
 
   // URL query: ?propertyId=xxx veya ?customerId=xxx ile preset
@@ -106,13 +122,9 @@ export default function NewContractPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [propertyId, properties]);
 
-  // Müşteri tipine göre kiracı/alıcı vs sahip listesi
-  const tenantCandidates = customers.filter((c) =>
-    ["BUYER", "TENANT", "TENANT_CANDIDATE"].includes(c.customerType)
-  );
-  const ownerCandidates = customers.filter((c) =>
-    ["SELLER", "LANDLORD"].includes(c.customerType)
-  );
+  // Müşteri tipine göre kiracı/alıcı vs sahip listesi (catalog flag'leri üzerinden)
+  const tenantCandidates = customers.filter((c) => tenantSideCodes.has(c.customerType));
+  const ownerCandidates = customers.filter((c) => ownerSideCodes.has(c.customerType));
 
   // Mülk seçilince, mülkün kayıtlı sahibini otomatik doldur
   function handlePropertyChange(newId: string) {

@@ -37,7 +37,7 @@ interface Pagination {
   totalPages: number;
 }
 
-const typeLabels: Record<string, string> = { BUYER: "Alıcı", SELLER: "Satıcı", TENANT: "Kiracı", TENANT_CANDIDATE: "Kiracı Adayı", LANDLORD: "Ev Sahibi" };
+const DEFAULT_TYPE_LABELS: Record<string, string> = { BUYER: "Alıcı", SELLER: "Satıcı", TENANT: "Kiracı", TENANT_CANDIDATE: "Kiracı Adayı", LANDLORD: "Ev Sahibi" };
 const typeBadgeColors: Record<string, string> = { BUYER: "bg-secondary-container text-on-secondary-container", SELLER: "bg-primary-fixed text-on-primary-fixed-variant", TENANT: "bg-tertiary-fixed text-on-tertiary-fixed-variant", TENANT_CANDIDATE: "bg-tertiary-container text-on-tertiary-container", LANDLORD: "bg-surface-container-high text-on-surface-variant" };
 const stageLabels: Record<string, string> = { LEAD: "Aday", QUALIFIED: "Nitelikli", ACTIVE: "Aktif Takip", SHOWING: "Gösterimde", OFFER: "Teklif Aşaması", CONTRACT: "Sözleşme Aşaması", CLOSED: "Kazanıldı", LOST: "Kaybedildi" };
 const stageColors: Record<string, string> = { LEAD: "bg-surface-container text-on-surface-variant", QUALIFIED: "bg-secondary-container text-on-secondary-container", ACTIVE: "bg-primary-fixed text-primary", SHOWING: "bg-tertiary-fixed text-tertiary", OFFER: "bg-tertiary-container text-on-tertiary-container", CONTRACT: "bg-primary-container text-on-primary-container", CLOSED: "bg-green-100 text-green-700", LOST: "bg-error-container text-on-error-container" };
@@ -99,6 +99,21 @@ function CustomersPageInner() {
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [loggedIds, setLoggedIds] = useState<Set<string>>(new Set());
+  const [customerTypes, setCustomerTypes] = useState<{ code: string; label: string }[]>([]);
+
+  const typeLabels: Record<string, string> = {
+    ...DEFAULT_TYPE_LABELS,
+    ...Object.fromEntries(customerTypes.map((t) => [t.code, t.label])),
+  };
+
+  useEffect(() => {
+    fetch("/api/customer-types")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => {
+        if (Array.isArray(data)) setCustomerTypes(data);
+      })
+      .catch(() => {});
+  }, []);
 
   async function logInteraction(customerId: string, type: string) {
     setLoggedIds((prev) => new Set(prev).add(`${customerId}-${type}`));
@@ -228,9 +243,9 @@ function CustomersPageInner() {
           <select value={typeFilter} onChange={(e) => { setTypeFilter(e.target.value); setPage(1); }}
             className="px-4 py-3 bg-surface-container-low border-none rounded-xl outline-none text-sm font-medium">
             <option value="">Tüm Tipler</option>
-            <option value="BUYER">Alıcı</option><option value="SELLER">Satıcı</option>
-            <option value="TENANT">Kiracı</option><option value="TENANT_CANDIDATE">Kiracı Adayı</option>
-            <option value="LANDLORD">Ev Sahibi</option>
+            {customerTypes.map((t) => (
+              <option key={t.code} value={t.code}>{t.label}</option>
+            ))}
           </select>
           {viewMode === "list" && (
             <select value={stageFilter} onChange={(e) => { setStageFilter(e.target.value); setPage(1); }}

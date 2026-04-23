@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, ShieldCheck, Info, AlertCircle, Loader2, Target } from "lucide-react";
@@ -14,6 +14,16 @@ export default function NewCustomerPage() {
   const [urgency, setUrgency] = useState("MEDIUM");
   const [preferredTypes, setPreferredTypes] = useState<string[]>([]);
   const [preferredFeatures, setPreferredFeatures] = useState<string[]>([]);
+  const [customerTypeOptions, setCustomerTypeOptions] = useState<{ code: string; label: string }[]>([]);
+
+  useEffect(() => {
+    fetch("/api/customer-types")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => {
+        if (Array.isArray(data)) setCustomerTypeOptions(data);
+      })
+      .catch(() => setCustomerTypeOptions([]));
+  }, []);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -118,12 +128,11 @@ export default function NewCustomerPage() {
             </div>
             <div>
               <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Müşteri Tipi *</label>
-              <select name="customerType" required className={inputClass}>
-                <option value="BUYER">Alıcı</option>
-                <option value="SELLER">Satıcı</option>
-                <option value="TENANT">Kiracı</option>
-                <option value="TENANT_CANDIDATE">Kiracı Adayı</option>
-                <option value="LANDLORD">Ev Sahibi</option>
+              <select name="customerType" required className={inputClass} defaultValue="">
+                <option value="" disabled>Seçiniz</option>
+                {customerTypeOptions.map((t) => (
+                  <option key={t.code} value={t.code}>{t.label}</option>
+                ))}
               </select>
             </div>
           </div>

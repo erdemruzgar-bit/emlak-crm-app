@@ -5,7 +5,7 @@ import { buildExcel, excelResponse, type ColumnDef } from "@/lib/excel";
 import { canExportData, extractActor } from "@/lib/rbac";
 import { createAuditLog } from "@/lib/audit";
 
-const typeLabels: Record<string, string> = { BUYER: "Alıcı", SELLER: "Satıcı", TENANT: "Kiracı", TENANT_CANDIDATE: "Kiracı Adayı", LANDLORD: "Ev Sahibi" };
+const DEFAULT_TYPE_LABELS: Record<string, string> = { BUYER: "Alıcı", SELLER: "Satıcı", TENANT: "Kiracı", TENANT_CANDIDATE: "Kiracı Adayı", LANDLORD: "Ev Sahibi" };
 const stageLabels: Record<string, string> = { LEAD: "Aday", QUALIFIED: "Nitelikli", ACTIVE: "Aktif Takip", SHOWING: "Gösterimde", OFFER: "Teklif Aşaması", CONTRACT: "Sözleşme Aşaması", CLOSED: "Kazanıldı", LOST: "Kaybedildi" };
 const urgencyLabels: Record<string, string> = { LOW: "Düşük", MEDIUM: "Orta", HIGH: "Yüksek", URGENT: "Acil" };
 
@@ -25,7 +25,7 @@ interface CustomerRow {
   branch: { name: string } | null;
 }
 
-const columns: ColumnDef<CustomerRow>[] = [
+function buildColumns(typeLabels: Record<string, string>): ColumnDef<CustomerRow>[] { return [
   { key: "firstName", header: "Ad", width: 16 },
   { key: "lastName", header: "Soyad", width: 16 },
   { key: "customerType", header: "Tip", width: 12, transform: (v) => typeLabels[String(v)] ?? String(v) },
@@ -51,7 +51,7 @@ const columns: ColumnDef<CustomerRow>[] = [
   { key: "createdAt", header: "Kayıt Tarihi", width: 18 },
   { key: "assignedAgent", header: "Danışman", width: 18, transform: (v) => (v as { name?: string } | null)?.name ?? "" },
   { key: "branch", header: "Şube", width: 16, transform: (v) => (v as { name?: string } | null)?.name ?? "" },
-];
+]; }
 
 export async function GET(req: NextRequest) {
   const session = await auth();
@@ -61,16 +61,24 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Excel dışa aktarma yetkiniz yok" }, { status: 403 });
   }
 
-  const customers = await prisma.customer.findMany({
-    where: { isAnonymized: false },
-    include: {
-      assignedAgent: { select: { name: true } },
-      branch: { select: { name: true } },
-    },
-    orderBy: { createdAt: "desc" },
-  });
+  const [customers, catalog] = await Promise.all([
+    prisma.customer.findMany({
+      where: { isAnonymized: false },
+      include: {
+        assignedAgent: { select: { name: true } },
+        branch: { select: { name: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.customerTypeCatalog.findMany(),
+  ]);
 
-  const buffer = buildExcel<CustomerRow>(customers as unknown as CustomerRow[], columns, "Müşteriler");
+  const typeLabels: Record<string, string> = {
+    ...DEFAULT_TYPE_LABELS,
+    ...Object.fromEntries(catalog.map((t) => [t.code, t.label])),
+  };
+
+  const buffer = buildExcel<CustomerRow>(customers as unknown as CustomerRow[], buildColumns(typeLabels), "Müşteriler");
 
   await createAuditLog({
     userId: actor.id,

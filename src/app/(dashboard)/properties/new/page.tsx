@@ -485,17 +485,33 @@ export default function NewPropertyPage() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {[
               { name: "area", label: "m²", type: "number" },
-              { name: "rooms", label: "Oda", type: "text", placeholder: "3+1" },
               { name: "bathrooms", label: "Banyo", type: "number" },
               { name: "floor", label: "Kat", type: "number" },
               { name: "totalFloors", label: "Toplam Kat", type: "number" },
               { name: "age", label: "Bina Yaşı", type: "number" },
-            ].map(({ name, label, type, placeholder }) => (
+            ].map(({ name, label, type }) => (
               <div key={name}>
                 <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">{label}</label>
-                <input name={name} type={type} placeholder={placeholder} className={inputClass} />
+                <input name={name} type={type} className={inputClass} />
               </div>
             ))}
+            <div>
+              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Oda</label>
+              <select name="rooms" className={inputClass} defaultValue="">
+                <option value="">Seçiniz</option>
+                <option value="1+0">1+0 (Stüdyo)</option>
+                <option value="1+1">1+1</option>
+                <option value="2+1">2+1</option>
+                <option value="3+1">3+1</option>
+                <option value="4+1">4+1</option>
+                <option value="5+1">5+1</option>
+                <option value="6+1">6+1</option>
+                <option value="2+2">2+2</option>
+                <option value="3+2">3+2</option>
+                <option value="4+2">4+2</option>
+                <option value="5+2">5+2</option>
+              </select>
+            </div>
             <div className="col-span-2">
               <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Isıtma</label>
               <select name="heating" className={inputClass}>

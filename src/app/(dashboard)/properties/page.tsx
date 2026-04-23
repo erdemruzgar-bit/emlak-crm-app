@@ -174,8 +174,21 @@ function PropertiesPageInner() {
             <ExcelToolbar
               exportUrl="/api/properties/export"
               importUrl="/api/properties/import"
+              templateUrl="/api/properties/import/template"
               label="ilan"
               onImportSuccess={fetchProperties}
+              importGuide={[
+                { columnName: "Başlık", description: "Zorunlu, ilan adı" },
+                { columnName: "Tip", description: "Satılık / Kiralık" },
+                { columnName: "Emlak Tipi", description: "Daire / Villa / Arsa / İşyeri / Müstakil Ev" },
+                { columnName: "Durum", description: "Aktif / Satıldı / Kiralandı / Pasif (opsiyonel)" },
+                { columnName: "Fiyat", description: "Sayı, TL" },
+                { columnName: "Para Birimi", description: "TRY / USD / EUR (varsayılan TRY)" },
+                { columnName: "m², Banyo, Kat, Toplam Kat, Bina Yaşı", description: "Sayısal, opsiyonel" },
+                { columnName: "Oda", description: "1+1, 2+1, 3+1 vb." },
+                { columnName: "Isıtma", description: "DOGALGAZ / MERKEZI / SOBA / KLIMA / YERDEN" },
+                { columnName: "Şehir / İlçe / Mahalle / Adres", description: "Metin, opsiyonel" },
+              ]}
             />
             <Link href="/properties/new"
               className="primary-gradient text-white px-6 py-3 rounded-xl text-sm font-bold shadow-xl shadow-primary/10 hover:opacity-90 transition-all flex items-center gap-2">

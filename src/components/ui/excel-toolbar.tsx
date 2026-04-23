@@ -2,15 +2,17 @@
 
 import { useRef, useState } from "react";
 import { useSession } from "next-auth/react";
-import { Download, Upload, Loader2, CheckCircle, X, AlertTriangle, FileSpreadsheet } from "lucide-react";
+import { Download, Upload, Loader2, CheckCircle, X, AlertTriangle, FileSpreadsheet, FileDown, Info } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
 
 interface Props {
   exportUrl: string; // GET endpoint — .xlsx döner
   importUrl?: string; // POST endpoint — varsa "Excel'den Yükle" görünür
+  templateUrl?: string; // GET endpoint — örnek şablon .xlsx
   label?: string; // kısa entity adı ("müşteri", "ilan")
   onImportSuccess?: () => void; // import tamamlanınca parent'ı yenilemek için
+  importGuide?: { columnName: string; description: string }[]; // kılavuz modal'da gösterilecek sütun açıklamaları
 }
 
 interface ImportSummary {
@@ -30,7 +32,7 @@ interface ImportRow {
   data: Record<string, unknown>;
 }
 
-export function ExcelToolbar({ exportUrl, importUrl, label = "veri", onImportSuccess }: Props) {
+export function ExcelToolbar({ exportUrl, importUrl, templateUrl, label = "veri", onImportSuccess, importGuide }: Props) {
   const { data: session } = useSession();
   const u = session?.user as unknown as { role?: string; canExport?: boolean; canImport?: boolean } | undefined;
   const canExport = u?.role === "ADMIN" || u?.canExport === true;
@@ -43,28 +45,38 @@ export function ExcelToolbar({ exportUrl, importUrl, label = "veri", onImportSuc
   const [preview, setPreview] = useState<{ summary: ImportSummary; rows: ImportRow[]; file: File } | null>(null);
   const [done, setDone] = useState<ImportSummary | null>(null);
   const [error, setError] = useState("");
+  const [guideOpen, setGuideOpen] = useState(false);
 
   if (!canExport && !canImport) return null;
 
   async function handleExport() {
+    await downloadFile(exportUrl, `${label}-${Date.now()}.xlsx`);
+  }
+
+  async function handleTemplate() {
+    if (!templateUrl) return;
+    await downloadFile(templateUrl, `${label}-sablonu.xlsx`);
+  }
+
+  async function downloadFile(url: string, fallbackName: string) {
     setExporting(true);
     try {
-      const res = await fetch(exportUrl);
+      const res = await fetch(url);
       if (!res.ok) throw new Error("İndirme başarısız");
       const blob = await res.blob();
       const cd = res.headers.get("Content-Disposition") || "";
       const m = cd.match(/filename="?([^";]+)"?/);
-      const filename = m?.[1] || `${label}-${Date.now()}.xlsx`;
-      const url = URL.createObjectURL(blob);
+      const filename = m?.[1] || fallbackName;
+      const href = URL.createObjectURL(blob);
       const a = document.createElement("a");
-      a.href = url;
+      a.href = href;
       a.download = filename;
       document.body.appendChild(a);
       a.click();
       a.remove();
-      URL.revokeObjectURL(url);
+      URL.revokeObjectURL(href);
     } catch {
-      setError("Excel dosyası indirilemedi");
+      setError("Dosya indirilemedi");
     } finally {
       setExporting(false);
     }
@@ -130,9 +142,15 @@ export function ExcelToolbar({ exportUrl, importUrl, label = "veri", onImportSuc
           </button>
         )}
         {canImport && importUrl && (
-          <button onClick={() => fileRef.current?.click()} disabled={uploading}
+          <button
+            onClick={() => {
+              if (templateUrl || importGuide) setGuideOpen(true);
+              else fileRef.current?.click();
+            }}
+            disabled={uploading}
             className="px-4 py-2.5 bg-surface-container-low hover:bg-surface-container rounded-xl text-sm font-bold text-on-surface-variant hover:text-on-surface transition-all flex items-center gap-2 disabled:opacity-50"
-            title="Excel'den Yükle">
+            title="Excel'den Yükle"
+          >
             {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
             <span className="hidden sm:inline">Excel'den Yükle</span>
           </button>
@@ -176,6 +194,120 @@ export function ExcelToolbar({ exportUrl, importUrl, label = "veri", onImportSuc
                 className="primary-gradient text-white px-8 py-3 rounded-xl text-sm font-bold shadow-lg shadow-primary/10">
                 Tamam
               </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Kılavuz modal — Excel'den Yükle tıklanınca önce bu açılır */}
+      <AnimatePresence>
+        {guideOpen && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={(e) => e.target === e.currentTarget && setGuideOpen(false)}>
+            <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }}
+              className="bg-surface-container-lowest rounded-3xl shadow-2xl max-w-xl w-full max-h-[85vh] flex flex-col overflow-hidden">
+              <div className="p-6 border-b border-outline-variant/10 flex items-start justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-primary-fixed rounded-xl flex items-center justify-center">
+                    <Info className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-black text-on-surface">Excel&apos;den Yükleme Kılavuzu</h2>
+                    <p className="text-sm text-on-surface-variant">Şablonu indir, doldur, geri yükle</p>
+                  </div>
+                </div>
+                <button onClick={() => setGuideOpen(false)} className="p-2 hover:bg-surface-container rounded-xl text-on-surface-variant">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-auto p-6 space-y-5">
+                {/* Adımlar */}
+                <ol className="space-y-3">
+                  <li className="flex gap-3">
+                    <span className="w-7 h-7 rounded-full bg-primary text-white font-black text-sm flex items-center justify-center shrink-0">1</span>
+                    <div className="flex-1">
+                      <p className="text-sm font-bold text-on-surface">Örnek şablonu indir</p>
+                      <p className="text-xs text-on-surface-variant mt-0.5">
+                        Başlık satırı ve örnek 2 satır içerir. Aşağıdaki butona tıkla.
+                      </p>
+                      {templateUrl && (
+                        <button
+                          onClick={handleTemplate}
+                          disabled={exporting}
+                          className="mt-2 px-4 py-2 bg-primary-fixed hover:bg-primary-fixed/80 text-primary rounded-xl text-xs font-black flex items-center gap-2 disabled:opacity-50"
+                        >
+                          {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileDown className="w-3.5 h-3.5" />}
+                          Şablonu İndir (.xlsx)
+                        </button>
+                      )}
+                    </div>
+                  </li>
+                  <li className="flex gap-3">
+                    <span className="w-7 h-7 rounded-full bg-primary text-white font-black text-sm flex items-center justify-center shrink-0">2</span>
+                    <div className="flex-1">
+                      <p className="text-sm font-bold text-on-surface">Şablondaki örnek 2 satırı silip kendi verini yaz</p>
+                      <p className="text-xs text-on-surface-variant mt-0.5">
+                        Başlık satırına dokunma. Sütun başlıklarını birebir aynı bırak.
+                      </p>
+                    </div>
+                  </li>
+                  <li className="flex gap-3">
+                    <span className="w-7 h-7 rounded-full bg-primary text-white font-black text-sm flex items-center justify-center shrink-0">3</span>
+                    <div className="flex-1">
+                      <p className="text-sm font-bold text-on-surface">Kaydet ve aşağıdaki &quot;Dosya Seç&quot; butonuyla yükle</p>
+                      <p className="text-xs text-on-surface-variant mt-0.5">
+                        Yüklemeden önce önizleme modalında tüm satırları kontrol edebilirsin. İstediğin an iptal edebilirsin.
+                      </p>
+                    </div>
+                  </li>
+                </ol>
+
+                {/* Önemli notlar */}
+                <div className="bg-surface-container-low rounded-2xl p-4 space-y-2">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Önemli</p>
+                  <ul className="text-xs text-on-surface-variant space-y-1 list-disc list-inside">
+                    <li>E-posta veya telefon eşleşirse kayıt <strong>güncellenir</strong>, yoksa <strong>yeni oluşturulur</strong>.</li>
+                    <li>Zorunlu alanlar: <strong>Ad</strong>, <strong>Soyad</strong>, <strong>Tip</strong>.</li>
+                    <li>Tarih formatı: <code className="bg-surface-container px-1 py-0.5 rounded text-[10px]">GG.AA.YYYY</code> (örn: 20.04.2026).</li>
+                    <li>Virgülle ayır: Tercih Şehirler, Etiketler vb.</li>
+                  </ul>
+                </div>
+
+                {/* Sütun listesi (opsiyonel) */}
+                {importGuide && importGuide.length > 0 && (
+                  <div className="bg-surface-container-low rounded-2xl p-4 space-y-2">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Sütunlar</p>
+                    <ul className="text-xs text-on-surface-variant space-y-1">
+                      {importGuide.map((g) => (
+                        <li key={g.columnName}>
+                          <strong className="text-on-surface">{g.columnName}</strong> — {g.description}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+
+              <div className="p-6 border-t border-outline-variant/10 flex items-center justify-end gap-3 bg-surface-container-low/50">
+                <button
+                  onClick={() => setGuideOpen(false)}
+                  className="px-5 py-2.5 bg-surface-container-low hover:bg-surface-container rounded-xl text-sm font-bold"
+                >
+                  Vazgeç
+                </button>
+                <button
+                  onClick={() => {
+                    setGuideOpen(false);
+                    fileRef.current?.click();
+                  }}
+                  className="primary-gradient text-white px-6 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2"
+                >
+                  <Upload className="w-4 h-4" />
+                  Dosya Seç ve Yükle
+                </button>
+              </div>
             </motion.div>
           </motion.div>
         )}

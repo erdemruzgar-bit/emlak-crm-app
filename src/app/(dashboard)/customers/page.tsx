@@ -192,8 +192,19 @@ function CustomersPageInner() {
           <ExcelToolbar
             exportUrl="/api/customers/export"
             importUrl="/api/customers/import"
+            templateUrl="/api/customers/import/template"
             label="müşteri"
             onImportSuccess={fetchCustomers}
+            importGuide={[
+              { columnName: "Ad / Soyad", description: "Zorunlu, en az 2 karakter" },
+              { columnName: "Tip", description: "Alıcı / Satıcı / Kiracı / Kiracı Adayı / Ev Sahibi (veya Ayarlardan eklenen)" },
+              { columnName: "Aşama", description: "Aday / Nitelikli / Aktif Takip / Gösterimde / Teklif Aşaması / Sözleşme Aşaması / Kazanıldı / Kaybedildi (opsiyonel)" },
+              { columnName: "Aciliyet", description: "Düşük / Orta / Yüksek / Acil (opsiyonel)" },
+              { columnName: "Telefon / E-posta", description: "Biri eşleşirse güncelleme yapılır" },
+              { columnName: "Min/Max Bütçe, Min/Max m²", description: "Sayısal değer; boş bırakılabilir" },
+              { columnName: "Tercih Şehirler, Tercih İlçeler, Etiketler", description: "Virgülle ayır (örn: İstanbul, Ankara)" },
+              { columnName: "Son İletişim / Sonraki Takip", description: "Tarih: GG.AA.YYYY" },
+            ]}
           />
           <div className="flex items-center bg-surface-container-low rounded-xl p-1">
             <button onClick={() => setViewMode("list")} title="Liste Görünümü"

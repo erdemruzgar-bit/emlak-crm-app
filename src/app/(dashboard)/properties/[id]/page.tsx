@@ -102,6 +102,9 @@ interface Property {
   } | null;
   images: { id: string; url: string; isPrimary: boolean }[];
   createdAt: string;
+
+  constructionStatus: "INSAAT_HALINDE" | "OTURUMA_HAZIR" | null;
+  hasTitleDeed: boolean | null;
 }
 
 const listingLabels: Record<string, string> = {
@@ -143,6 +146,7 @@ export default function PropertyDetailPage() {
   const [loading, setLoading] = useState(true);
   const [activeImg, setActiveImg] = useState(0);
   const [lightbox, setLightbox] = useState(false);
+  const [failedImages, setFailedImages] = useState<Set<number>>(new Set());
   const [matches, setMatches] = useState<MatchEntry[]>([]);
   const [matchesLoading, setMatchesLoading] = useState(true);
   const [matchInfoOpen, setMatchInfoOpen] = useState(false);
@@ -289,7 +293,14 @@ export default function PropertyDetailPage() {
     {
       icon: Calendar,
       label: "Bina Yaşı",
-      value: property.age?.toString(),
+      value:
+        property.constructionStatus === "INSAAT_HALINDE"
+          ? "İnşaat Halinde"
+          : property.constructionStatus === "OTURUMA_HAZIR" && (property.age == null || property.age === 0)
+          ? "Oturuma Hazır"
+          : property.age != null
+          ? `${property.age}`
+          : null,
     },
     {
       icon: Flame,
@@ -372,9 +383,27 @@ export default function PropertyDetailPage() {
           {property.images[activeImg] ? (
             property.images[activeImg].url.match(/\.(mp4|webm|mov)(\?|$)/i) ? (
               <video src={property.images[activeImg].url} className="w-full h-full object-cover" controls />
+            ) : failedImages.has(activeImg) ? (
+              <div className="flex flex-col items-center text-on-surface-variant/40">
+                <Home className="w-16 h-16" />
+                <span className="text-xs font-medium mt-2">Görsel yüklenemedi</span>
+                <a
+                  href={property.images[activeImg].url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-[10px] text-primary hover:underline mt-1 break-all max-w-[80%] text-center"
+                >
+                  Linki yeni sekmede aç
+                </a>
+              </div>
             ) : (
-              <img src={property.images[activeImg].url} alt={property.title}
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+              <img
+                src={property.images[activeImg].url}
+                alt={property.title}
+                referrerPolicy="no-referrer"
+                onError={() => setFailedImages((s) => new Set(s).add(activeImg))}
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              />
             )
           ) : (
             <div className="flex flex-col items-center text-on-surface-variant/30">
@@ -412,8 +441,18 @@ export default function PropertyDetailPage() {
                   <div className="w-full h-full bg-surface-container flex items-center justify-center">
                     <Video className="w-4 h-4 text-primary" />
                   </div>
+                ) : failedImages.has(i) ? (
+                  <div className="w-full h-full bg-surface-container flex items-center justify-center">
+                    <ImageIcon className="w-4 h-4 text-on-surface-variant/50" />
+                  </div>
                 ) : (
-                  <img src={img.url} alt="" className="w-full h-full object-cover" />
+                  <img
+                    src={img.url}
+                    alt=""
+                    referrerPolicy="no-referrer"
+                    onError={() => setFailedImages((s) => new Set(s).add(i))}
+                    className="w-full h-full object-cover"
+                  />
                 )}
               </button>
             ))}
@@ -443,6 +482,7 @@ export default function PropertyDetailPage() {
               </>
             )}
             <img src={property.images[activeImg].url} alt={property.title}
+              referrerPolicy="no-referrer"
               onClick={(e) => e.stopPropagation()}
               className="max-h-[85vh] max-w-[90vw] object-contain rounded-2xl" />
             <span className="absolute bottom-4 text-white/60 text-sm">{activeImg + 1} / {property.images.length}</span>
@@ -500,8 +540,31 @@ export default function PropertyDetailPage() {
               <DetailItem label="Alan" value={property.area ? `${property.area} m²` : null} />
               <DetailItem label="Banyo" value={property.bathrooms?.toString()} />
               <DetailItem label="Kat" value={property.floor != null ? `${property.floor}/${property.totalFloors || "?"}` : null} />
-              <DetailItem label="Bina Yaşı" value={property.age?.toString()} />
+              <DetailItem
+                label="Bina Yaşı"
+                value={
+                  property.constructionStatus === "INSAAT_HALINDE"
+                    ? "İnşaat Halinde"
+                    : property.age != null
+                    ? String(property.age)
+                    : null
+                }
+              />
               <DetailItem label="Isıtma" value={property.heating ? heatingLabels[property.heating] || property.heating : null} />
+              <DetailItem
+                label="İnşaat Durumu"
+                value={
+                  property.constructionStatus === "INSAAT_HALINDE"
+                    ? "İnşaat Halinde"
+                    : property.constructionStatus === "OTURUMA_HAZIR"
+                    ? "Oturuma Hazır"
+                    : null
+                }
+              />
+              <DetailItem
+                label="Tapu Kaydı"
+                value={property.hasTitleDeed == null ? null : property.hasTitleDeed ? "Var" : "Yok"}
+              />
             </div>
           </section>
         </div>

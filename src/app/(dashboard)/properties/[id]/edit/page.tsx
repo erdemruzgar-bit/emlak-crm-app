@@ -107,6 +107,8 @@ export default function EditPropertyPage() {
     hasParking: "",
     hasBalcony: "",
     facingDirection: "",
+    hasTitleDeed: "",
+    constructionStatus: "",
   });
 
   // Proje / Blok cascading
@@ -160,6 +162,8 @@ export default function EditPropertyPage() {
           hasParking: data.hasParking === true ? "true" : data.hasParking === false ? "false" : "",
           hasBalcony: data.hasBalcony === true ? "true" : data.hasBalcony === false ? "false" : "",
           facingDirection: data.facingDirection || "",
+          hasTitleDeed: data.hasTitleDeed === true ? "true" : data.hasTitleDeed === false ? "false" : "",
+          constructionStatus: data.constructionStatus || "",
         });
         setProjectId(data.projectId || "");
         setBlockId(data.blockId || "");
@@ -237,6 +241,8 @@ export default function EditPropertyPage() {
       hasParking: boolOrNull(form.hasParking),
       hasBalcony: boolOrNull(form.hasBalcony),
       facingDirection: form.facingDirection || null,
+      hasTitleDeed: boolOrNull(form.hasTitleDeed),
+      constructionStatus: form.constructionStatus || null,
     };
 
     const res = await fetch(`/api/properties/${params.id}`, {
@@ -445,6 +451,22 @@ export default function EditPropertyPage() {
                 <option value="ARSA_PAYLI">Arsa Paylı</option>
                 <option value="HISSELI">Hisseli</option>
                 <option value="BAGIMSIZ_BOLUMSUZ">Bağımsız Bölümsüz</option>
+              </select>
+            </div>
+            <div className="col-span-2">
+              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Tapu Kaydı</label>
+              <select value={form.hasTitleDeed} onChange={(e) => set("hasTitleDeed", e.target.value)} className={inputClass}>
+                <option value="">—</option>
+                <option value="true">Var</option>
+                <option value="false">Yok</option>
+              </select>
+            </div>
+            <div className="col-span-2">
+              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">İnşaat Durumu</label>
+              <select value={form.constructionStatus} onChange={(e) => set("constructionStatus", e.target.value)} className={inputClass}>
+                <option value="">Seçiniz</option>
+                <option value="OTURUMA_HAZIR">Oturuma Hazır</option>
+                <option value="INSAAT_HALINDE">İnşaat Halinde</option>
               </select>
             </div>
           </div>

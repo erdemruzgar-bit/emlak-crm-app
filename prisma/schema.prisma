@@ -150,6 +150,11 @@ enum ParkingType {
   KAPALI
 }
 
+enum ConstructionStatus {
+  INSAAT_HALINDE
+  OTURUMA_HAZIR
+}
+
 enum ReminderTargetType {
   CUSTOMER
   PROPERTY
@@ -391,6 +396,10 @@ model Property {
   parkingSpotCount  Int?             // sadece kapalı otoparkta anlamlı — B. Bölüme düşen otopark sayısı
   hasBalcony        Boolean?
   facingDirection   FacingDirection?
+
+  // İnşaat durumu + tapu
+  constructionStatus ConstructionStatus?  // Oturuma hazır / İnşaat halinde (age=0 durumu için)
+  hasTitleDeed       Boolean?             // Tapu kaydı var/yok
 
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt

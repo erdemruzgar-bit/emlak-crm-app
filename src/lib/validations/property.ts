@@ -61,6 +61,13 @@ export const propertyCreateSchema = z.object({
     .enum(["KUZEY", "GUNEY", "DOGU", "BATI", "KUZEY_DOGU", "KUZEY_BATI", "GUNEY_DOGU", "GUNEY_BATI"])
     .nullable()
     .optional(),
+
+  // İnşaat durumu + tapu kaydı
+  constructionStatus: z
+    .enum(["INSAAT_HALINDE", "OTURUMA_HAZIR"])
+    .nullable()
+    .optional(),
+  hasTitleDeed: z.boolean().nullable().optional(),
 });
 
 export const propertyUpdateSchema = propertyCreateSchema.partial();

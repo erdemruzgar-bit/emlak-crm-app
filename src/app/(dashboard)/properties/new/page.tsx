@@ -131,6 +131,10 @@ export default function NewPropertyPage() {
       parsel: optStr("parsel"),
       bagimsizBolumNo: optStr("bagimsizBolumNo"),
       katMulkiyetiTipi: optStr("katMulkiyetiTipi"),
+      hasTitleDeed: optBool("hasTitleDeed"),
+
+      // İnşaat durumu
+      constructionStatus: optStr("constructionStatus"),
 
       // Sakin / kullanım / vatandaşlık
       occupancyStatus: optStr("occupancyStatus"),
@@ -359,6 +363,22 @@ export default function NewPropertyPage() {
                 <option value="ARSA_PAYLI">Arsa Paylı</option>
                 <option value="HISSELI">Hisseli</option>
                 <option value="BAGIMSIZ_BOLUMSUZ">Bağımsız Bölümsüz</option>
+              </select>
+            </div>
+            <div className="col-span-2">
+              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Tapu Kaydı</label>
+              <select name="hasTitleDeed" className={inputClass} defaultValue="">
+                <option value="">—</option>
+                <option value="true">Var</option>
+                <option value="false">Yok</option>
+              </select>
+            </div>
+            <div className="col-span-2">
+              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">İnşaat Durumu</label>
+              <select name="constructionStatus" className={inputClass} defaultValue="">
+                <option value="">Seçiniz</option>
+                <option value="OTURUMA_HAZIR">Oturuma Hazır</option>
+                <option value="INSAAT_HALINDE">İnşaat Halinde</option>
               </select>
             </div>
           </div>

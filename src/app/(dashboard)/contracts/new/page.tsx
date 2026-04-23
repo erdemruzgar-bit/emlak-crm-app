@@ -21,7 +21,7 @@ interface CustomerOption {
   firstName: string;
   lastName: string;
   phone: string | null;
-  customerType: "BUYER" | "SELLER" | "TENANT" | "LANDLORD";
+  customerType: "BUYER" | "SELLER" | "TENANT" | "LANDLORD" | "TENANT_CANDIDATE";
 }
 
 const attachmentCategoryOptions = [
@@ -37,6 +37,7 @@ const customerTypeLabels: Record<string, string> = {
   BUYER: "Alıcı",
   SELLER: "Satıcı",
   TENANT: "Kiracı",
+  TENANT_CANDIDATE: "Kiracı Adayı",
   LANDLORD: "Mülk Sahibi",
 };
 
@@ -107,7 +108,7 @@ export default function NewContractPage() {
 
   // Müşteri tipine göre kiracı/alıcı vs sahip listesi
   const tenantCandidates = customers.filter((c) =>
-    ["BUYER", "TENANT"].includes(c.customerType)
+    ["BUYER", "TENANT", "TENANT_CANDIDATE"].includes(c.customerType)
   );
   const ownerCandidates = customers.filter((c) =>
     ["SELLER", "LANDLORD"].includes(c.customerType)

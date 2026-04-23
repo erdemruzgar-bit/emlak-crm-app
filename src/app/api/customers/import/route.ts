@@ -9,7 +9,7 @@ import { createAuditLog } from "@/lib/audit";
 // Ad, Soyad, Tip, Aşama, Aciliyet, Telefon, E-posta, Adres, Kaynak, Min Bütçe, Max Bütçe,
 // Tercih Tipler, Tercih Şehirler, Tercih İlçeler, Min m², Max m², Min Oda, Max Oda, Etiketler, Özet Not
 
-const typeLabelRev: Record<string, string> = { "Alıcı": "BUYER", "Satıcı": "SELLER", "Kiracı": "TENANT", "Ev Sahibi": "LANDLORD" };
+const typeLabelRev: Record<string, string> = { "Alıcı": "BUYER", "Satıcı": "SELLER", "Kiracı": "TENANT", "Kiracı Adayı": "TENANT_CANDIDATE", "Ev Sahibi": "LANDLORD" };
 // Hem yeni hem eski Türkçe etiketleri kabul et (geriye dönük uyum)
 const stageLabelRev: Record<string, string> = {
   "Aday": "LEAD", "Lead": "LEAD",
@@ -100,7 +100,7 @@ export async function POST(req: NextRequest) {
     if (firstName.length < 2) errors.push("Ad en az 2 karakter olmalı");
     if (lastName.length < 2) errors.push("Soyad en az 2 karakter olmalı");
     const customerType = typeLabelRev[typeLabel] || typeLabel.toUpperCase();
-    if (!["BUYER", "SELLER", "TENANT", "LANDLORD"].includes(customerType)) errors.push(`Tip geçersiz: "${typeLabel}"`);
+    if (!["BUYER", "SELLER", "TENANT", "LANDLORD", "TENANT_CANDIDATE"].includes(customerType)) errors.push(`Tip geçersiz: "${typeLabel}"`);
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.push("E-posta biçimi geçersiz");
 
     const stage = stageLabel ? stageLabelRev[stageLabel] || null : null;
@@ -171,7 +171,7 @@ export async function POST(req: NextRequest) {
       email: d.email as string | null,
       phone: d.phone as string | null,
       address: d.address as string | null,
-      customerType: d.customerType as "BUYER" | "SELLER" | "TENANT" | "LANDLORD",
+      customerType: d.customerType as "BUYER" | "SELLER" | "TENANT" | "LANDLORD" | "TENANT_CANDIDATE",
       source: d.source as string | null,
       stage: d.stage as string | null,
       urgency: d.urgency as string | null,

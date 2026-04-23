@@ -18,6 +18,7 @@ enum CustomerType {
   SELLER
   TENANT
   LANDLORD
+  TENANT_CANDIDATE  // Kiracı Adayı — henüz sözleşmesi yok, kiralamak için arıyor
 }
 
 enum ConsentType {

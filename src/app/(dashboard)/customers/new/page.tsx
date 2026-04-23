@@ -122,6 +122,7 @@ export default function NewCustomerPage() {
                 <option value="BUYER">Alıcı</option>
                 <option value="SELLER">Satıcı</option>
                 <option value="TENANT">Kiracı</option>
+                <option value="TENANT_CANDIDATE">Kiracı Adayı</option>
                 <option value="LANDLORD">Ev Sahibi</option>
               </select>
             </div>

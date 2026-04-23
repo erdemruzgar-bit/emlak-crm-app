@@ -37,8 +37,8 @@ interface Pagination {
   totalPages: number;
 }
 
-const typeLabels: Record<string, string> = { BUYER: "Alıcı", SELLER: "Satıcı", TENANT: "Kiracı", LANDLORD: "Ev Sahibi" };
-const typeBadgeColors: Record<string, string> = { BUYER: "bg-secondary-container text-on-secondary-container", SELLER: "bg-primary-fixed text-on-primary-fixed-variant", TENANT: "bg-tertiary-fixed text-on-tertiary-fixed-variant", LANDLORD: "bg-surface-container-high text-on-surface-variant" };
+const typeLabels: Record<string, string> = { BUYER: "Alıcı", SELLER: "Satıcı", TENANT: "Kiracı", TENANT_CANDIDATE: "Kiracı Adayı", LANDLORD: "Ev Sahibi" };
+const typeBadgeColors: Record<string, string> = { BUYER: "bg-secondary-container text-on-secondary-container", SELLER: "bg-primary-fixed text-on-primary-fixed-variant", TENANT: "bg-tertiary-fixed text-on-tertiary-fixed-variant", TENANT_CANDIDATE: "bg-tertiary-container text-on-tertiary-container", LANDLORD: "bg-surface-container-high text-on-surface-variant" };
 const stageLabels: Record<string, string> = { LEAD: "Aday", QUALIFIED: "Nitelikli", ACTIVE: "Aktif Takip", SHOWING: "Gösterimde", OFFER: "Teklif Aşaması", CONTRACT: "Sözleşme Aşaması", CLOSED: "Kazanıldı", LOST: "Kaybedildi" };
 const stageColors: Record<string, string> = { LEAD: "bg-surface-container text-on-surface-variant", QUALIFIED: "bg-secondary-container text-on-secondary-container", ACTIVE: "bg-primary-fixed text-primary", SHOWING: "bg-tertiary-fixed text-tertiary", OFFER: "bg-tertiary-container text-on-tertiary-container", CONTRACT: "bg-primary-container text-on-primary-container", CLOSED: "bg-green-100 text-green-700", LOST: "bg-error-container text-on-error-container" };
 const urgencyDots: Record<string, string> = { LOW: "bg-green-500", MEDIUM: "bg-yellow-500", HIGH: "bg-orange-500", URGENT: "bg-red-500" };
@@ -229,7 +229,8 @@ function CustomersPageInner() {
             className="px-4 py-3 bg-surface-container-low border-none rounded-xl outline-none text-sm font-medium">
             <option value="">Tüm Tipler</option>
             <option value="BUYER">Alıcı</option><option value="SELLER">Satıcı</option>
-            <option value="TENANT">Kiracı</option><option value="LANDLORD">Ev Sahibi</option>
+            <option value="TENANT">Kiracı</option><option value="TENANT_CANDIDATE">Kiracı Adayı</option>
+            <option value="LANDLORD">Ev Sahibi</option>
           </select>
           {viewMode === "list" && (
             <select value={stageFilter} onChange={(e) => { setStageFilter(e.target.value); setPage(1); }}

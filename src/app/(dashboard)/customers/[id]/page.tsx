@@ -109,7 +109,7 @@ interface PropertyMatchResult {
   };
 }
 
-const typeLabels: Record<string, string> = { BUYER: "Alıcı", SELLER: "Satıcı", TENANT: "Kiracı", LANDLORD: "Ev Sahibi" };
+const typeLabels: Record<string, string> = { BUYER: "Alıcı", SELLER: "Satıcı", TENANT: "Kiracı", TENANT_CANDIDATE: "Kiracı Adayı", LANDLORD: "Ev Sahibi" };
 const consentLabels: Record<string, string> = { ACIK_RIZA: "Açık Rıza", AYDINLATMA: "Aydınlatma Metni", PAZARLAMA: "Pazarlama İzni" };
 const interactionLabels: Record<string, string> = { CALL: "Telefon", EMAIL: "E-posta", VISIT: "Ziyaret", WHATSAPP: "WhatsApp" };
 const interactionIcons: Record<string, React.ComponentType<{ className?: string }>> = { CALL: Phone, EMAIL: Mail, VISIT: MapPin, WHATSAPP: MessageCircle };
@@ -382,6 +382,7 @@ export default function CustomerDetailPage() {
                   { value: "BUYER", label: "Alıcı" },
                   { value: "SELLER", label: "Satıcı" },
                   { value: "TENANT", label: "Kiracı" },
+                  { value: "TENANT_CANDIDATE", label: "Kiracı Adayı" },
                   { value: "LANDLORD", label: "Ev Sahibi" },
                 ]} />
               <EditableSelect icon={Globe} label="Kaynak" editing={editingInfo}

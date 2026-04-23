@@ -103,7 +103,7 @@ export default function ProjectsSettingsPage() {
   async function addBlock(projectId: string) {
     const name = prompt("Yeni blok adı (örn: A, D/02):");
     if (!name) return;
-    const totalStr = prompt("Toplam daire sayısı (opsiyonel):");
+    const totalStr = prompt("Toplam B. Bölüm adedi (opsiyonel):");
     const payload: Record<string, unknown> = { name };
     if (totalStr && /^\d+$/.test(totalStr)) payload.totalUnits = parseInt(totalStr);
     const res = await fetch(`/api/projects/${projectId}/blocks`, {
@@ -206,7 +206,7 @@ export default function ProjectsSettingsPage() {
                       className="flex-1 px-4 py-2.5 bg-surface-container-low rounded-xl text-sm border-none outline-none focus:ring-2 focus:ring-primary/20"
                     />
                     <input
-                      placeholder="Daire sayısı"
+                      placeholder="B. Bölüm Adedi"
                       type="number"
                       value={b.totalUnits}
                       onChange={(e) => {
@@ -343,7 +343,7 @@ export default function ProjectsSettingsPage() {
                               <span className="text-sm font-bold text-on-surface">{b.name}</span>
                               {b.totalUnits && (
                                 <span className="text-xs text-on-surface-variant">
-                                  · {b.totalUnits} daire
+                                  · {b.totalUnits} b. bölüm
                                 </span>
                               )}
                             </div>

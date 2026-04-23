@@ -40,6 +40,9 @@ export default function NewPropertyPage() {
   const [parkingType, setParkingType] = useState<"" | "ACIK" | "KAPALI">("");
   const [parkingSpotCount, setParkingSpotCount] = useState("");
 
+  // Oda tipleri (admin yönetimli)
+  const [roomTypes, setRoomTypes] = useState<{ id: string; name: string }[]>([]);
+
   useEffect(() => {
     fetch("/api/projects")
       .then((r) => r.json())
@@ -47,6 +50,12 @@ export default function NewPropertyPage() {
         if (Array.isArray(data)) setProjects(data);
       })
       .catch(() => setProjects([]));
+    fetch("/api/room-types")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => {
+        if (Array.isArray(data)) setRoomTypes(data);
+      })
+      .catch(() => setRoomTypes([]));
   }, []);
 
   const selectedProjectBlocks =
@@ -496,20 +505,17 @@ export default function NewPropertyPage() {
               </div>
             ))}
             <div>
-              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Oda</label>
+              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2 flex items-center justify-between">
+                <span>Oda</span>
+                <Link href="/settings/room-types" target="_blank" className="text-[10px] text-primary hover:underline normal-case tracking-normal">
+                  yönet
+                </Link>
+              </label>
               <select name="rooms" className={inputClass} defaultValue="">
                 <option value="">Seçiniz</option>
-                <option value="1+0">1+0 (Stüdyo)</option>
-                <option value="1+1">1+1</option>
-                <option value="2+1">2+1</option>
-                <option value="3+1">3+1</option>
-                <option value="4+1">4+1</option>
-                <option value="5+1">5+1</option>
-                <option value="6+1">6+1</option>
-                <option value="2+2">2+2</option>
-                <option value="3+2">3+2</option>
-                <option value="4+2">4+2</option>
-                <option value="5+2">5+2</option>
+                {roomTypes.map((rt) => (
+                  <option key={rt.id} value={rt.name}>{rt.name}</option>
+                ))}
               </select>
             </div>
             <div className="col-span-2">

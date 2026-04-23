@@ -73,6 +73,7 @@ function PropertiesPageInner() {
   const [assignedAgentId, setAssignedAgentId] = useState("");
   const [projects, setProjects] = useState<{ id: string; name: string; blocks: { id: string; name: string }[] }[]>([]);
   const [users, setUsers] = useState<{ id: string; name: string; role: string }[]>([]);
+  const [roomTypes, setRoomTypes] = useState<{ id: string; name: string }[]>([]);
 
   const [sortBy, setSortBy] = useState("createdAt");
   const [sortOrder, setSortOrder] = useState("desc");
@@ -93,6 +94,9 @@ function PropertiesPageInner() {
     }).catch(() => {});
     fetch("/api/users").then((r) => r.ok ? r.json() : []).then((data) => {
       if (Array.isArray(data)) setUsers(data.filter((u: { isActive: boolean }) => u.isActive));
+    }).catch(() => {});
+    fetch("/api/room-types").then((r) => r.ok ? r.json() : []).then((data) => {
+      if (Array.isArray(data)) setRoomTypes(data);
     }).catch(() => {});
   }, []);
 
@@ -273,13 +277,9 @@ function PropertiesPageInner() {
                     <select value={rooms} onChange={(e) => setRooms(e.target.value)}
                       className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm">
                       <option value="">Oda Türü</option>
-                      <option value="1+0">1+0</option>
-                      <option value="1+1">1+1</option>
-                      <option value="2+1">2+1</option>
-                      <option value="3+1">3+1</option>
-                      <option value="4+1">4+1</option>
-                      <option value="5+1">5+1</option>
-                      <option value="6+1">6+1</option>
+                      {roomTypes.map((rt) => (
+                        <option key={rt.id} value={rt.name}>{rt.name}</option>
+                      ))}
                     </select>
                     <input type="number" placeholder="Min Fiyat" value={minPrice} onChange={(e) => setMinPrice(e.target.value)}
                       className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm" />

@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Users, Building2, ShieldCheck, ClipboardList, Palette, Blocks } from "lucide-react";
+import { Users, Building2, ShieldCheck, ClipboardList, Palette, Blocks, DoorOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const tabs = [
   { href: "/settings/users", label: "Kullanıcılar", icon: Users },
   { href: "/settings/branches", label: "Şubeler", icon: Building2 },
   { href: "/settings/projects", label: "Projeler", icon: Blocks },
+  { href: "/settings/room-types", label: "Oda Tipleri", icon: DoorOpen },
   { href: "/settings/appearance", label: "Görünüm", icon: Palette },
   { href: "/settings/kvkk", label: "KVKK", icon: ShieldCheck },
   { href: "/settings/audit-log", label: "Denetim Kayıtları", icon: ClipboardList },

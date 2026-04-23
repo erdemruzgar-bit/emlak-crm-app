@@ -448,6 +448,19 @@ model Block {
   @@index([projectId])
 }
 
+// ─── Oda Tipi Kataloğu ───
+// Property.rooms alanı String olarak kalır (eski veri korunur). Bu tablo sadece
+// dropdown için seçim listesi — ADMIN/MANAGER yeni tip ekleyip silebilir.
+
+model RoomType {
+  id        String   @id @default(cuid())
+  name      String   @unique  // "1+1", "3+1", "Dubleks" vb.
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([sortOrder])
+}
+
 model PropertyImage {
   id         String  @id @default(cuid())
   propertyId String

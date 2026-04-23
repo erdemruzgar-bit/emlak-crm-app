@@ -145,6 +145,11 @@ enum FacingDirection {
   GUNEY_BATI
 }
 
+enum ParkingType {
+  ACIK
+  KAPALI
+}
+
 enum ReminderTargetType {
   CUSTOMER
   PROPERTY
@@ -382,6 +387,8 @@ model Property {
   // ─── Ek özellikler ───
   hasElevator       Boolean?
   hasParking        Boolean?
+  parkingType       ParkingType?
+  parkingSpotCount  Int?             // sadece kapalı otoparkta anlamlı — B. Bölüme düşen otopark sayısı
   hasBalcony        Boolean?
   facingDirection   FacingDirection?
 

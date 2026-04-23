@@ -54,6 +54,8 @@ export const propertyCreateSchema = z.object({
   // Ek özellikler
   hasElevator: z.boolean().nullable().optional(),
   hasParking: z.boolean().nullable().optional(),
+  parkingType: z.enum(["ACIK", "KAPALI"]).nullable().optional(),
+  parkingSpotCount: z.number().int().nonnegative().nullable().optional(),
   hasBalcony: z.boolean().nullable().optional(),
   facingDirection: z
     .enum(["KUZEY", "GUNEY", "DOGU", "BATI", "KUZEY_DOGU", "KUZEY_BATI", "GUNEY_DOGU", "GUNEY_BATI"])

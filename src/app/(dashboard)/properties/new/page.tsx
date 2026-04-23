@@ -35,6 +35,11 @@ export default function NewPropertyPage() {
   const [projectId, setProjectId] = useState("");
   const [blockId, setBlockId] = useState("");
 
+  // Otopark cascading: "" | "true" | "false"; Var → tür (ACIK/KAPALI); Kapalı → sayı
+  const [hasParking, setHasParking] = useState("");
+  const [parkingType, setParkingType] = useState<"" | "ACIK" | "KAPALI">("");
+  const [parkingSpotCount, setParkingSpotCount] = useState("");
+
   useEffect(() => {
     fetch("/api/projects")
       .then((r) => r.json())
@@ -120,7 +125,12 @@ export default function NewPropertyPage() {
 
       // Ek özellikler
       hasElevator: optBool("hasElevator"),
-      hasParking: optBool("hasParking"),
+      hasParking: hasParking === "true" ? true : hasParking === "false" ? false : undefined,
+      parkingType: hasParking === "true" && parkingType ? parkingType : undefined,
+      parkingSpotCount:
+        hasParking === "true" && parkingType === "KAPALI" && parkingSpotCount
+          ? parseInt(parkingSpotCount)
+          : undefined,
       hasBalcony: optBool("hasBalcony"),
       facingDirection: optStr("facingDirection"),
     };
@@ -382,7 +392,6 @@ export default function NewPropertyPage() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {[
               { name: "hasElevator", label: "Asansör" },
-              { name: "hasParking", label: "Otopark" },
               { name: "hasBalcony", label: "Balkon" },
             ].map((f) => (
               <div key={f.name}>
@@ -407,6 +416,65 @@ export default function NewPropertyPage() {
                 <option value="GUNEY_DOGU">Güney-Doğu</option>
                 <option value="GUNEY_BATI">Güney-Batı</option>
               </select>
+            </div>
+          </div>
+
+          {/* Otopark — cascading: Var/Yok → Kapalı/Açık → sayı */}
+          <div className="space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Otopark</label>
+                <select
+                  value={hasParking}
+                  onChange={(e) => {
+                    setHasParking(e.target.value);
+                    if (e.target.value !== "true") {
+                      setParkingType("");
+                      setParkingSpotCount("");
+                    }
+                  }}
+                  className={inputClass}
+                >
+                  <option value="">—</option>
+                  <option value="true">Var</option>
+                  <option value="false">Yok</option>
+                </select>
+              </div>
+
+              {hasParking === "true" && (
+                <div>
+                  <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Otopark Türü</label>
+                  <select
+                    value={parkingType}
+                    onChange={(e) => {
+                      const v = e.target.value as "" | "ACIK" | "KAPALI";
+                      setParkingType(v);
+                      if (v !== "KAPALI") setParkingSpotCount("");
+                    }}
+                    className={inputClass}
+                  >
+                    <option value="">Seçiniz</option>
+                    <option value="ACIK">Açık</option>
+                    <option value="KAPALI">Kapalı</option>
+                  </select>
+                </div>
+              )}
+
+              {hasParking === "true" && parkingType === "KAPALI" && (
+                <div>
+                  <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">
+                    B. Bölüme Düşen Otopark Sayısı
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={parkingSpotCount}
+                    onChange={(e) => setParkingSpotCount(e.target.value)}
+                    placeholder="1"
+                    className={inputClass}
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>

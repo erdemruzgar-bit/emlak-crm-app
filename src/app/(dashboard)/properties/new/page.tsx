@@ -7,6 +7,7 @@ import { ArrowLeft, AlertCircle, Loader2, User, X } from "lucide-react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { MediaUploader, type MediaItem } from "@/components/ui/media-uploader";
+import { TURKEY_CITIES, getDistrictsOf } from "@/lib/turkey-locations";
 
 interface CustomerResult { id: string; label: string; }
 interface ProjectOption {
@@ -42,6 +43,10 @@ export default function NewPropertyPage() {
 
   // Oda tipleri (admin yönetimli)
   const [roomTypes, setRoomTypes] = useState<{ id: string; name: string }[]>([]);
+
+  // Şehir / İlçe cascading
+  const [city, setCity] = useState("");
+  const [district, setDistrict] = useState("");
 
   useEffect(() => {
     fetch("/api/projects")
@@ -108,8 +113,8 @@ export default function NewPropertyPage() {
       totalFloors: fd.get("totalFloors") ? parseInt(fd.get("totalFloors") as string) : undefined,
       age: fd.get("age") ? parseInt(fd.get("age") as string) : undefined,
       heating: optStr("heating"),
-      city: optStr("city"),
-      district: optStr("district"),
+      city: city || undefined,
+      district: district || undefined,
       neighborhood: optStr("neighborhood"),
       address: optStr("address"),
       description: optStr("description"),
@@ -536,16 +541,37 @@ export default function NewPropertyPage() {
         <div className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-8 space-y-5 border border-outline-variant/10">
           <h2 className="text-lg font-bold text-on-surface tracking-tight">Konum</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {[
-              { name: "city", label: "Şehir" },
-              { name: "district", label: "İlçe" },
-              { name: "neighborhood", label: "Mahalle" },
-            ].map(({ name, label }) => (
-              <div key={name}>
-                <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">{label}</label>
-                <input name={name} className={inputClass} />
-              </div>
-            ))}
+            <div>
+              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Şehir</label>
+              <select
+                value={city}
+                onChange={(e) => { setCity(e.target.value); setDistrict(""); }}
+                className={inputClass}
+              >
+                <option value="">Seçiniz</option>
+                {TURKEY_CITIES.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">İlçe</label>
+              <select
+                value={district}
+                onChange={(e) => setDistrict(e.target.value)}
+                disabled={!city}
+                className={cn(inputClass, "disabled:opacity-50")}
+              >
+                <option value="">{city ? "Seçiniz" : "Önce şehir seç"}</option>
+                {getDistrictsOf(city).map((d) => (
+                  <option key={d} value={d}>{d}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Mahalle</label>
+              <input name="neighborhood" className={inputClass} />
+            </div>
           </div>
           <div>
             <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Adres</label>

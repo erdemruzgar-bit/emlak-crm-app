@@ -8,6 +8,7 @@ import { ArrowLeft, Loader2, AlertCircle, CheckCircle, User, X } from "lucide-re
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { MediaUploader, type MediaItem } from "@/components/ui/media-uploader";
+import { TURKEY_CITIES, getDistrictsOf } from "@/lib/turkey-locations";
 
 interface CustomerResult { id: string; label: string; }
 interface ProjectOption {
@@ -588,12 +589,44 @@ export default function EditPropertyPage() {
         <div className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-8 space-y-5 border border-outline-variant/10">
           <h2 className="text-lg font-bold text-on-surface">Konum</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {[{ field: "city", label: "Şehir" }, { field: "district", label: "İlçe" }, { field: "neighborhood", label: "Mahalle" }].map(({ field, label }) => (
-              <div key={field}>
-                <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">{label}</label>
-                <input value={form[field]} onChange={(e) => set(field, e.target.value)} className={inputClass} />
-              </div>
-            ))}
+            <div>
+              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Şehir</label>
+              <select
+                value={form.city}
+                onChange={(e) => { set("city", e.target.value); set("district", ""); }}
+                className={inputClass}
+              >
+                <option value="">Seçiniz</option>
+                {/* Legacy değeri (listeye uymayan) koru */}
+                {form.city && !TURKEY_CITIES.includes(form.city) && (
+                  <option value={form.city}>{form.city}</option>
+                )}
+                {TURKEY_CITIES.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">İlçe</label>
+              <select
+                value={form.district}
+                onChange={(e) => set("district", e.target.value)}
+                disabled={!form.city}
+                className={cn(inputClass, "disabled:opacity-50")}
+              >
+                <option value="">{form.city ? "Seçiniz" : "Önce şehir seç"}</option>
+                {form.district && !getDistrictsOf(form.city).includes(form.district) && (
+                  <option value={form.district}>{form.district}</option>
+                )}
+                {getDistrictsOf(form.city).map((d) => (
+                  <option key={d} value={d}>{d}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Mahalle</label>
+              <input value={form.neighborhood} onChange={(e) => set("neighborhood", e.target.value)} className={inputClass} />
+            </div>
           </div>
           <div>
             <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Adres</label>

@@ -12,6 +12,7 @@ import { PropertyCard, type PropertyCardData, formatPrice } from "@/components/u
 import { PropertyDetail } from "@/components/ui/property-detail";
 import { ExcelToolbar } from "@/components/ui/excel-toolbar";
 import { cn } from "@/lib/utils";
+import { TURKEY_CITIES } from "@/lib/turkey-locations";
 
 interface PropertyFull extends PropertyCardData {
   bathrooms: number | null;
@@ -272,8 +273,13 @@ function PropertiesPageInner() {
                       <option value="RENTED">Kiralandı</option>
                       <option value="INACTIVE">Pasif</option>
                     </select>
-                    <input type="text" placeholder="Şehir" value={city} onChange={(e) => setCity(e.target.value)}
-                      className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm" />
+                    <select value={city} onChange={(e) => setCity(e.target.value)}
+                      className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm">
+                      <option value="">Şehir</option>
+                      {TURKEY_CITIES.map((c) => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </select>
                     <select value={rooms} onChange={(e) => setRooms(e.target.value)}
                       className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm">
                       <option value="">Oda Türü</option>

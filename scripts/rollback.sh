@@ -1,5 +1,5 @@
 #!/bin/bash
-# Emlak CRM — Rollback Script
+# ART CRM — Rollback Script
 # Kullanım: ./scripts/rollback.sh <tag>
 # Şema-only rollback: veri korunur, sadece şema değişiklikleri (yeni tablo/kolon) geri alınır.
 

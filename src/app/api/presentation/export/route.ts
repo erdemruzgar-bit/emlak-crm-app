@@ -30,7 +30,7 @@ function setupMaster(pres: pptxgen) {
     objects: [
       { rect: { x: 0, y: 7.15, w: 13.33, h: 0.35, fill: { color: C.primary } } },
       { text: {
-        text: "Emlak CRM · Profesyonel Gayrimenkul Yönetimi",
+        text: "ART CRM · Profesyonel Gayrimenkul Yönetimi",
         options: { x: 0.4, y: 7.2, w: 6, h: 0.25, fontSize: 9, color: C.white, fontFace: "Calibri", bold: true },
       }},
     ],
@@ -119,9 +119,9 @@ export async function GET(req: NextRequest) {
   const stats = await collectLiveStats();
 
   const pres = new pptxgen();
-  pres.title = "Emlak CRM — Ürün Sunumu";
-  pres.author = "Emlak CRM";
-  pres.company = "Emlak CRM";
+  pres.title = "ART CRM — Ürün Sunumu";
+  pres.author = "ART CRM";
+  pres.company = "ART CRM";
   pres.subject = "Profesyonel Emlak Ofisi Yönetim Sistemi";
   pres.layout = "LAYOUT_WIDE";
   setupMaster(pres);
@@ -188,7 +188,7 @@ export async function GET(req: NextRequest) {
   // ---- SLIDE 3: NEDEN CRM? ----
   {
     const s = pres.addSlide({ masterName: "BASE" });
-    addHeader(s, "Neden Emlak CRM?", "Emlak sektöründe kayıp müşteri ve unutulmuş portföy en büyük gelir kaybıdır");
+    addHeader(s, "Neden ART CRM?", "Emlak sektöründe kayıp müşteri ve unutulmuş portföy en büyük gelir kaybıdır");
 
     const problems = [
       { icon: "❌", title: "Aynı müşteri, 3 danışman", desc: "Ekip içinde takip dağınık. Müşteri 3 kez farklı kişi tarafından aranıyor." },
@@ -206,7 +206,7 @@ export async function GET(req: NextRequest) {
       s.addText(p.desc, { x: x + 1.1, y: y + 0.85, w: 4.7, h: 1.0, fontSize: 12, color: C.textSoft, fontFace: "Calibri", valign: "top" });
     });
 
-    s.addText("→ Emlak CRM bu 4 sorunun hepsini tek ekrandan çözer.", {
+    s.addText("→ ART CRM bu 4 sorunun hepsini tek ekrandan çözer.", {
       x: 0.5, y: 6.5, w: 12, h: 0.4,
       fontSize: 16, bold: true, color: C.primary, fontFace: "Calibri", align: "center", italic: true,
     });
@@ -404,7 +404,7 @@ export async function GET(req: NextRequest) {
     s.addShape("ellipse", { x: 10, y: 5, w: 6, h: 6, fill: { color: "FFFFFF", transparency: 92 }, line: { type: "none" } });
 
     s.addText("Teşekkürler", { x: 0.5, y: 1.5, w: 12, h: 1.5, fontSize: 72, bold: true, color: C.white, align: "center", fontFace: "Calibri", charSpacing: -2 });
-    s.addText("Emlak CRM — ofisinizin günlük işini yalınlaştıran dijital çözüm", { x: 0.5, y: 3.2, w: 12, h: 0.6, fontSize: 20, color: C.white, align: "center", fontFace: "Calibri" });
+    s.addText("ART CRM — ofisinizin günlük işini yalınlaştıran dijital çözüm", { x: 0.5, y: 3.2, w: 12, h: 0.6, fontSize: 20, color: C.white, align: "center", fontFace: "Calibri" });
 
     s.addShape("roundRect", { x: 3, y: 4.5, w: 7.33, h: 1.8, fill: { color: "FFFFFF", transparency: 85 }, line: { color: C.white, width: 1 }, rectRadius: 0.2 });
     s.addText("Soru & Demo Talebi", { x: 3, y: 4.65, w: 7.33, h: 0.4, fontSize: 14, bold: true, color: C.white, align: "center", fontFace: "Calibri", charSpacing: 2 });

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Emlak CRM — Releases Listesi
+# ART CRM — Releases Listesi
 # Kullanım: ./scripts/releases.sh [--detail]
 
 set -euo pipefail
@@ -16,7 +16,7 @@ dim()    { echo -e "\e[2m$*\e[0m"; }
 CURRENT_TAG=$(readlink "$BACKUP_ROOT/current" 2>/dev/null | xargs basename 2>/dev/null || echo "")
 
 bold "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-bold "  Emlak CRM — Sürüm Geçmişi"
+bold "  ART CRM — Sürüm Geçmişi"
 if [ -n "$CURRENT_TAG" ]; then
   bold "  Şu an aktif: $(green $CURRENT_TAG)"
 fi

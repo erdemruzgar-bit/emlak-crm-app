@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Emlak CRM - KVKK Uyumlu Gayrimenkul Yönetim Sistemi",
+  title: "ART CRM - KVKK Uyumlu Gayrimenkul Yönetim Sistemi",
   description: "Emlak profesyonelleri için KVKK uyumlu müşteri ilişkileri yönetim sistemi",
 };
 

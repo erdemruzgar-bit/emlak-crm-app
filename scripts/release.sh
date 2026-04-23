@@ -1,5 +1,5 @@
 #!/bin/bash
-# Emlak CRM — Release Script
+# ART CRM — Release Script
 # Kullanım: ./scripts/release.sh "Sürüm açıklaması"
 # Tag formatı: YYYY-MM-DD-vN (aynı gün birden fazla deploy için vN otomatik artar)
 

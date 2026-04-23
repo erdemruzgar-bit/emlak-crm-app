@@ -1,8 +1,8 @@
 ---
-title: "Emlak CRM — Ürün Sunumu"
+title: "ART CRM — Ürün Sunumu"
 ---
 
-# Emlak CRM
+# ART CRM
 
 **Profesyonel Emlak Ofisleri için Uçtan Uca Müşteri ve Portföy Yönetimi**
 
@@ -19,7 +19,7 @@ Emlak sektöründe en büyük kayıp, **takipsiz kalmış müşteri** ve **unutu
 - Yeni gelen alıcıya uygun ilan önerisi yapılamıyor
 - KVKK denetiminde hangi verinin nerede olduğu bilinmiyor
 
-Emlak CRM, bu sorunların hepsini çözer.
+ART CRM, bu sorunların hepsini çözer.
 
 ---
 

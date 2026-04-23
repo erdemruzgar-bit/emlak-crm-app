@@ -51,7 +51,7 @@ export default function Sidebar() {
           </div>
           <div>
             <h1 className="text-xl font-black tracking-tighter text-on-surface">
-              Emlak CRM
+              ART CRM
             </h1>
             <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest opacity-60">
               Premium Yönetim

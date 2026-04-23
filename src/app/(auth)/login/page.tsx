@@ -50,7 +50,7 @@ export default function LoginPage() {
               <Home className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-2xl font-black tracking-tight text-on-surface">
-              Emlak CRM
+              ART CRM
             </h1>
             <p className="text-on-surface-variant mt-1 text-sm font-medium">
               Gayrimenkul Yönetim Sistemi

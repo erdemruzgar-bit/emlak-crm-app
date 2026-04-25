@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, useCallback } from "react";
-import { Upload, X, Image as ImageIcon, Video, Link2, Plus, Loader2, Star } from "lucide-react";
+import { Upload, X, Image as ImageIcon, Video, Link2, Plus, Loader2, Star, ArrowLeft, ArrowRight, GripVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface MediaItem {
@@ -23,6 +23,16 @@ export function MediaUploader({ value, onChange, maxItems = 20 }: MediaUploaderP
   const [dragOver, setDragOver] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+
+  function moveItem(from: number, to: number) {
+    if (from === to || from < 0 || to < 0 || from >= value.length || to >= value.length) return;
+    const next = [...value];
+    const [item] = next.splice(from, 1);
+    next.splice(to, 0, item);
+    onChange(next);
+  }
 
   async function uploadFiles(files: FileList | File[]) {
     setUploadError("");
@@ -162,7 +172,35 @@ export function MediaUploader({ value, onChange, maxItems = 20 }: MediaUploaderP
       {value.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {value.map((item, i) => (
-            <div key={i} className="relative group rounded-2xl overflow-hidden aspect-video bg-surface-container-low">
+            <div
+              key={i}
+              draggable
+              onDragStart={(e) => {
+                setDraggingIndex(i);
+                e.dataTransfer.effectAllowed = "move";
+              }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = "move";
+                if (dragOverIndex !== i) setDragOverIndex(i);
+              }}
+              onDragLeave={() => setDragOverIndex((curr) => (curr === i ? null : curr))}
+              onDrop={(e) => {
+                e.preventDefault();
+                if (draggingIndex !== null && draggingIndex !== i) moveItem(draggingIndex, i);
+                setDraggingIndex(null);
+                setDragOverIndex(null);
+              }}
+              onDragEnd={() => {
+                setDraggingIndex(null);
+                setDragOverIndex(null);
+              }}
+              className={cn(
+                "relative group rounded-2xl overflow-hidden aspect-video bg-surface-container-low cursor-move transition-all",
+                draggingIndex === i && "opacity-40 scale-95",
+                dragOverIndex === i && draggingIndex !== i && "ring-2 ring-primary scale-105"
+              )}
+            >
               {item.mediaType === "video" ? (
                 <div className="w-full h-full flex flex-col items-center justify-center bg-surface-container gap-2">
                   <Video className="w-8 h-8 text-primary" />
@@ -172,16 +210,26 @@ export function MediaUploader({ value, onChange, maxItems = 20 }: MediaUploaderP
                   <video src={item.url} className="absolute inset-0 w-full h-full object-cover opacity-20" />
                 </div>
               ) : (
-                <img src={item.url} alt="" className="w-full h-full object-cover"
+                <img src={item.url} alt="" className="w-full h-full object-cover pointer-events-none"
                   onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
               )}
 
-              {/* Primary badge */}
-              {i === 0 && (
-                <span className="absolute top-2 left-2 bg-primary text-white text-[8px] font-black px-2 py-0.5 rounded-full uppercase flex items-center gap-1">
-                  <Star className="w-2 h-2 fill-current" />Ana
+              {/* Sıra numarası */}
+              <span className="absolute top-2 left-2 flex items-center gap-1.5">
+                <span className="bg-black/60 text-white text-[10px] font-black px-2 py-0.5 rounded-full">
+                  {i + 1}
                 </span>
-              )}
+                {i === 0 && (
+                  <span className="bg-primary text-white text-[8px] font-black px-2 py-0.5 rounded-full uppercase flex items-center gap-1">
+                    <Star className="w-2 h-2 fill-current" />Ana
+                  </span>
+                )}
+              </span>
+
+              {/* Drag handle göstergesi */}
+              <span className="absolute top-2 right-2 opacity-30 group-hover:opacity-100 transition-opacity bg-black/40 text-white rounded p-0.5 pointer-events-none">
+                <GripVertical className="w-3 h-3" />
+              </span>
 
               {/* Type badge */}
               <span className={cn("absolute bottom-2 left-2 text-[8px] font-bold px-1.5 py-0.5 rounded",
@@ -190,17 +238,32 @@ export function MediaUploader({ value, onChange, maxItems = 20 }: MediaUploaderP
                 {item.mediaType === "video" ? <Video className="w-2.5 h-2.5" /> : <ImageIcon className="w-2.5 h-2.5" />}
               </span>
 
-              {/* Actions */}
-              <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              {/* Sol / Sağ kaydırma + Ana yap + Sil */}
+              <div className="absolute bottom-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                 {i > 0 && (
-                  <button type="button" onClick={() => setPrimary(i)}
+                  <button type="button" onClick={(e) => { e.stopPropagation(); moveItem(i, i - 1); }}
+                    title="Sola kaydır"
+                    className="w-6 h-6 bg-black/60 hover:bg-black/80 text-white rounded-full flex items-center justify-center shadow">
+                    <ArrowLeft className="w-3 h-3" />
+                  </button>
+                )}
+                {i < value.length - 1 && (
+                  <button type="button" onClick={(e) => { e.stopPropagation(); moveItem(i, i + 1); }}
+                    title="Sağa kaydır"
+                    className="w-6 h-6 bg-black/60 hover:bg-black/80 text-white rounded-full flex items-center justify-center shadow">
+                    <ArrowRight className="w-3 h-3" />
+                  </button>
+                )}
+                {i > 0 && (
+                  <button type="button" onClick={(e) => { e.stopPropagation(); setPrimary(i); }}
                     title="Ana fotoğraf yap"
                     className="w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center shadow">
                     <Star className="w-3 h-3" />
                   </button>
                 )}
-                <button type="button" onClick={() => remove(i)}
-                  className="w-6 h-6 bg-black/60 text-white rounded-full flex items-center justify-center shadow">
+                <button type="button" onClick={(e) => { e.stopPropagation(); remove(i); }}
+                  title="Sil"
+                  className="w-6 h-6 bg-error text-white rounded-full flex items-center justify-center shadow">
                   <X className="w-3 h-3" />
                 </button>
               </div>
@@ -220,7 +283,10 @@ export function MediaUploader({ value, onChange, maxItems = 20 }: MediaUploaderP
 
       {value.length > 0 && (
         <p className="text-xs text-on-surface-variant">
-          {value.length} medya · Yıldıza tıklayarak ana fotoğrafı değiştirebilirsiniz
+          {value.length} medya · Sıralamak için <strong>sürükle-bırak</strong> ya da{" "}
+          <ArrowLeft className="inline w-3 h-3" /> /{" "}
+          <ArrowRight className="inline w-3 h-3" /> butonlarını kullanın · Ana fotoğraf için{" "}
+          <Star className="inline w-3 h-3" />
         </p>
       )}
     </div>

@@ -456,7 +456,18 @@ export default function EditPropertyPage() {
             </div>
             <div className="col-span-2">
               <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Kat Mülkiyeti Tipi</label>
-              <select value={form.katMulkiyetiTipi} onChange={(e) => set("katMulkiyetiTipi", e.target.value)} className={inputClass}>
+              <select
+                value={form.katMulkiyetiTipi}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  set("katMulkiyetiTipi", v);
+                  // Kat Mülkiyeti seçilince inşaat durumu boşsa otomatik "Oturuma Hazır"
+                  if (v === "KAT_MULKIYETI" && !form.constructionStatus) {
+                    set("constructionStatus", "OTURUMA_HAZIR");
+                  }
+                }}
+                className={inputClass}
+              >
                 <option value="">Seçiniz</option>
                 <option value="KAT_MULKIYETI">Kat Mülkiyeti</option>
                 <option value="KAT_IRTIFAKI">Kat İrtifakı</option>
@@ -515,6 +526,7 @@ export default function EditPropertyPage() {
                 <option value="">Seçiniz</option>
                 <option value="TC">TC</option>
                 <option value="YABANCI">Yabancı</option>
+                <option value="VATANDASLIGA_UYGUN">Vatandaşlığa Uygun</option>
               </select>
             </div>
           </div>

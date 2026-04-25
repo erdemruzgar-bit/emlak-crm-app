@@ -45,7 +45,7 @@ export const propertyCreateSchema = z.object({
     .enum(["SAHIBI_OTURUYOR", "KIRACILI", "BOS", "ARSIV"])
     .nullable()
     .optional(),
-  ownerCitizenship: z.enum(["TC", "YABANCI"]).nullable().optional(),
+  ownerCitizenship: z.enum(["TC", "YABANCI", "VATANDASLIGA_UYGUN"]).nullable().optional(),
   usageType: z
     .enum(["KONUT", "ISYERI", "KARMA", "ARSA_IMARLI", "ARSA_IMARSIZ"])
     .nullable()

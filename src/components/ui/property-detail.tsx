@@ -347,7 +347,16 @@ export function PropertyDetail({ property, onClose }: PropertyDetailProps) {
                   <InfoRow label="Kullanım" value={usageLabels[property.usageType] || property.usageType} />
                 )}
                 {property.ownerCitizenship && (
-                  <InfoRow label="Sahip Vatandaşlığı" value={property.ownerCitizenship === "TC" ? "TC" : "Yabancı"} />
+                  <InfoRow
+                    label="Sahip Vatandaşlığı"
+                    value={
+                      property.ownerCitizenship === "TC"
+                        ? "TC"
+                        : property.ownerCitizenship === "VATANDASLIGA_UYGUN"
+                        ? "Vatandaşlığa Uygun"
+                        : "Yabancı"
+                    }
+                  />
                 )}
                 {(property.ada || property.pafta || property.parsel) && (
                   <InfoRow

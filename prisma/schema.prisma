@@ -106,6 +106,7 @@ enum OccupancyStatus {
 enum OwnerCitizenship {
   TC
   YABANCI
+  VATANDASLIGA_UYGUN  // Vatandaşlığa uygun (yabancıya satışta TR vatandaşlık programı için uygun mülk)
 }
 
 enum UsageType {

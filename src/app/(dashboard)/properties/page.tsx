@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -82,6 +82,10 @@ function PropertiesPageInner() {
     ...Object.fromEntries(listingTypes.map((t) => [t.code, t.label])),
   };
 
+  // Scroll position'ı korumak için ref
+  const scrollSectionRef = useRef<HTMLElement>(null);
+  const savedScrollRef = useRef<number>(0);
+
   const [sortBy, setSortBy] = useState("createdAt");
   const [sortOrder, setSortOrder] = useState("desc");
   const [showFilters, setShowFilters] = useState(false);
@@ -152,6 +156,8 @@ function PropertiesPageInner() {
 
   async function handleSelectProperty(p: PropertyCardData) {
     if (selectedProperty?.id === p.id) return;
+    // Scroll pozisyonunu kaydet, layout shift sonrası geri yükleyeceğiz
+    savedScrollRef.current = scrollSectionRef.current?.scrollTop ?? 0;
     try {
       const res = await fetch(`/api/properties/${p.id}`);
       const data = await res.json();
@@ -160,6 +166,13 @@ function PropertiesPageInner() {
       setSelectedProperty(null);
     }
   }
+
+  // Detay paneli açılıp/kapanırken layout shift olur — scroll'u koru
+  useLayoutEffect(() => {
+    if (scrollSectionRef.current && savedScrollRef.current > 0) {
+      scrollSectionRef.current.scrollTop = savedScrollRef.current;
+    }
+  }, [selectedProperty]);
 
   function toggleSort(field: string) {
     if (sortBy === field) {
@@ -172,7 +185,7 @@ function PropertiesPageInner() {
 
   return (
     <div className="flex gap-8 overflow-hidden h-[calc(100vh-120px)]">
-      <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex-1 flex flex-col no-scrollbar overflow-y-auto">
+      <motion.section ref={scrollSectionRef} initial={false} className="flex-1 flex flex-col no-scrollbar overflow-y-auto">
         {/* Header */}
         <div className="flex justify-between items-end mb-8">
           <div>
@@ -357,6 +370,7 @@ function PropertiesPageInner() {
                       <option value="">Vatandaşlık</option>
                       <option value="TC">TC</option>
                       <option value="YABANCI">Yabancı</option>
+                      <option value="VATANDASLIGA_UYGUN">Vatandaşlığa Uygun</option>
                     </select>
                     <select value={assignedAgentId} onChange={(e) => setAssignedAgentId(e.target.value)}
                       className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm">

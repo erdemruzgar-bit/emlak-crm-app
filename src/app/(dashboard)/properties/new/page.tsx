@@ -51,6 +51,10 @@ export default function NewPropertyPage() {
   const [city, setCity] = useState("");
   const [district, setDistrict] = useState("");
 
+  // Tapu / İnşaat — Kat Mülkiyeti seçilince inşaat durumu otomatik OTURUMA_HAZIR
+  const [katMulkiyetiTipi, setKatMulkiyetiTipi] = useState("");
+  const [constructionStatus, setConstructionStatus] = useState("");
+
   useEffect(() => {
     fetch("/api/projects")
       .then((r) => r.json())
@@ -139,11 +143,11 @@ export default function NewPropertyPage() {
       pafta: optStr("pafta"),
       parsel: optStr("parsel"),
       bagimsizBolumNo: optStr("bagimsizBolumNo"),
-      katMulkiyetiTipi: optStr("katMulkiyetiTipi"),
+      katMulkiyetiTipi: katMulkiyetiTipi || undefined,
       hasTitleDeed: optBool("hasTitleDeed"),
 
       // İnşaat durumu
-      constructionStatus: optStr("constructionStatus"),
+      constructionStatus: constructionStatus || undefined,
 
       // Sakin / kullanım / vatandaşlık
       occupancyStatus: optStr("occupancyStatus"),
@@ -368,7 +372,18 @@ export default function NewPropertyPage() {
             </div>
             <div className="col-span-2">
               <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Kat Mülkiyeti Tipi</label>
-              <select name="katMulkiyetiTipi" className={inputClass} defaultValue="">
+              <select
+                value={katMulkiyetiTipi}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setKatMulkiyetiTipi(v);
+                  // Kat Mülkiyeti seçilince inşaat durumu otomatik "Oturuma Hazır"
+                  if (v === "KAT_MULKIYETI" && !constructionStatus) {
+                    setConstructionStatus("OTURUMA_HAZIR");
+                  }
+                }}
+                className={inputClass}
+              >
                 <option value="">Seçiniz</option>
                 <option value="KAT_MULKIYETI">Kat Mülkiyeti</option>
                 <option value="KAT_IRTIFAKI">Kat İrtifakı</option>
@@ -386,8 +401,17 @@ export default function NewPropertyPage() {
               </select>
             </div>
             <div className="col-span-2">
-              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">İnşaat Durumu</label>
-              <select name="constructionStatus" className={inputClass} defaultValue="">
+              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">
+                İnşaat Durumu
+                {katMulkiyetiTipi === "KAT_MULKIYETI" && constructionStatus === "OTURUMA_HAZIR" && (
+                  <span className="ml-2 text-primary text-[9px] normal-case tracking-normal">(otomatik dolduruldu)</span>
+                )}
+              </label>
+              <select
+                value={constructionStatus}
+                onChange={(e) => setConstructionStatus(e.target.value)}
+                className={inputClass}
+              >
                 <option value="">Seçiniz</option>
                 <option value="OTURUMA_HAZIR">Oturuma Hazır</option>
                 <option value="INSAAT_HALINDE">İnşaat Halinde</option>
@@ -427,6 +451,7 @@ export default function NewPropertyPage() {
                 <option value="">Seçiniz</option>
                 <option value="TC">TC</option>
                 <option value="YABANCI">Yabancı</option>
+                <option value="VATANDASLIGA_UYGUN">Vatandaşlığa Uygun</option>
               </select>
             </div>
           </div>

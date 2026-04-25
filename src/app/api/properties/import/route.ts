@@ -6,7 +6,7 @@ import { canImportData, extractActor } from "@/lib/rbac";
 import { createAuditLog } from "@/lib/audit";
 import { runPropertyMatching } from "@/lib/matching";
 
-const listingRev: Record<string, string> = { "Satılık": "SATILIK", "Kiralık": "KIRALIK" };
+const DEFAULT_LISTING_REV: Record<string, string> = { "Satılık": "SATILIK", "Kiralık": "KIRALIK", "Arşiv": "ARSIV" };
 const propertyTypeRev: Record<string, string> = { "Daire": "DAIRE", "Villa": "VILLA", "Arsa": "ARSA", "İşyeri": "ISYERI", "Müstakil Ev": "MUSTAKILEV" };
 const statusRev: Record<string, string> = { "Aktif": "ACTIVE", "Satıldı": "SOLD", "Kiralandı": "RENTED", "Pasif": "INACTIVE" };
 
@@ -56,6 +56,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Dosyada satır yok" }, { status: 400 });
   }
 
+  // Catalog'dan mevcut listing tip kodlarını ve etiketlerini çek
+  const listingCatalog = await prisma.listingTypeCatalog.findMany({ where: { isActive: true } });
+  const listingCatalogCodes = new Set(listingCatalog.map((c) => c.code));
+  const listingCatalogLabelMap: Record<string, string> = Object.fromEntries(
+    listingCatalog.map((c) => [c.label, c.code])
+  );
+  const listingRev: Record<string, string> = { ...DEFAULT_LISTING_REV, ...listingCatalogLabelMap };
+
   // Mevcut ilan eşleşmesi için başlık ile bak
   const titles = rawRows.map((r) => r["Başlık"]).filter(Boolean) as string[];
   const existing = await prisma.property.findMany({
@@ -74,7 +82,10 @@ export async function POST(req: NextRequest) {
 
     if (title.length < 3) errors.push("Başlık en az 3 karakter olmalı");
     const listingType = listingRev[listingTR] || listingTR.toUpperCase();
-    if (!["SATILIK", "KIRALIK"].includes(listingType)) errors.push(`Tip geçersiz: "${listingTR}"`);
+    const listingValid =
+      listingCatalogCodes.has(listingType) ||
+      ["SATILIK", "KIRALIK", "ARSIV"].includes(listingType);
+    if (!listingValid) errors.push(`Tip geçersiz: "${listingTR}" — Ayarlar → İlan Tipleri'nden ekleyin`);
     const propertyType = propertyTypeRev[propertyTypeTR] || propertyTypeTR.toUpperCase();
     if (!["DAIRE", "VILLA", "ARSA", "ISYERI", "MUSTAKILEV"].includes(propertyType)) errors.push(`Emlak tipi geçersiz: "${propertyTypeTR}"`);
     if (!price || price <= 0) errors.push("Fiyat pozitif bir sayı olmalı");

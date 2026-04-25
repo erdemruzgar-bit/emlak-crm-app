@@ -50,6 +50,7 @@ const statusColors: Record<string, string> = {
 const listingLabels: Record<string, string> = {
   SATILIK: "Satılık",
   KIRALIK: "Kiralık",
+  ARSIV: "Arşiv",
 };
 
 export function formatPrice(price: number, currency: string) {

@@ -72,6 +72,12 @@ const propertyTypeLabels: Record<string, string> = {
   MUSTAKILEV: "Müstakil Ev",
 };
 
+const listingLabels: Record<string, string> = {
+  SATILIK: "Satılık",
+  KIRALIK: "Kiralık",
+  ARSIV: "Arşiv",
+};
+
 const heatingLabels: Record<string, string> = {
   DOGALGAZ: "Doğalgaz",
   MERKEZI: "Merkezi",
@@ -317,7 +323,7 @@ export function PropertyDetail({ property, onClose }: PropertyDetailProps) {
                 exit={{ opacity: 0, y: -10 }}
                 className="grid grid-cols-1 gap-3"
               >
-                <InfoRow label="İlan Tipi" value={property.listingType === "SATILIK" ? "Satılık" : "Kiralık"} />
+                <InfoRow label="İlan Tipi" value={listingLabels[property.listingType] || property.listingType} />
                 <InfoRow label="Mülk Tipi" value={propertyTypeLabels[property.propertyType] || property.propertyType} />
                 {property.rooms && <InfoRow label="Oda Sayısı" value={property.rooms} />}
                 {property.bathrooms != null && <InfoRow label="Banyo" value={String(property.bathrooms)} />}

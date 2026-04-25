@@ -25,7 +25,7 @@ interface PropertyFull extends PropertyCardData {
   description: string | null;
 }
 
-const listingLabels: Record<string, string> = { SATILIK: "Satılık", KIRALIK: "Kiralık" };
+const DEFAULT_LISTING_LABELS: Record<string, string> = { SATILIK: "Satılık", KIRALIK: "Kiralık", ARSIV: "Arşiv" };
 const propertyTypeLabels: Record<string, string> = { DAIRE: "Daire", VILLA: "Villa", ARSA: "Arsa", ISYERI: "İşyeri", MUSTAKILEV: "Müstakil Ev" };
 const statusLabels: Record<string, string> = { ACTIVE: "Aktif", SOLD: "Satıldı", RENTED: "Kiralandı", INACTIVE: "Pasif" };
 const statusColors: Record<string, string> = {
@@ -75,6 +75,12 @@ function PropertiesPageInner() {
   const [projects, setProjects] = useState<{ id: string; name: string; blocks: { id: string; name: string }[] }[]>([]);
   const [users, setUsers] = useState<{ id: string; name: string; role: string }[]>([]);
   const [roomTypes, setRoomTypes] = useState<{ id: string; name: string }[]>([]);
+  const [listingTypes, setListingTypes] = useState<{ code: string; label: string }[]>([]);
+
+  const listingLabels: Record<string, string> = {
+    ...DEFAULT_LISTING_LABELS,
+    ...Object.fromEntries(listingTypes.map((t) => [t.code, t.label])),
+  };
 
   const [sortBy, setSortBy] = useState("createdAt");
   const [sortOrder, setSortOrder] = useState("desc");
@@ -98,6 +104,9 @@ function PropertiesPageInner() {
     }).catch(() => {});
     fetch("/api/room-types").then((r) => r.ok ? r.json() : []).then((data) => {
       if (Array.isArray(data)) setRoomTypes(data);
+    }).catch(() => {});
+    fetch("/api/listing-types").then((r) => r.ok ? r.json() : []).then((data) => {
+      if (Array.isArray(data)) setListingTypes(data);
     }).catch(() => {});
   }, []);
 
@@ -208,9 +217,10 @@ function PropertiesPageInner() {
             </div>
             <select value={listingType} onChange={(e) => setListingType(e.target.value)}
               className="px-4 py-3 bg-surface-container-low border-none rounded-xl outline-none text-sm font-medium">
-              <option value="">Satılık / Kiralık</option>
-              <option value="SATILIK">Satılık</option>
-              <option value="KIRALIK">Kiralık</option>
+              <option value="">Tüm İlan Tipleri</option>
+              {listingTypes.map((t) => (
+                <option key={t.code} value={t.code}>{t.label}</option>
+              ))}
             </select>
 
             {/* Sort */}
@@ -518,7 +528,7 @@ function CompactCard({ property: p, isSelected, onClick, onDoubleClick }: {
           {statusLabels[p.status]}
         </span>
         <span className="absolute bottom-2 left-2 glass-badge text-[9px] px-1.5 py-0.5 rounded font-bold text-primary">
-          {p.listingType === "SATILIK" ? "Satılık" : "Kiralık"}
+          {DEFAULT_LISTING_LABELS[p.listingType] || p.listingType}
         </span>
       </div>
       <div className="p-3">

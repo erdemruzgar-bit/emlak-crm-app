@@ -119,6 +119,9 @@ export default function EditPropertyPage() {
   const selectedProjectBlocks =
     projects.find((p) => p.id === projectId)?.blocks ?? [];
 
+  // İlan tipi catalog
+  const [listingTypes, setListingTypes] = useState<{ code: string; label: string }[]>([]);
+
   useEffect(() => {
     fetch("/api/projects")
       .then((r) => r.json())
@@ -126,6 +129,12 @@ export default function EditPropertyPage() {
         if (Array.isArray(data)) setProjects(data);
       })
       .catch(() => setProjects([]));
+    fetch("/api/listing-types")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => {
+        if (Array.isArray(data)) setListingTypes(data);
+      })
+      .catch(() => setListingTypes([]));
   }, []);
 
   useEffect(() => {
@@ -565,8 +574,13 @@ export default function EditPropertyPage() {
             <div>
               <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">İlan Tipi *</label>
               <select value={form.listingType} onChange={(e) => set("listingType", e.target.value)} className={inputClass}>
-                <option value="SATILIK">Satılık</option>
-                <option value="KIRALIK">Kiralık</option>
+                {/* Eski değer listede yoksa onu da göster */}
+                {form.listingType && !listingTypes.find((t) => t.code === form.listingType) && (
+                  <option value={form.listingType}>{form.listingType}</option>
+                )}
+                {listingTypes.map((t) => (
+                  <option key={t.code} value={t.code}>{t.label}</option>
+                ))}
               </select>
             </div>
             <div>

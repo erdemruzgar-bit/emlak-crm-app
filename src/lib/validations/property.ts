@@ -2,7 +2,7 @@ import { z } from "zod/v4";
 
 export const propertyCreateSchema = z.object({
   title: z.string().min(3, "Başlık en az 3 karakter olmalı"),
-  listingType: z.enum(["SATILIK", "KIRALIK"]),
+  listingType: z.string().min(1, "İlan tipi gerekli"),
   propertyType: z.enum(["DAIRE", "VILLA", "ARSA", "ISYERI", "MUSTAKILEV"]),
   status: z.enum(["ACTIVE", "SOLD", "RENTED", "INACTIVE"]).optional(),
   price: z.number().positive("Fiyat pozitif olmalı"),

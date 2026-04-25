@@ -44,6 +44,9 @@ export default function NewPropertyPage() {
   // Oda tipleri (admin yönetimli)
   const [roomTypes, setRoomTypes] = useState<{ id: string; name: string }[]>([]);
 
+  // İlan tipleri (admin yönetimli)
+  const [listingTypes, setListingTypes] = useState<{ code: string; label: string }[]>([]);
+
   // Şehir / İlçe cascading
   const [city, setCity] = useState("");
   const [district, setDistrict] = useState("");
@@ -61,6 +64,12 @@ export default function NewPropertyPage() {
         if (Array.isArray(data)) setRoomTypes(data);
       })
       .catch(() => setRoomTypes([]));
+    fetch("/api/listing-types")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => {
+        if (Array.isArray(data)) setListingTypes(data);
+      })
+      .catch(() => setListingTypes([]));
   }, []);
 
   const selectedProjectBlocks =
@@ -216,9 +225,11 @@ export default function NewPropertyPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">İlan Tipi *</label>
-              <select name="listingType" required className={inputClass}>
-                <option value="SATILIK">Satılık</option>
-                <option value="KIRALIK">Kiralık</option>
+              <select name="listingType" required className={inputClass} defaultValue="">
+                <option value="" disabled>Seçiniz</option>
+                {listingTypes.map((t) => (
+                  <option key={t.code} value={t.code}>{t.label}</option>
+                ))}
               </select>
             </div>
             <div>

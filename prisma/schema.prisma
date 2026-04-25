@@ -20,10 +20,6 @@ enum ConsentType {
   PAZARLAMA
 }
 
-enum ListingType {
-  SATILIK
-  KIRALIK
-}
 
 enum PropertyType {
   DAIRE
@@ -348,7 +344,7 @@ model CustomerInteraction {
 model Property {
   id             String         @id @default(cuid())
   title          String
-  listingType    ListingType
+  listingType    String        // ListingTypeCatalog.code referansı
   propertyType   PropertyType
   price          Float
   currency       String         @default("TRY")
@@ -482,6 +478,18 @@ model CustomerTypeCatalog {
   isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  @@index([sortOrder])
+}
+
+model ListingTypeCatalog {
+  id        String   @id @default(cuid())
+  code      String   @unique  // "SATILIK", "KIRALIK", "ARSIV", custom
+  label     String             // Türkçe görünen ad
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([sortOrder])
 }

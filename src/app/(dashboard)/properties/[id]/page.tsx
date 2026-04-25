@@ -108,9 +108,10 @@ interface Property {
   kitchenType: "ACIK" | "KAPALI" | null;
 }
 
-const listingLabels: Record<string, string> = {
+const DEFAULT_LISTING_LABELS: Record<string, string> = {
   SATILIK: "Satılık",
   KIRALIK: "Kiralık",
+  ARSIV: "Arşiv",
 };
 const typeLabels: Record<string, string> = {
   DAIRE: "Daire",
@@ -148,6 +149,12 @@ export default function PropertyDetailPage() {
   const [activeImg, setActiveImg] = useState(0);
   const [lightbox, setLightbox] = useState(false);
   const [failedImages, setFailedImages] = useState<Set<number>>(new Set());
+  const [listingTypeCatalog, setListingTypeCatalog] = useState<{ code: string; label: string }[]>([]);
+
+  const listingLabels: Record<string, string> = {
+    ...DEFAULT_LISTING_LABELS,
+    ...Object.fromEntries(listingTypeCatalog.map((t) => [t.code, t.label])),
+  };
   const [matches, setMatches] = useState<MatchEntry[]>([]);
   const [matchesLoading, setMatchesLoading] = useState(true);
   const [matchInfoOpen, setMatchInfoOpen] = useState(false);
@@ -168,6 +175,12 @@ export default function PropertyDetailPage() {
       .then((r) => (r.ok ? r.json() : []))
       .then((data) => setContracts(Array.isArray(data) ? data : []))
       .catch(() => setContracts([]));
+    fetch("/api/listing-types")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => {
+        if (Array.isArray(data)) setListingTypeCatalog(data);
+      })
+      .catch(() => {});
   }, [params.id]);
 
   function reloadMatches() {

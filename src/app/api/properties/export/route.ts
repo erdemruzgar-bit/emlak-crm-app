@@ -5,7 +5,7 @@ import { buildExcel, excelResponse, type ColumnDef } from "@/lib/excel";
 import { canExportData, extractActor } from "@/lib/rbac";
 import { createAuditLog } from "@/lib/audit";
 
-const listingLabels: Record<string, string> = { SATILIK: "Satılık", KIRALIK: "Kiralık" };
+const DEFAULT_LISTING_LABELS: Record<string, string> = { SATILIK: "Satılık", KIRALIK: "Kiralık", ARSIV: "Arşiv" };
 const propertyTypeLabels: Record<string, string> = { DAIRE: "Daire", VILLA: "Villa", ARSA: "Arsa", ISYERI: "İşyeri", MUSTAKILEV: "Müstakil Ev" };
 const statusLabels: Record<string, string> = { ACTIVE: "Aktif", SOLD: "Satıldı", RENTED: "Kiralandı", INACTIVE: "Pasif" };
 
@@ -24,7 +24,7 @@ interface PropertyRow {
   branch: { name: string } | null;
 }
 
-const columns: ColumnDef<PropertyRow>[] = [
+function buildColumns(listingLabels: Record<string, string>): ColumnDef<PropertyRow>[] { return [
   { key: "title", header: "Başlık", width: 32 },
   { key: "listingType", header: "Tip", width: 10, transform: (v) => listingLabels[String(v)] ?? String(v) },
   { key: "propertyType", header: "Emlak Tipi", width: 12, transform: (v) => propertyTypeLabels[String(v)] ?? String(v) },
@@ -50,7 +50,7 @@ const columns: ColumnDef<PropertyRow>[] = [
   { key: "branch", header: "Şube", width: 16, transform: (v) => (v as { name?: string } | null)?.name ?? "" },
   { key: "description", header: "Açıklama", width: 40 },
   { key: "createdAt", header: "Kayıt Tarihi", width: 18 },
-];
+]; }
 
 export async function GET(req: NextRequest) {
   const session = await auth();
@@ -60,16 +60,24 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Excel dışa aktarma yetkiniz yok" }, { status: 403 });
   }
 
-  const properties = await prisma.property.findMany({
-    include: {
-      owner: { select: { firstName: true, lastName: true } },
-      assignedAgent: { select: { name: true } },
-      branch: { select: { name: true } },
-    },
-    orderBy: { createdAt: "desc" },
-  });
+  const [properties, listingCatalog] = await Promise.all([
+    prisma.property.findMany({
+      include: {
+        owner: { select: { firstName: true, lastName: true } },
+        assignedAgent: { select: { name: true } },
+        branch: { select: { name: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.listingTypeCatalog.findMany(),
+  ]);
 
-  const buffer = buildExcel<PropertyRow>(properties as unknown as PropertyRow[], columns, "Portföy");
+  const listingLabels: Record<string, string> = {
+    ...DEFAULT_LISTING_LABELS,
+    ...Object.fromEntries(listingCatalog.map((t) => [t.code, t.label])),
+  };
+
+  const buffer = buildExcel<PropertyRow>(properties as unknown as PropertyRow[], buildColumns(listingLabels), "Portföy");
 
   await createAuditLog({
     userId: actor.id,

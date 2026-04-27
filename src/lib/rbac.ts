@@ -1,7 +1,7 @@
 // Merkezi RBAC (Role-Based Access Control) helper'ları
 // Kural özeti:
 //  - Müşteriler: tüm roller tüm şubelerde görür; düzenleme atanmış danışman / herhangi MANAGER / ADMIN
-//  - İlanlar: AGENT/MANAGER kendi şubesi; düzenleme atanmış danışman / aynı şube MANAGER / ADMIN
+//  - İlanlar: AGENT kendi şubesi; MANAGER tüm şubeleri görür ama düzenleme sadece kendi şubesi; ADMIN hepsi
 //  - Randevu/görev: AGENT kendi, MANAGER şubesinin kullanıcıları, ADMIN hepsi
 //  - Eşleşmeler: ilgili ilanın edit hakkıyla aynı
 
@@ -67,18 +67,19 @@ export function canEditCustomer(
 
 // -------- İlan --------
 
-// Görüntüleme: ADMIN her şubeyi; AGENT/MANAGER kendi şubesini (ilanın branchId'si eşleşmeli)
+// Görüntüleme: ADMIN ve MANAGER tüm şubeleri; AGENT sadece kendi şubesini
 export function canViewProperty(
   actor: SessionActor | null,
   property: { branchId: string | null }
 ): boolean {
   if (!actor) return false;
-  if (actor.role === "ADMIN") return true;
+  if (actor.role === "ADMIN" || actor.role === "MANAGER") return true;
   if (!actor.branchId || !property.branchId) return false;
   return actor.branchId === property.branchId;
 }
 
 // Düzenleme: atanmış danışman, aynı şube MANAGER, ADMIN
+// (MANAGER görüntülemeyi tüm şubelerde yapar ama düzenleme yalnızca kendi şubesinde)
 export function canEditProperty(
   actor: SessionActor | null,
   property: { assignedAgentId: string | null; branchId: string | null }
@@ -93,9 +94,12 @@ export function canEditProperty(
 }
 
 // Prisma where filtresi — liste endpointlerinde kullanılır
+// MANAGER artık tüm şubelerin ilanlarını listede görür (görsel listede izolasyon yok);
+// edit/delete RBAC üzerinden korunuyor.
 export function propertyListFilter(actor: SessionActor | null): Record<string, unknown> {
-  if (!actor || actor.role === "ADMIN") return {};
-  return { branchId: actor.branchId ?? "__no_branch__" }; // müdür/danışmanın şubesi yoksa hiçbir şey dönmez
+  if (!actor) return { branchId: "__no_branch__" };
+  if (actor.role === "ADMIN" || actor.role === "MANAGER") return {};
+  return { branchId: actor.branchId ?? "__no_branch__" }; // AGENT — kendi şubesi
 }
 
 // -------- Randevu / Görev --------

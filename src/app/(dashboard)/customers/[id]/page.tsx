@@ -145,6 +145,8 @@ const urgencyColors: Record<string, string> = { LOW: "bg-green-100 text-green-70
 const propertyTypeOptions = ["DAIRE", "VILLA", "ARSA", "ISYERI", "MUSTAKILEV"];
 const propertyTypeLabels: Record<string, string> = { DAIRE: "Daire", VILLA: "Villa", ARSA: "Arsa", ISYERI: "İşyeri", MUSTAKILEV: "Müstakil Ev" };
 const featureOptions = ["Otopark", "Havuz", "Asansör", "Balkon", "Güvenlik", "Bahçe", "Ebeveyn Banyosu", "Manzara", "Metro Yakın", "Okul Yakın"];
+// Oda kavramı olan mülk tipleri (ARSA hariç)
+const TYPES_WITH_ROOMS = new Set(["DAIRE", "VILLA", "MUSTAKILEV", "ISYERI"]);
 
 export default function CustomerDetailPage() {
   const params = useParams();
@@ -173,6 +175,7 @@ export default function CustomerDetailPage() {
   const [newNote, setNewNote] = useState("");
   const [noteSaving, setNoteSaving] = useState(false);
   const [customerTypeOptions, setCustomerTypeOptions] = useState<{ code: string; label: string }[]>([]);
+  const [roomTypeOptions, setRoomTypeOptions] = useState<{ id: string; name: string }[]>([]);
 
   const typeLabels: Record<string, string> = {
     ...DEFAULT_TYPE_LABELS,
@@ -233,7 +236,21 @@ export default function CustomerDetailPage() {
         if (Array.isArray(data)) setCustomerTypeOptions(data);
       })
       .catch(() => {});
+
+    fetch("/api/room-types")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => {
+        if (Array.isArray(data)) setRoomTypeOptions(data);
+      })
+      .catch(() => {});
   }, []);
+
+  // Müşterinin tercih ettiği tipler arasında oda kavramı olan en az bir tip varsa oda alanları görünür
+  const showRoomFields = useMemo(() => {
+    const types = customer?.preferredTypes ?? [];
+    if (types.length === 0) return true;
+    return types.some((t) => TYPES_WITH_ROOMS.has(t));
+  }, [customer?.preferredTypes]);
 
   if (loading) return (
     <div className="flex items-center justify-center h-64 text-on-surface-variant">
@@ -574,7 +591,7 @@ export default function CustomerDetailPage() {
                   ))}
                 </div>
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className={cn("grid gap-4", showRoomFields ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-2")}>
                 <div>
                   <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Min m²</label>
                   <input type="number" value={customer.minArea || ""} onChange={(e) => setCustomer({ ...customer, minArea: e.target.value ? parseFloat(e.target.value) : null })}
@@ -585,16 +602,30 @@ export default function CustomerDetailPage() {
                   <input type="number" value={customer.maxArea || ""} onChange={(e) => setCustomer({ ...customer, maxArea: e.target.value ? parseFloat(e.target.value) : null })}
                     className="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/20 outline-none text-sm" />
                 </div>
-                <div>
-                  <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Min Oda</label>
-                  <input value={customer.minRooms || ""} onChange={(e) => setCustomer({ ...customer, minRooms: e.target.value || null })} placeholder="2+1"
-                    className="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/20 outline-none text-sm" />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Max Oda</label>
-                  <input value={customer.maxRooms || ""} onChange={(e) => setCustomer({ ...customer, maxRooms: e.target.value || null })} placeholder="4+1"
-                    className="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/20 outline-none text-sm" />
-                </div>
+                {showRoomFields && (
+                  <>
+                    <div>
+                      <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Min Oda Tipi</label>
+                      <select value={customer.minRooms || ""} onChange={(e) => setCustomer({ ...customer, minRooms: e.target.value || null })}
+                        className="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/20 outline-none text-sm">
+                        <option value="">Seçiniz</option>
+                        {roomTypeOptions.map((rt) => (
+                          <option key={rt.id} value={rt.name}>{rt.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Max Oda Tipi</label>
+                      <select value={customer.maxRooms || ""} onChange={(e) => setCustomer({ ...customer, maxRooms: e.target.value || null })}
+                        className="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/20 outline-none text-sm">
+                        <option value="">Seçiniz</option>
+                        {roomTypeOptions.map((rt) => (
+                          <option key={rt.id} value={rt.name}>{rt.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </>
+                )}
               </div>
               <div>
                 <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-3">İstenen Özellikler</label>

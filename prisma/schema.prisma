@@ -106,7 +106,8 @@ enum OccupancyStatus {
 enum OwnerCitizenship {
   TC
   YABANCI
-  VATANDASLIGA_UYGUN  // Vatandaşlığa uygun (yabancıya satışta TR vatandaşlık programı için uygun mülk)
+  VATANDASLIGA_UYGUN  // ⚠️ DEPRECATED: yeni kayıtlarda kullanılmaz; isCitizenshipEligible alanına taşınmıştır.
+                      // Mevcut veri uyumluluğu için tutuluyor; UI'da artık gösterilmez.
 }
 
 enum UsageType {
@@ -175,10 +176,11 @@ model Branch {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  users      User[]
-  customers  Customer[]
-  properties Property[]
-  contracts  Contract[]
+  users            User[]
+  customers        Customer[]
+  properties       Property[]
+  contracts        Contract[]
+  commissionPolicy CommissionPolicy?
 }
 
 model User {
@@ -381,9 +383,11 @@ model Property {
   katMulkiyetiTipi  KatMulkiyetiTipi?
 
   // ─── Sakin, vatandaşlık, kullanım ───
-  occupancyStatus   OccupancyStatus?
-  ownerCitizenship  OwnerCitizenship?
-  usageType         UsageType?
+  occupancyStatus       OccupancyStatus?
+  ownerCitizenship      OwnerCitizenship?
+  // Yabancıya satışta TR vatandaşlık programı için uygun mülk (sahibinin uyruğundan bağımsız mülk özelliği).
+  isCitizenshipEligible Boolean?
+  usageType             UsageType?
 
   // ─── Ek özellikler ───
   hasElevator       Boolean?
@@ -644,4 +648,50 @@ model Reminder {
   @@index([isDone])
   @@index([dueDate])
   @@index([targetType, targetId])
+}
+
+// ─── Komisyon Politikası ───
+// branchId NULL ise = şirket geneli (default).
+// branchId doluysa = o şubenin override'ı.
+// Her şube için en fazla bir politika kaydı tutulur (@@unique([branchId])).
+//
+// payoutTemplate: hesaplayıcıda hangi default şablon seçili gelir
+//   - CLASSIC: tek ofis, tek danışman; bizim ofis = %100, danışman ofise düşenden alır
+//   - COBROKER: iki ofis (bizim + partner) %50/%50
+//   - DOUBLE_AGENT: aynı ofis, iki danışman (alıcı + satıcı tarafı)
+//   - COBROKER_DOUBLE: iki ofis + her iki tarafın da farklı danışmanları
+
+model CommissionPolicy {
+  id        String   @id @default(cuid())
+  branchId  String?  @unique  // null = şirket geneli
+  name      String   @default("Varsayılan")
+
+  // Satış varsayılan oranları (yüzde)
+  salesBuyerRate    Float    @default(2)
+  salesSellerRate   Float    @default(2)
+
+  // Kira varsayılan oranları (yüzde — kira tutarına oranla)
+  rentTenantRate    Float    @default(100)   // 1 aylık kira = %100
+  rentLandlordRate  Float    @default(0)
+
+  // KDV
+  vatRate            Float   @default(20)
+  vatIncludedDefault Boolean @default(true)
+
+  // Co-broker payı (partner ofis varsa) — bizim ofise düşen %
+  cobrokerOwnShare       Float @default(50)
+
+  // Bizim ofis payından danışmana giden % (tek danışman senaryosu)
+  agentShareOfOwnOffice  Float @default(50)
+
+  // Çift danışman varsa danışman havuzunda alıcı tarafı %
+  // (sellerSide = 100 - bu)
+  buyerSideAgentShare    Float @default(50)
+
+  // Default şablon
+  payoutTemplate    String   @default("CLASSIC") // CLASSIC | COBROKER | DOUBLE_AGENT | COBROKER_DOUBLE
+
+  branch    Branch?  @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

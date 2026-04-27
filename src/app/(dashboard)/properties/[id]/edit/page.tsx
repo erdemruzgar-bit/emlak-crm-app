@@ -102,6 +102,7 @@ export default function EditPropertyPage() {
     katMulkiyetiTipi: "",
     occupancyStatus: "",
     ownerCitizenship: "",
+    isCitizenshipEligible: "",
     usageType: "",
     hasElevator: "",
     hasParking: "",
@@ -166,7 +167,11 @@ export default function EditPropertyPage() {
           bagimsizBolumNo: data.bagimsizBolumNo || "",
           katMulkiyetiTipi: data.katMulkiyetiTipi || "",
           occupancyStatus: data.occupancyStatus || "",
-          ownerCitizenship: data.ownerCitizenship || "",
+          ownerCitizenship: data.ownerCitizenship === "VATANDASLIGA_UYGUN" ? "" : (data.ownerCitizenship || ""),
+          isCitizenshipEligible:
+            data.isCitizenshipEligible === true || data.ownerCitizenship === "VATANDASLIGA_UYGUN"
+              ? "true"
+              : data.isCitizenshipEligible === false ? "false" : "",
           usageType: data.usageType || "",
           hasElevator: data.hasElevator === true ? "true" : data.hasElevator === false ? "false" : "",
           hasParking: data.hasParking === true ? "true" : data.hasParking === false ? "false" : "",
@@ -245,6 +250,7 @@ export default function EditPropertyPage() {
       // Sakin / kullanım
       occupancyStatus: form.occupancyStatus || null,
       ownerCitizenship: form.ownerCitizenship || null,
+      isCitizenshipEligible: boolOrNull(form.isCitizenshipEligible),
       usageType: form.usageType || null,
 
       // Ek özellikler
@@ -526,8 +532,16 @@ export default function EditPropertyPage() {
                 <option value="">Seçiniz</option>
                 <option value="TC">TC</option>
                 <option value="YABANCI">Yabancı</option>
-                <option value="VATANDASLIGA_UYGUN">Vatandaşlığa Uygun</option>
               </select>
+            </div>
+            <div>
+              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Vatandaşlığa Uygun</label>
+              <select value={form.isCitizenshipEligible} onChange={(e) => set("isCitizenshipEligible", e.target.value)} className={inputClass}>
+                <option value="">—</option>
+                <option value="true">Evet</option>
+                <option value="false">Hayır</option>
+              </select>
+              <p className="text-[10px] text-on-surface-variant mt-1">Yabancıya satışta TR vatandaşlığı için uygun mülk</p>
             </div>
           </div>
         </div>

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { extractActor } from "@/lib/rbac";
 import { createAuditLog } from "@/lib/audit";
+import { applyContractEffects } from "@/lib/contract-effects";
 import { z } from "zod/v4";
 
 const contractCreateSchema = z.object({
@@ -108,6 +109,10 @@ export async function POST(req: NextRequest) {
       newValue: { contractType: contract.contractType, amount: contract.amount },
       ipAddress: req.headers.get("x-forwarded-for") || undefined,
     });
+
+    // Doğrudan ACTIVE olarak yaratıldıysa (DRAFT atlanmış) ilişkili
+    // mülk/müşteriyi kira/satış durumuna geçir.
+    await applyContractEffects(contract.id, null);
 
     return NextResponse.json(contract, { status: 201 });
   } catch {

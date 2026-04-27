@@ -13,24 +13,57 @@ export async function GET() {
   const user = session.user as unknown as Record<string, unknown>;
   const now = new Date();
 
+  // Property tabanlı sayım için (adet) — eski davranışla uyumlu
   const branchFilter: Record<string, unknown> = {};
   if (user.role === "MANAGER") branchFilter.branchId = user.branchId;
   else if (user.role === "AGENT") branchFilter.assignedAgentId = user.id;
 
+  // Contract tabanlı ciro hesabı için ayrı filtre
+  // (Contract.assignedAgentId yok; AGENT için createdById ile filtrelenir)
+  const contractBranchFilter: Record<string, unknown> = {};
+  if (user.role === "MANAGER") contractBranchFilter.branchId = user.branchId;
+  else if (user.role === "AGENT") contractBranchFilter.createdById = user.id;
+
   try {
-    // Monthly sales/rentals (last 6 months)
+    // Aylık satış/kira (son 6 ay) — ADET (Property.status) + CİRO (Contract.amount)
     const monthlySales = [];
     for (let i = 5; i >= 0; i--) {
       const mStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const mEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0, 23, 59, 59);
-      const [satis, kira] = await Promise.all([
+
+      const [satis, kira, satisCiroAgg, kiraCiroAgg] = await Promise.all([
         prisma.property.count({ where: { status: "SOLD", updatedAt: { gte: mStart, lte: mEnd }, ...branchFilter } }),
         prisma.property.count({ where: { status: "RENTED", updatedAt: { gte: mStart, lte: mEnd }, ...branchFilter } }),
+        prisma.contract.aggregate({
+          _sum: { amount: true },
+          where: {
+            contractType: "SATIS",
+            status: { in: ["ACTIVE", "RENEWED", "EXPIRED"] },
+            startDate: { gte: mStart, lte: mEnd },
+            ...contractBranchFilter,
+          },
+        }),
+        prisma.contract.aggregate({
+          _sum: { amount: true },
+          where: {
+            contractType: "KIRA",
+            status: { in: ["ACTIVE", "RENEWED", "EXPIRED"] },
+            startDate: { gte: mStart, lte: mEnd },
+            ...contractBranchFilter,
+          },
+        }),
       ]);
-      monthlySales.push({ month: monthNames[mStart.getMonth()], satis, kira });
+
+      monthlySales.push({
+        month: monthNames[mStart.getMonth()],
+        satis,
+        kira,
+        satisCiro: satisCiroAgg._sum.amount ?? 0,
+        kiraCiro: kiraCiroAgg._sum.amount ?? 0,
+      });
     }
 
-    // Agent performance
+    // Danışman performansı — adet + ciro
     const agents = await prisma.user.findMany({
       where: { role: { in: ["AGENT", "MANAGER"] }, isActive: true, ...(user.role === "MANAGER" ? { branchId: user.branchId as string } : {}) },
       select: { id: true, name: true },
@@ -38,29 +71,56 @@ export async function GET() {
 
     const agentPerformance = await Promise.all(
       agents.map(async (agent) => {
-        const [sales, customers] = await Promise.all([
+        const [sales, customers, revenueAgg] = await Promise.all([
           prisma.property.count({ where: { assignedAgentId: agent.id, status: { in: ["SOLD", "RENTED"] } } }),
           prisma.customer.count({ where: { assignedAgentId: agent.id, isAnonymized: false } }),
+          prisma.contract.aggregate({
+            _sum: { amount: true },
+            where: {
+              createdById: agent.id,
+              status: { in: ["ACTIVE", "RENEWED", "EXPIRED"] },
+              contractType: { in: ["KIRA", "SATIS"] },
+            },
+          }),
         ]);
-        return { name: agent.name, sales, customers };
+        return {
+          name: agent.name,
+          sales,
+          customers,
+          revenue: revenueAgg._sum.amount ?? 0,
+        };
       })
     );
 
-    // Branch comparison
+    // Şube karşılaştırma — adet + ciro
     const branches = await prisma.branch.findMany({
       select: { id: true, name: true },
     });
 
     const branchComparison = await Promise.all(
       branches.map(async (b) => {
-        const value = await prisma.property.count({
-          where: { branchId: b.id, status: { in: ["SOLD", "RENTED"] } },
-        });
-        return { name: b.name, value };
+        const [count, revenueAgg] = await Promise.all([
+          prisma.property.count({
+            where: { branchId: b.id, status: { in: ["SOLD", "RENTED"] } },
+          }),
+          prisma.contract.aggregate({
+            _sum: { amount: true },
+            where: {
+              branchId: b.id,
+              status: { in: ["ACTIVE", "RENEWED", "EXPIRED"] },
+              contractType: { in: ["KIRA", "SATIS"] },
+            },
+          }),
+        ]);
+        return {
+          name: b.name,
+          value: count,
+          revenue: revenueAgg._sum.amount ?? 0,
+        };
       })
     );
 
-    // KVKK stats
+    // KVKK istatistikleri
     const [totalConsents, acikRiza, pazarlama, pendingDeletion, auditLogsToday] = await Promise.all([
       prisma.customerConsent.count({ where: { isGranted: true } }),
       prisma.customerConsent.count({ where: { consentType: "ACIK_RIZA", isGranted: true } }),

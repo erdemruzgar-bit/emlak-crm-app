@@ -57,6 +57,7 @@ interface PropertyDetailData {
   katMulkiyetiTipi?: string | null;
   occupancyStatus?: string | null;
   ownerCitizenship?: string | null;
+  isCitizenshipEligible?: boolean | null;
   usageType?: string | null;
   hasElevator?: boolean | null;
   hasParking?: boolean | null;
@@ -346,17 +347,14 @@ export function PropertyDetail({ property, onClose }: PropertyDetailProps) {
                 {property.usageType && (
                   <InfoRow label="Kullanım" value={usageLabels[property.usageType] || property.usageType} />
                 )}
-                {property.ownerCitizenship && (
+                {property.ownerCitizenship && property.ownerCitizenship !== "VATANDASLIGA_UYGUN" && (
                   <InfoRow
                     label="Sahip Vatandaşlığı"
-                    value={
-                      property.ownerCitizenship === "TC"
-                        ? "TC"
-                        : property.ownerCitizenship === "VATANDASLIGA_UYGUN"
-                        ? "Vatandaşlığa Uygun"
-                        : "Yabancı"
-                    }
+                    value={property.ownerCitizenship === "TC" ? "TC" : "Yabancı"}
                   />
+                )}
+                {(property.isCitizenshipEligible || property.ownerCitizenship === "VATANDASLIGA_UYGUN") && (
+                  <InfoRow label="Vatandaşlığa Uygun" value="Evet (yabancıya satışta TR vatandaşlığı için)" />
                 )}
                 {(property.ada || property.pafta || property.parsel) && (
                   <InfoRow

@@ -45,7 +45,10 @@ export const propertyCreateSchema = z.object({
     .enum(["SAHIBI_OTURUYOR", "KIRACILI", "BOS", "ARSIV"])
     .nullable()
     .optional(),
+  // VATANDASLIGA_UYGUN deprecated; mevcut payload'larda hâlâ gelirse geriye dönük kabul edilir,
+  // POST/PUT route'ları bunu yeni alana (isCitizenshipEligible) çevirir.
   ownerCitizenship: z.enum(["TC", "YABANCI", "VATANDASLIGA_UYGUN"]).nullable().optional(),
+  isCitizenshipEligible: z.boolean().nullable().optional(),
   usageType: z
     .enum(["KONUT", "ISYERI", "KARMA", "ARSA_IMARLI", "ARSA_IMARSIZ"])
     .nullable()

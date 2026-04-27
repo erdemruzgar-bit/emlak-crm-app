@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { extractActor, SessionActor } from "@/lib/rbac";
 import { createAuditLog } from "@/lib/audit";
+import { applyContractEffects } from "@/lib/contract-effects";
 import { z } from "zod/v4";
 
 const contractUpdateSchema = z.object({
@@ -155,6 +156,11 @@ export async function PUT(
       newValue: { status: contract.status, amount: contract.amount },
       ipAddress: req.headers.get("x-forwarded-for") || undefined,
     });
+
+    // Status değişiminde ilişkili mülk/müşteri durumunu senkronla
+    if (existing.status !== contract.status) {
+      await applyContractEffects(contract.id, existing.status);
+    }
 
     return NextResponse.json(contract);
   } catch {

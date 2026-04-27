@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   Search, SlidersHorizontal, Plus, LayoutGrid, List, Loader2, Home,
-  X, MapPin, DoorOpen, Maximize, ArrowUpDown, LayoutList, CalendarPlus, MessageSquare
+  X, MapPin, DoorOpen, Maximize, ArrowUpDown, LayoutList, CalendarPlus, MessageSquare, Building2
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { PropertyCard, type PropertyCardData, formatPrice } from "@/components/ui/property-card";
@@ -71,9 +71,12 @@ function PropertiesPageInner() {
   const [usageType, setUsageType] = useState("");
   const [occupancyStatus, setOccupancyStatus] = useState("");
   const [ownerCitizenship, setOwnerCitizenship] = useState("");
+  const [isCitizenshipEligible, setIsCitizenshipEligible] = useState("");
   const [assignedAgentId, setAssignedAgentId] = useState("");
+  const [branchId, setBranchId] = useState("");
   const [projects, setProjects] = useState<{ id: string; name: string; blocks: { id: string; name: string }[] }[]>([]);
   const [users, setUsers] = useState<{ id: string; name: string; role: string }[]>([]);
+  const [branches, setBranches] = useState<{ id: string; name: string }[]>([]);
   const [roomTypes, setRoomTypes] = useState<{ id: string; name: string }[]>([]);
   const [listingTypes, setListingTypes] = useState<{ code: string; label: string }[]>([]);
 
@@ -94,7 +97,7 @@ function PropertiesPageInner() {
 
   const activeFilterCount = [
     propertyType, status, minPrice, maxPrice, rooms, minArea, maxArea, city,
-    projectId, blockId, usageType, occupancyStatus, ownerCitizenship, assignedAgentId,
+    projectId, blockId, usageType, occupancyStatus, ownerCitizenship, isCitizenshipEligible, assignedAgentId, branchId,
   ].filter(Boolean).length;
 
   const selectedProjectBlocks = projects.find((p) => p.id === projectId)?.blocks ?? [];
@@ -112,12 +115,15 @@ function PropertiesPageInner() {
     fetch("/api/listing-types").then((r) => r.ok ? r.json() : []).then((data) => {
       if (Array.isArray(data)) setListingTypes(data);
     }).catch(() => {});
+    fetch("/api/branches").then((r) => r.ok ? r.json() : []).then((data) => {
+      if (Array.isArray(data)) setBranches(data.map((b: { id: string; name: string }) => ({ id: b.id, name: b.name })));
+    }).catch(() => {});
   }, []);
 
   useEffect(() => {
     fetchProperties();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, listingType, propertyType, status, minPrice, maxPrice, rooms, minArea, maxArea, city, projectId, blockId, usageType, occupancyStatus, ownerCitizenship, assignedAgentId, sortBy, sortOrder]);
+  }, [search, listingType, propertyType, status, minPrice, maxPrice, rooms, minArea, maxArea, city, projectId, blockId, usageType, occupancyStatus, ownerCitizenship, isCitizenshipEligible, assignedAgentId, branchId, sortBy, sortOrder]);
 
   async function fetchProperties() {
     setLoading(true);
@@ -137,7 +143,9 @@ function PropertiesPageInner() {
       ...(usageType && { usageType }),
       ...(occupancyStatus && { occupancyStatus }),
       ...(ownerCitizenship && { ownerCitizenship }),
+      ...(isCitizenshipEligible && { isCitizenshipEligible }),
       ...(assignedAgentId && { assignedAgentId }),
+      ...(branchId && { branchId }),
       sortBy,
       sortOrder,
     });
@@ -151,7 +159,7 @@ function PropertiesPageInner() {
     setPropertyType(""); setStatus(""); setMinPrice(""); setMaxPrice("");
     setRooms(""); setMinArea(""); setMaxArea(""); setCity("");
     setProjectId(""); setBlockId(""); setUsageType(""); setOccupancyStatus("");
-    setOwnerCitizenship(""); setAssignedAgentId("");
+    setOwnerCitizenship(""); setIsCitizenshipEligible(""); setAssignedAgentId(""); setBranchId("");
   }
 
   async function handleSelectProperty(p: PropertyCardData) {
@@ -370,13 +378,25 @@ function PropertiesPageInner() {
                       <option value="">Vatandaşlık</option>
                       <option value="TC">TC</option>
                       <option value="YABANCI">Yabancı</option>
-                      <option value="VATANDASLIGA_UYGUN">Vatandaşlığa Uygun</option>
+                    </select>
+                    <select value={isCitizenshipEligible} onChange={(e) => setIsCitizenshipEligible(e.target.value)}
+                      className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm">
+                      <option value="">Vatandaşlığa Uygun</option>
+                      <option value="true">Evet</option>
+                      <option value="false">Hayır</option>
                     </select>
                     <select value={assignedAgentId} onChange={(e) => setAssignedAgentId(e.target.value)}
                       className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm">
                       <option value="">Personel</option>
                       {users.map((u) => (
                         <option key={u.id} value={u.id}>{u.name}</option>
+                      ))}
+                    </select>
+                    <select value={branchId} onChange={(e) => setBranchId(e.target.value)}
+                      className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm">
+                      <option value="">Tüm Şubeler</option>
+                      {branches.map((b) => (
+                        <option key={b.id} value={b.id}>{b.name}</option>
                       ))}
                     </select>
                   </div>
@@ -423,6 +443,7 @@ function PropertiesPageInner() {
                     { label: "Tip", field: null },
                     { label: "Fiyat", field: "price" },
                     { label: "Konum", field: "city" },
+                    { label: "Şube", field: null },
                     { label: "Durum", field: null },
                     { label: "Grş.", field: null },
                     { label: "Danışman", field: null },
@@ -472,6 +493,15 @@ function PropertiesPageInner() {
                           <MapPin className="w-3 h-3 text-primary" />
                           {[p.district, p.city].filter(Boolean).join(", ") || "-"}
                         </span>
+                      </td>
+                      <td className="px-4 py-4 text-xs">
+                        {p.branch?.name ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-secondary-container/40 text-on-secondary-container font-semibold">
+                            {p.branch.name}
+                          </span>
+                        ) : (
+                          <span className="text-on-surface-variant/40">—</span>
+                        )}
                       </td>
                       <td className="px-4 py-4">
                         <span className={cn("text-[10px] px-2.5 py-1 rounded-lg font-bold uppercase", statusColors[p.status])}>
@@ -565,6 +595,12 @@ function CompactCard({ property: p, isSelected, onClick, onDoubleClick }: {
             </span>
           )}
         </div>
+        {p.branch?.name && (
+          <p className="flex items-center gap-0.5 mt-1 text-[9px] text-on-surface-variant truncate">
+            <Building2 className="w-2.5 h-2.5 shrink-0" />
+            <span className="font-semibold">{p.branch.name}</span>
+          </p>
+        )}
       </div>
     </div>
   );

@@ -32,7 +32,9 @@ export async function GET(req: NextRequest) {
   const usageType = searchParams.get("usageType") || "";
   const occupancyStatus = searchParams.get("occupancyStatus") || "";
   const ownerCitizenship = searchParams.get("ownerCitizenship") || "";
+  const isCitizenshipEligible = searchParams.get("isCitizenshipEligible") || "";
   const assignedAgentId = searchParams.get("assignedAgentId") || "";
+  const branchId = searchParams.get("branchId") || "";
 
   const actor = extractActor(session);
   const where: Record<string, unknown> = { ...propertyListFilter(actor) };
@@ -68,7 +70,10 @@ export async function GET(req: NextRequest) {
   if (usageType) where.usageType = usageType;
   if (occupancyStatus) where.occupancyStatus = occupancyStatus;
   if (ownerCitizenship) where.ownerCitizenship = ownerCitizenship;
+  if (isCitizenshipEligible === "true") where.isCitizenshipEligible = true;
+  else if (isCitizenshipEligible === "false") where.isCitizenshipEligible = false;
   if (assignedAgentId) where.assignedAgentId = assignedAgentId;
+  if (branchId) where.branchId = branchId;
 
   const sortBy = searchParams.get("sortBy") || "createdAt";
   const sortOrder = (searchParams.get("sortOrder") || "desc") as "asc" | "desc";

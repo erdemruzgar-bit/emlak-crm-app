@@ -28,11 +28,19 @@ const reports = [
 ] as const;
 
 interface ReportData {
-  monthlySales: { month: string; satis: number; kira: number }[];
-  agentPerformance: { name: string; sales: number; customers: number }[];
-  branchComparison: { name: string; value: number }[];
+  monthlySales: { month: string; satis: number; kira: number; satisCiro: number; kiraCiro: number }[];
+  agentPerformance: { name: string; sales: number; customers: number; revenue: number }[];
+  branchComparison: { name: string; value: number; revenue: number }[];
   kvkkStats: { totalConsents: number; acikRiza: number; pazarlama: number; pendingDeletion: number; auditLogsToday: number };
 }
+
+const tryFormatter = new Intl.NumberFormat("tr-TR", { maximumFractionDigits: 0 });
+const formatTry = (n: number) => `${tryFormatter.format(n)} ₺`;
+const compactTry = (n: number) => {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M ₺`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(0)}B ₺`;
+  return `${n} ₺`;
+};
 
 export default function ReportsPage() {
   const [activeReport, setActiveReport] = useState<"sales" | "performance" | "branch" | "kvkk">("sales");
@@ -82,26 +90,71 @@ export default function ReportsPage() {
 
       <AnimatePresence mode="wait">
         {activeReport === "sales" && (
-          <motion.div key="sales" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-            className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-8 border border-outline-variant/10">
-            <h2 className="text-lg font-bold text-on-surface mb-6 tracking-tight">Aylık Satış ve Kiralama</h2>
-            {monthlySales.every(m => m.satis === 0 && m.kira === 0) ? (
-              <div className="text-center py-16 text-on-surface-variant">
-                <BarChart3 className="w-12 h-12 opacity-20 mx-auto mb-3" />
-                <p className="text-sm">Henüz satış/kiralama verisi bulunmuyor</p>
-              </div>
-            ) : (
-              <ResponsiveContainer width="100%" height={400}>
-                <BarChart data={monthlySales}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#eceef0" />
-                  <XAxis dataKey="month" tick={{ fill: "#424754", fontSize: 12 }} />
-                  <YAxis tick={{ fill: "#424754", fontSize: 12 }} />
-                  <Tooltip contentStyle={tooltipStyle} />
-                  <Bar dataKey="satis" fill="#0051d5" name="Satış" radius={[8, 8, 0, 0]} />
-                  <Bar dataKey="kira" fill="#316bf3" name="Kiralama" radius={[8, 8, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            )}
+          <motion.div key="sales" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-8">
+            {(() => {
+              const totalSatisCiro = monthlySales.reduce((s, m) => s + m.satisCiro, 0);
+              const totalKiraCiro = monthlySales.reduce((s, m) => s + m.kiraCiro, 0);
+              const totalSatisAdet = monthlySales.reduce((s, m) => s + m.satis, 0);
+              const totalKiraAdet = monthlySales.reduce((s, m) => s + m.kira, 0);
+              return (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {[
+                    { label: "Toplam Satış Cirosu", value: formatTry(totalSatisCiro), sub: `${totalSatisAdet} işlem` },
+                    { label: "Toplam Kira Cirosu", value: formatTry(totalKiraCiro), sub: `${totalKiraAdet} işlem` },
+                    { label: "Satış Adedi (6 Ay)", value: String(totalSatisAdet), sub: "satış sözleşmesi" },
+                    { label: "Kira Adedi (6 Ay)", value: String(totalKiraAdet), sub: "kira sözleşmesi" },
+                  ].map((stat) => (
+                    <div key={stat.label} className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-6 border border-outline-variant/10">
+                      <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">{stat.label}</p>
+                      <p className="text-2xl font-black text-on-surface mt-2">{stat.value}</p>
+                      <p className="text-xs text-on-surface-variant mt-1">{stat.sub}</p>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+
+            <div className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-8 border border-outline-variant/10">
+              <h2 className="text-lg font-bold text-on-surface mb-6 tracking-tight">Aylık Satış ve Kiralama (Adet)</h2>
+              {monthlySales.every(m => m.satis === 0 && m.kira === 0) ? (
+                <div className="text-center py-16 text-on-surface-variant">
+                  <BarChart3 className="w-12 h-12 opacity-20 mx-auto mb-3" />
+                  <p className="text-sm">Henüz satış/kiralama verisi bulunmuyor</p>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={350}>
+                  <BarChart data={monthlySales}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#eceef0" />
+                    <XAxis dataKey="month" tick={{ fill: "#424754", fontSize: 12 }} />
+                    <YAxis tick={{ fill: "#424754", fontSize: 12 }} />
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Bar dataKey="satis" fill="#0051d5" name="Satış" radius={[8, 8, 0, 0]} />
+                    <Bar dataKey="kira" fill="#316bf3" name="Kiralama" radius={[8, 8, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+
+            <div className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-8 border border-outline-variant/10">
+              <h2 className="text-lg font-bold text-on-surface mb-6 tracking-tight">Aylık Ciro (₺)</h2>
+              {monthlySales.every(m => m.satisCiro === 0 && m.kiraCiro === 0) ? (
+                <div className="text-center py-16 text-on-surface-variant">
+                  <BarChart3 className="w-12 h-12 opacity-20 mx-auto mb-3" />
+                  <p className="text-sm">Bu dönem için ciro verisi bulunmuyor</p>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={350}>
+                  <BarChart data={monthlySales}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#eceef0" />
+                    <XAxis dataKey="month" tick={{ fill: "#424754", fontSize: 12 }} />
+                    <YAxis tick={{ fill: "#424754", fontSize: 12 }} tickFormatter={compactTry} />
+                    <Tooltip contentStyle={tooltipStyle} formatter={(v) => formatTry(typeof v === "number" ? v : Number(v) || 0)} />
+                    <Bar dataKey="satisCiro" fill="#0051d5" name="Satış Cirosu" radius={[8, 8, 0, 0]} />
+                    <Bar dataKey="kiraCiro" fill="#924700" name="Kira Cirosu" radius={[8, 8, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </div>
           </motion.div>
         )}
 
@@ -129,7 +182,7 @@ export default function ReportsPage() {
               <table className="w-full">
                 <thead className="bg-surface-container-low">
                   <tr>
-                    {["Danışman", "Satış", "Müşteri", "Dönüşüm"].map((h) => (
+                    {["Danışman", "Satış", "Müşteri", "Ciro", "Dönüşüm"].map((h) => (
                       <th key={h} className="text-left px-6 py-4 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">{h}</th>
                     ))}
                   </tr>
@@ -140,6 +193,7 @@ export default function ReportsPage() {
                       <td className="px-6 py-5 text-sm font-semibold text-on-surface">{a.name}</td>
                       <td className="px-6 py-5 text-sm text-on-surface-variant">{a.sales}</td>
                       <td className="px-6 py-5 text-sm text-on-surface-variant">{a.customers}</td>
+                      <td className="px-6 py-5 text-sm font-bold text-on-surface">{formatTry(a.revenue)}</td>
                       <td className="px-6 py-5 text-sm text-primary font-bold">
                         {a.customers > 0 ? `%${((a.sales / a.customers) * 100).toFixed(0)}` : "-"}
                       </td>
@@ -175,8 +229,11 @@ export default function ReportsPage() {
                 {branchComparison.map((b, i) => (
                   <div key={b.name} className="flex items-center gap-4 p-4 bg-surface-container-low rounded-2xl">
                     <div className="w-4 h-4 rounded-full shrink-0" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                    <span className="flex-1 text-sm font-semibold text-on-surface">{b.name}</span>
-                    <span className="text-sm font-black text-on-surface">{b.value} işlem</span>
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold text-on-surface">{b.name}</p>
+                      <p className="text-xs text-on-surface-variant mt-0.5">{b.value} işlem</p>
+                    </div>
+                    <span className="text-sm font-black text-on-surface">{formatTry(b.revenue)}</span>
                   </div>
                 ))}
               </div>

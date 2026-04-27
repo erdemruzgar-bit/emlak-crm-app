@@ -1,6 +1,6 @@
 "use client";
 
-import { MapPin, ArrowRight, Bookmark } from "lucide-react";
+import { MapPin, ArrowRight, Bookmark, Building2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
 
@@ -17,6 +17,7 @@ export interface PropertyCardData {
   district: string | null;
   status: string;
   assignedAgent: { id?: string; name: string } | null;
+  branch?: { name: string } | null;
   images: { url: string }[];
   project?: { id: string; name: string } | null;
   block?: { id: string; name: string } | null;
@@ -144,10 +145,17 @@ export function PropertyCard({
           )}
         </div>
 
-        <p className="flex items-center gap-1 text-on-surface-variant text-xs mb-4">
+        <p className="flex items-center gap-1 text-on-surface-variant text-xs mb-2">
           <MapPin className="w-3 h-3" />
           {location || "Konum belirtilmemiş"}
         </p>
+
+        {property.branch?.name && (
+          <p className="flex items-center gap-1 text-on-surface-variant text-xs mb-4">
+            <Building2 className="w-3 h-3" />
+            <span className="font-semibold">{property.branch.name}</span>
+          </p>
+        )}
 
         <div className="flex justify-between items-center">
           <span className="text-lg font-black text-primary">

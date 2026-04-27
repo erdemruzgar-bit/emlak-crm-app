@@ -7,6 +7,10 @@ import { ArrowLeft, ShieldCheck, Info, AlertCircle, Loader2, Target } from "luci
 import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
 
+// "Oda" alanları yalnızca oda kavramı olan mülk tiplerinde gösterilir.
+// ARSA için saklı, diğerleri (DAIRE, VILLA, MUSTAKILEV, ISYERI) için açık.
+const TYPES_WITH_ROOMS = new Set(["DAIRE", "VILLA", "MUSTAKILEV", "ISYERI"]);
+
 export default function NewCustomerPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -15,6 +19,9 @@ export default function NewCustomerPage() {
   const [preferredTypes, setPreferredTypes] = useState<string[]>([]);
   const [preferredFeatures, setPreferredFeatures] = useState<string[]>([]);
   const [customerTypeOptions, setCustomerTypeOptions] = useState<{ code: string; label: string }[]>([]);
+  const [roomTypeOptions, setRoomTypeOptions] = useState<{ id: string; name: string }[]>([]);
+  const [minRooms, setMinRooms] = useState("");
+  const [maxRooms, setMaxRooms] = useState("");
 
   useEffect(() => {
     fetch("/api/customer-types")
@@ -23,7 +30,27 @@ export default function NewCustomerPage() {
         if (Array.isArray(data)) setCustomerTypeOptions(data);
       })
       .catch(() => setCustomerTypeOptions([]));
+
+    fetch("/api/room-types")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => {
+        if (Array.isArray(data)) setRoomTypeOptions(data);
+      })
+      .catch(() => setRoomTypeOptions([]));
   }, []);
+
+  // Oda alanları: tercih edilen tipler arasında oda kavramı olan en az bir tip varsa açık
+  const showRoomFields =
+    preferredTypes.length === 0 ||
+    preferredTypes.some((t) => TYPES_WITH_ROOMS.has(t));
+
+  // ARSA seçilip kaldırılırsa eski oda değerlerini sıfırla
+  useEffect(() => {
+    if (!showRoomFields) {
+      setMinRooms("");
+      setMaxRooms("");
+    }
+  }, [showRoomFields]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -53,6 +80,8 @@ export default function NewCustomerPage() {
       preferredTypes: preferredTypes.length > 0 ? preferredTypes : undefined,
       preferredCities: formData.get("preferredCities") ? (formData.get("preferredCities") as string).split(",").map((s) => s.trim()).filter(Boolean) : undefined,
       preferredFeatures: preferredFeatures.length > 0 ? preferredFeatures : undefined,
+      minRooms: showRoomFields && minRooms ? minRooms : undefined,
+      maxRooms: showRoomFields && maxRooms ? maxRooms : undefined,
     };
 
     const res = await fetch("/api/customers", {
@@ -192,6 +221,28 @@ export default function NewCustomerPage() {
               ))}
             </div>
           </div>
+          {showRoomFields && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Min Oda Tipi</label>
+                <select value={minRooms} onChange={(e) => setMinRooms(e.target.value)} className={inputClass}>
+                  <option value="">Seçiniz</option>
+                  {roomTypeOptions.map((rt) => (
+                    <option key={rt.id} value={rt.name}>{rt.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Max Oda Tipi</label>
+                <select value={maxRooms} onChange={(e) => setMaxRooms(e.target.value)} className={inputClass}>
+                  <option value="">Seçiniz</option>
+                  {roomTypeOptions.map((rt) => (
+                    <option key={rt.id} value={rt.name}>{rt.name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
           <div>
             <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Tercih Edilen Şehirler</label>
             <input name="preferredCities" className={inputClass} placeholder="İstanbul, Ankara (virgülle ayırın)" />

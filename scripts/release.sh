@@ -124,7 +124,12 @@ dpkg --get-selections 2>/dev/null | head -500 > "$BACKUP_DIR/installed-packages.
 node --version > "$BACKUP_DIR/node-version.txt" 2>/dev/null || true
 npm --version > "$BACKUP_DIR/npm-version.txt" 2>/dev/null || true
 
-green "     ✓ schema, kod (source.tar.gz + git-history.bundle), sistem dosyaları"
+# Disaster recovery talimatı (bu yedeği yeni sunucuda nasıl ayağa kaldırırsın)
+if [ -f scripts/RESTORE-TEMPLATE.md ]; then
+  sed "s/__TAG__/$TAG/g" scripts/RESTORE-TEMPLATE.md > "$BACKUP_DIR/RESTORE.md"
+fi
+
+green "     ✓ schema, kod, sistem dosyaları, RESTORE.md"
 
 # ─── 5. Migration uygula ───
 step "5/8  Veritabanı migration uygulanıyor"

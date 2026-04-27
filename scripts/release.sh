@@ -109,22 +109,22 @@ date -Iseconds > "$BACKUP_DIR/timestamp.txt"
 ls prisma/migrations | grep -v migration_lock.toml > "$BACKUP_DIR/migrations.txt" 2>/dev/null || true
 
 # Kaynak kod arşivi (HEAD itibariyle, .git geçmişi olmadan — mini)
-git archive --format=tar.gz --output="$BACKUP_DIR/source.tar.gz" HEAD 2>/dev/null
+git archive --format=tar.gz --output="$BACKUP_DIR/source.tar.gz" HEAD 2>/dev/null || true
 # Tüm git geçmişi (clone'lanabilir bundle — büyük ama en kapsamlı geri dönüş için)
-git bundle create "$BACKUP_DIR/git-history.bundle" --all 2>/dev/null
+git bundle create "$BACKUP_DIR/git-history.bundle" --all 2>/dev/null || true
 
-# Sistem yapılandırma dosyaları (varsa)
-[ -f .env ] && cp .env "$BACKUP_DIR/dotenv" && chmod 600 "$BACKUP_DIR/dotenv"
-[ -f docker-compose.yml ] && cp docker-compose.yml "$BACKUP_DIR/docker-compose.yml"
-[ -f /etc/systemd/system/emlak-crm.service ] && cp /etc/systemd/system/emlak-crm.service "$BACKUP_DIR/emlak-crm.service" 2>/dev/null
-[ -f /etc/nginx/sites-available/emlak-crm ] && cp /etc/nginx/sites-available/emlak-crm "$BACKUP_DIR/nginx-emlak-crm.conf" 2>/dev/null
+# Sistem yapılandırma dosyaları (opsiyonel; izin yoksa atlanır, release iptal olmaz)
+{ [ -f .env ] && cp .env "$BACKUP_DIR/dotenv" && chmod 600 "$BACKUP_DIR/dotenv"; } || true
+{ [ -f docker-compose.yml ] && cp docker-compose.yml "$BACKUP_DIR/docker-compose.yml"; } || true
+{ [ -r /etc/systemd/system/emlak-crm.service ] && cp /etc/systemd/system/emlak-crm.service "$BACKUP_DIR/emlak-crm.service"; } || true
+{ [ -r /etc/nginx/sites-available/emlak-crm ] && cp /etc/nginx/sites-available/emlak-crm "$BACKUP_DIR/nginx-emlak-crm.conf"; } || true
 
 # Kurulu paketler listesi (yeni sunucuda sistem-level dependency için)
-dpkg --get-selections 2>/dev/null | head -500 > "$BACKUP_DIR/installed-packages.txt"
-node --version > "$BACKUP_DIR/node-version.txt" 2>/dev/null
-npm --version > "$BACKUP_DIR/npm-version.txt" 2>/dev/null
+dpkg --get-selections 2>/dev/null | head -500 > "$BACKUP_DIR/installed-packages.txt" || true
+node --version > "$BACKUP_DIR/node-version.txt" 2>/dev/null || true
+npm --version > "$BACKUP_DIR/npm-version.txt" 2>/dev/null || true
 
-green "     ✓ schema, kod (source.tar.gz + git-history.bundle), .env, sistem dosyaları"
+green "     ✓ schema, kod (source.tar.gz + git-history.bundle), sistem dosyaları"
 
 # ─── 5. Migration uygula ───
 step "5/8  Veritabanı migration uygulanıyor"

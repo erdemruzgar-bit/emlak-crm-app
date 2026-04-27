@@ -99,15 +99,32 @@ else
   yellow "     • uploads boş, atlandı"
 fi
 
-# ─── 4. Schema + metadata ───
-step "4/8  Şema ve metadata kaydediliyor"
+# ─── 4. Şema + metadata + KAYNAK KOD + SİSTEM YAPILANDIRMASI ───
+step "4/8  Şema, kod ve sistem dosyaları kaydediliyor"
 cp prisma/schema.prisma "$BACKUP_DIR/schema.prisma"
 git rev-parse HEAD > "$BACKUP_DIR/git-sha.txt"
 echo "$MESSAGE" > "$BACKUP_DIR/message.txt"
 date -Iseconds > "$BACKUP_DIR/timestamp.txt"
 # Hangi migration'lar uygulandı?
 ls prisma/migrations | grep -v migration_lock.toml > "$BACKUP_DIR/migrations.txt" 2>/dev/null || true
-green "     ✓ schema.prisma, git-sha, message, migrations listesi"
+
+# Kaynak kod arşivi (HEAD itibariyle, .git geçmişi olmadan — mini)
+git archive --format=tar.gz --output="$BACKUP_DIR/source.tar.gz" HEAD 2>/dev/null
+# Tüm git geçmişi (clone'lanabilir bundle — büyük ama en kapsamlı geri dönüş için)
+git bundle create "$BACKUP_DIR/git-history.bundle" --all 2>/dev/null
+
+# Sistem yapılandırma dosyaları (varsa)
+[ -f .env ] && cp .env "$BACKUP_DIR/dotenv" && chmod 600 "$BACKUP_DIR/dotenv"
+[ -f docker-compose.yml ] && cp docker-compose.yml "$BACKUP_DIR/docker-compose.yml"
+[ -f /etc/systemd/system/emlak-crm.service ] && cp /etc/systemd/system/emlak-crm.service "$BACKUP_DIR/emlak-crm.service" 2>/dev/null
+[ -f /etc/nginx/sites-available/emlak-crm ] && cp /etc/nginx/sites-available/emlak-crm "$BACKUP_DIR/nginx-emlak-crm.conf" 2>/dev/null
+
+# Kurulu paketler listesi (yeni sunucuda sistem-level dependency için)
+dpkg --get-selections 2>/dev/null | head -500 > "$BACKUP_DIR/installed-packages.txt"
+node --version > "$BACKUP_DIR/node-version.txt" 2>/dev/null
+npm --version > "$BACKUP_DIR/npm-version.txt" 2>/dev/null
+
+green "     ✓ schema, kod (source.tar.gz + git-history.bundle), .env, sistem dosyaları"
 
 # ─── 5. Migration uygula ───
 step "5/8  Veritabanı migration uygulanıyor"
@@ -171,13 +188,39 @@ trap - ERR
 # ─── Güncel sembolik link ───
 ln -sfn "$BACKUP_DIR" "$BACKUP_ROOT/current"
 
-# ─── 90 günden eski yedekleri temizle ───
+# ─── Bulut: Google Drive'a yükle (rclone "drive:emlak-crm-backups/<TAG>") ───
+# rclone yapılandırılmamışsa veya başarısız olursa adım atlanır; release iptal edilmez.
+step "Bonus: Google Drive'a yedek yükleniyor"
+if command -v rclone >/dev/null 2>&1 && rclone listremotes 2>/dev/null | grep -q "^drive:$"; then
+  if rclone copy "$BACKUP_DIR" "drive:emlak-crm-backups/$TAG" \
+       --transfers 4 --checkers 4 --quiet 2>&1; then
+    green "     ✓ Drive: drive:emlak-crm-backups/$TAG"
+  else
+    yellow "     ⚠ Drive yükleme başarısız (release etkilenmedi); manuel: rclone copy $BACKUP_DIR drive:emlak-crm-backups/$TAG"
+  fi
+else
+  yellow "     • rclone/drive yapılandırılmamış — atlanıyor (kurmak için: rclone config)"
+fi
+
+# ─── 90 günden eski yedekleri temizle (lokal + Drive) ───
 step "Bonus: 90 günden eski yedekler temizleniyor"
 DELETED=$(find "$BACKUP_ROOT" -maxdepth 1 -type d -name "20*-v*" -mtime +$RETENTION_DAYS -exec rm -rf {} \; -print 2>/dev/null | wc -l)
 if [ "$DELETED" -gt 0 ]; then
-  yellow "     • $DELETED eski yedek silindi"
+  yellow "     • Lokal: $DELETED eski yedek silindi"
 else
-  echo "     • Silinecek eski yedek yok"
+  echo "     • Lokal: silinecek eski yedek yok"
+fi
+
+# Drive retention — eskiyse silinir
+if command -v rclone >/dev/null 2>&1 && rclone listremotes 2>/dev/null | grep -q "^drive:$"; then
+  DRIVE_DELETED=$(rclone delete "drive:emlak-crm-backups/" \
+                    --min-age "${RETENTION_DAYS}d" \
+                    --rmdirs --include "20*-v*/**" 2>&1 | grep -c "Deleted" || true)
+  if [ "$DRIVE_DELETED" -gt 0 ]; then
+    yellow "     • Drive: $DRIVE_DELETED eski dosya silindi"
+  else
+    echo "     • Drive: silinecek eski yedek yok"
+  fi
 fi
 
 echo ""

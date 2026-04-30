@@ -87,6 +87,51 @@ const categoryLabels: Record<string, string> = {
   EK_DOKUMAN: "Ek Doküman",
 };
 
+const distributionCategoryLabels: Record<string, string> = {
+  OFFICE: "Bizim Ofis",
+  PARTNER_OFFICE: "Partner Ofis",
+  AGENT_BUYER_SIDE: "Alıcı Tarafı Danışman",
+  AGENT_SELLER_SIDE: "Satıcı Tarafı Danışman",
+  REFERRAL: "Yönlendirme",
+  OTHER: "Diğer",
+};
+
+const templateLabels: Record<string, string> = {
+  CLASSIC: "Klasik (Tek Ofis)",
+  COBROKER: "Co-Broker (İki Ofis)",
+  DOUBLE_AGENT: "Çift Danışman",
+  COBROKER_DOUBLE: "Co-Broker + Çift Danışman",
+};
+
+interface DistributionItem {
+  label: string;
+  type: "PERCENT" | "FIXED";
+  value: number;
+  category: string;
+  payeeUserId: string | null;
+  amount: number;
+}
+
+interface CommissionNotes {
+  template?: string;
+  vatRate?: number;
+  vatIncluded?: boolean;
+  distribution?: DistributionItem[];
+}
+
+function parseCommissionNotes(notes: string | null): CommissionNotes | null {
+  if (!notes) return null;
+  try {
+    const parsed = JSON.parse(notes);
+    if (parsed && typeof parsed === "object" && Array.isArray(parsed.distribution)) {
+      return parsed as CommissionNotes;
+    }
+  } catch {
+    // not JSON, treat as plain text
+  }
+  return null;
+}
+
 const attachmentCategoryOptions = [
   { value: "KONTRAT_PDF", label: "Kontrat PDF" },
   { value: "KOMISYON_SOZLESMESI", label: "Komisyon Sözleşmesi" },
@@ -390,13 +435,70 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
         </div>
       </div>
 
-      {/* Notlar */}
-      {contract.notes && (
-        <div className="bg-surface-container-lowest rounded-3xl p-6 shadow-[0_8px_24px_rgba(25,28,30,0.04)]">
-          <h2 className="text-sm font-black uppercase tracking-wider text-on-surface-variant mb-2">Notlar</h2>
-          <p className="text-sm text-on-surface whitespace-pre-wrap leading-relaxed">{contract.notes}</p>
-        </div>
-      )}
+      {/* Notlar / Komisyon Dağılımı */}
+      {contract.notes && (() => {
+        const commission = parseCommissionNotes(contract.notes);
+        if (commission && commission.distribution) {
+          const totalAmount = commission.distribution.reduce((sum, d) => sum + (d.amount || 0), 0);
+          return (
+            <div className="bg-surface-container-lowest rounded-3xl p-6 shadow-[0_8px_24px_rgba(25,28,30,0.04)]">
+              <h2 className="text-sm font-black uppercase tracking-wider text-on-surface-variant mb-4">
+                Komisyon Dağılımı
+              </h2>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+                {commission.template && (
+                  <div className="px-3 py-2 bg-surface-container-low rounded-xl">
+                    <p className="text-[10px] font-black uppercase tracking-wider text-on-surface-variant">Şablon</p>
+                    <p className="text-sm font-bold text-on-surface mt-0.5">
+                      {templateLabels[commission.template] || commission.template}
+                    </p>
+                  </div>
+                )}
+                {commission.vatRate !== undefined && (
+                  <div className="px-3 py-2 bg-surface-container-low rounded-xl">
+                    <p className="text-[10px] font-black uppercase tracking-wider text-on-surface-variant">KDV</p>
+                    <p className="text-sm font-bold text-on-surface mt-0.5">
+                      %{commission.vatRate} {commission.vatIncluded ? "(dahil)" : "(hariç)"}
+                    </p>
+                  </div>
+                )}
+              </div>
+              <ul className="space-y-2">
+                {commission.distribution.map((item, idx) => (
+                  <li
+                    key={idx}
+                    className="flex items-center justify-between gap-3 p-3 bg-surface-container-low rounded-xl"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-bold text-on-surface truncate">{item.label}</p>
+                      <p className="text-[11px] text-on-surface-variant mt-0.5">
+                        {distributionCategoryLabels[item.category] || item.category}
+                        {" · "}
+                        {item.type === "PERCENT" ? `%${item.value}` : `Sabit ${item.value.toLocaleString("tr-TR")} ${contract.currency}`}
+                      </p>
+                    </div>
+                    <p className="text-sm font-black text-primary shrink-0">
+                      {item.amount.toLocaleString("tr-TR", { maximumFractionDigits: 2 })} {contract.currency}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-4 pt-4 border-t border-outline-variant/20 flex items-center justify-between">
+                <p className="text-xs font-black uppercase tracking-wider text-on-surface-variant">Toplam</p>
+                <p className="text-base font-black text-on-surface">
+                  {totalAmount.toLocaleString("tr-TR", { maximumFractionDigits: 2 })} {contract.currency}
+                </p>
+              </div>
+            </div>
+          );
+        }
+        return (
+          <div className="bg-surface-container-lowest rounded-3xl p-6 shadow-[0_8px_24px_rgba(25,28,30,0.04)]">
+            <h2 className="text-sm font-black uppercase tracking-wider text-on-surface-variant mb-2">Notlar</h2>
+            <p className="text-sm text-on-surface whitespace-pre-wrap leading-relaxed">{contract.notes}</p>
+          </div>
+        );
+      })()}
 
       {/* Ekler */}
       <div className="bg-surface-container-lowest rounded-3xl p-6 shadow-[0_8px_24px_rgba(25,28,30,0.04)]">

@@ -61,7 +61,7 @@ export default function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 space-y-2">
+      <nav className="flex-1 min-h-0 overflow-y-auto space-y-2 -mx-2 px-2">
         {navigation.map((item) => {
           const Icon = item.icon;
           const isActive =

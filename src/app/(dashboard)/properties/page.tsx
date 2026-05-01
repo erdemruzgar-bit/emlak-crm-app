@@ -378,6 +378,7 @@ function PropertiesPageInner() {
                       <option value="">Vatandaşlık</option>
                       <option value="TC">TC</option>
                       <option value="YABANCI">Yabancı</option>
+                      <option value="SIRKET">Şirket</option>
                     </select>
                     <select value={isCitizenshipEligible} onChange={(e) => setIsCitizenshipEligible(e.target.value)}
                       className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm">

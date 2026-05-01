@@ -350,7 +350,13 @@ export function PropertyDetail({ property, onClose }: PropertyDetailProps) {
                 {property.ownerCitizenship && property.ownerCitizenship !== "VATANDASLIGA_UYGUN" && (
                   <InfoRow
                     label="Sahip Vatandaşlığı"
-                    value={property.ownerCitizenship === "TC" ? "TC" : "Yabancı"}
+                    value={
+                      property.ownerCitizenship === "TC"
+                        ? "TC"
+                        : property.ownerCitizenship === "SIRKET"
+                        ? "Şirket"
+                        : "Yabancı"
+                    }
                   />
                 )}
                 {(property.isCitizenshipEligible || property.ownerCitizenship === "VATANDASLIGA_UYGUN") && (

@@ -452,6 +452,7 @@ export default function NewPropertyPage() {
                 <option value="">Seçiniz</option>
                 <option value="TC">TC</option>
                 <option value="YABANCI">Yabancı</option>
+                <option value="SIRKET">Şirket</option>
               </select>
             </div>
             <div>

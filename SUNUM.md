@@ -8,6 +8,8 @@ title: "ART CRM — Ürün Sunumu"
 
 Modern, hızlı, KVKK uyumlu. Bir emlak ofisinin günlük iş akışını tek ekrandan yönetmek için tasarlandı.
 
+![Dashboard](docs/screenshots/02-dashboard.png)
+
 ---
 
 ## Neden Bu Sistem?
@@ -18,23 +20,38 @@ Emlak sektöründe en büyük kayıp, **takipsiz kalmış müşteri** ve **unutu
 - Satılmış ilan hâlâ listede görünüyor
 - Yeni gelen alıcıya uygun ilan önerisi yapılamıyor
 - KVKK denetiminde hangi verinin nerede olduğu bilinmiyor
+- Ekipte kim hangi müşteriye ne zaman bakmış belirsiz
 
 ART CRM, bu sorunların hepsini çözer.
 
 ---
 
-## Ürün Özellikleri — Genel Bakış
+## Modüller — Faz 1 (Canlı)
 
 | Modül | Özet |
 |-------|------|
-| **Müşteri Yönetimi** | Zengin talep profili, otomatik ilan eşleştirme, tek tıkla iletişim kaydı |
-| **Portföy Yönetimi** | Fotoğraf/video galerisi, sahip-kiracı ilişkisi, durum takibi |
+| **Müşteri Yönetimi** | Zengin talep profili, otomatik ilan eşleştirme, tek tıkla iletişim kaydı, Excel import/export |
+| **Portföy Yönetimi** | Fotoğraf/video galerisi, sahip-kiracı ilişkisi, durum takibi, Tapu bilgileri (ada/pafta/parsel), Vatandaşlığa Uygun bayrağı, Excel import/export |
+| **Proje / Blok Hiyerarşisi** | Toplu konut projeleri için Proje → Blok → Daire yapısı |
 | **Otomatik Eşleştirme** | Bütçe, şehir, tip, m² kriterlerine göre skorlu eşleşme |
 | **Takvim & Randevu** | Gösterim, toplantı, tamamlama ve iptal akışları |
 | **Görev Yönetimi** | Kendine ve ekibe atama, öncelik, son tarih |
-| **Raporlama** | Dashboard, aylık trendler, danışman performansı, kaynak analizi |
-| **KVKK Uyum** | Açık rıza, aydınlatma, unutulma hakkı, denetim kayıtları |
-| **Kullanıcı Yönetimi** | 3 seviyeli rol (Yönetici / Şube Müdürü / Danışman), fotoğraflı profil |
+| **Hatırlatmalar** | Müşteri/ilan/sözleşme/randevu için zamanlı hatırlatmalar |
+| **Sözleşme Yönetimi** | KIRA / SATIS / KOMISYON sözleşmeleri, ekler, otomatik komisyon hesaplama |
+| **Komisyon Politikası & Hesaplayıcı** | Şirket/danışman/ko-broker payı yönetimi + interaktif hesaplayıcı |
+| **Finans** | Sözleşme bazlı ciro, tahsilat takibi, aylık özet |
+| **Raporlama** | Dashboard, aylık trendler, danışman performansı, kaynak analizi, ciro raporları |
+| **Hassas Veri Erişim Denetimi (KVKK)** | Telefon/email/TC maskeleme + gerekçeli açma + sonuç notu zorunluluğu |
+| **Kullanıcı Yönetimi** | 3 seviyeli rol, fotoğraflı profil, Excel izinleri, aktif/pasif toggle |
+| **Katalog Yönetimi** | Müşteri tipi, ilan tipi, oda tipi, komisyon politikası — UI'dan düzenlenir |
+
+## Faz 2 — Yakında
+
+| Modül | Açıklama |
+|-------|----------|
+| **İletişim Merkezi (Messages)** | WhatsApp Business API entegrasyonu, toplu kampanya, müşteri sohbet geçmişi |
+| **Otomasyon Kuralları** | Sözleşme bitimi, soğuyan müşteri, takip gecikmesi tetikleyicileri |
+| **Mobil Uygulama (PWA)** | Sahada gösterimde kullanmak için |
 
 ---
 
@@ -44,36 +61,28 @@ ART CRM, bu sorunların hepsini çözer.
 - **Liste görünümü:** Sütunlu tablo — ad, aşama, tip, bütçe, aciliyet, son iletişim, danışman
 - **Kart görünümü:** Portföy-benzeri görsel kartlar, fotoğraf destekli
 - **Canlı arama:** Ad, soyad, e-posta, telefon
-- **Gelişmiş filtreler:** Tip (Alıcı/Satıcı/Kiracı/Ev Sahibi), aşama, aciliyet, kaynak
+- **Gelişmiş filtreler:** Tip, aşama, aciliyet, kaynak
 - **Sıralama:** Ad, aşama, tip, kayıt tarihi
+- **Excel:** Filtreli dışa aktarma + toplu içe aktarma (yetki bazlı)
 
-### İstatistik Kutuları (üst bölüm)
-- Toplam müşteri
-- Aktif lead sayısı
-- Takibi gecikmiş müşteri (nextFollowUp < bugün)
-- 30+ gündür iletişime geçilmemiş müşteri
+### İstatistik Kutuları
+- Toplam müşteri / Aktif lead / Takibi gecikmiş / 30+ gün iletişimsiz
 
-### Müşteri Kartı (grid görünümü)
-Her kart: gradient avatar (veya fotoğraf), tip rozeti, aciliyet noktası, takip gecikmesi uyarısı, bütçe, tercih özeti, son iletişim tarihi. Hover'da hızlı aksiyonlar: **Ara / WhatsApp / E-posta** — tek tıkla iletişim kaydı oluşturur.
+### Müşteri Detayı — 8 Sekme
+1. **Bilgiler** — Ad, telefon, e-posta, TC (AES-256 şifreli), adres, fotoğraf
+2. **Talep Profili** — Aşama, aciliyet, bütçe, mülk tercihleri, finansman, etiketler
+3. **Notlar** — Serbest metin
+4. **İletişim** — Telefon/e-posta/WhatsApp/Ziyaret kayıtları
+5. **Randevular** — Bu müşteriyle ilgili tüm randevular
+6. **İlgili İlanlar** — Otomatik öneriler + manuel ekleme
+7. **Sözleşmeler** — Bu müşterinin tüm sözleşmeleri
+8. **KVKK Rızaları** — İzin geçmişi
+9. **Erişim Geçmişi** — Kim, ne zaman, hangi gerekçeyle bakmış
 
 ### Hızlı İletişim Kaydı
-Liste ekranında her müşteri satırında Telefon / WhatsApp / E-posta ikonu — tıklar tıklamaz o müşterinin "iletişim geçmişi"ne kayıt düşer. Ayrı form doldurmanıza gerek yok.
+Liste ekranında her müşteri satırında Telefon / WhatsApp / E-posta ikonu — tıklar tıklamaz "iletişim geçmişi"ne kayıt düşer.
 
-### Detay Sayfası — 7 Sekme
-
-1. **Bilgiler** — Ad, soyad, telefon, e-posta, TC Kimlik (AES-256 şifreli), adres, müşteri tipi, kaynak, danışman, şube. Fotoğraf yükleme.
-2. **Talep Profili** — Aşama (Lead → Kapandı), aciliyet, bütçe aralığı, tercih edilen mülk tipleri, şehir/ilçe, m² ve oda aralığı, istenen özellikler (otopark, havuz, asansör vs.), finansman (nakit/kredi/takas), ön onay durumu, peşinat %, etiketler (VIP, Yatırımcı, Acil vb.), kısa özet not, sonraki takip tarihi, taşınma tarihi.
-3. **Notlar** — Serbest metin, danışman ve tarih ile imzalı.
-4. **İletişim Geçmişi** — Telefon, e-posta, ziyaret, WhatsApp; iletişimi kim ne zaman yapmış, kısa özet.
-5. **Randevular** — Bu müşteriyle ilgili tüm randevular (statü ve ilan bağlantısıyla).
-6. **İlgili İlanlar** — Otomatik öneriler (⚡) ve manuel eklediğiniz ilgili ilanlar (✓). *"Öneri gelmese bile manuel ilan ekleyebilirsiniz"*.
-7. **KVKK Rızaları** — Açık rıza, aydınlatma, pazarlama izinlerinin tarihçesi.
-
-### Müşteri Oluşturma Akışı
-- Zorunlu: Ad, Soyad, Tip
-- Opsiyonel: telefon, e-posta, TC, adres
-- **KVKK rızaları**: Açık Rıza + Aydınlatma mutlaka; Pazarlama seçime bağlı
-- Talep profili aynı ekrandan başlangıçta doldurulabilir (bütçe, tercihler, etiketler)
+![Müşteri detayı](docs/screenshots/04-customer-demand.png)
 
 ---
 
@@ -81,166 +90,224 @@ Liste ekranında her müşteri satırında Telefon / WhatsApp / E-posta ikonu �
 
 ### Listeleme
 - **Grid, kompakt grid, liste** — 3 farklı görünüm
-- **Canlı arama:** Başlık, şehir, ilçe
-- **Filtreler:** Satılık/Kiralık, mülk tipi, durum, fiyat aralığı, oda, m² aralığı, şehir
+- **Filtreler:** Satılık/Kiralık (ve özel tipler), mülk tipi, durum, fiyat, oda, m², şehir
 - **Sıralama:** Fiyat, tarih, m²
+- **Excel:** Müşteride olduğu gibi import/export
 
-### İlan Kartı
-Fotoğraf üzerinde: durum rozeti (Aktif/Satıldı/Kiralandı/Pasif), ilan tipi, fiyat. Altında: başlık, konum, m² ve oda bilgisi. Galeri desteği (fotoğraf + video).
+### Türkiye'ye Özgü
+- **Tapu bilgileri:** Ada, pafta, parsel, bağımsız bölüm no, kat mülkiyeti tipi
+- **Vatandaşlığa Uygun:** Yabancıya satışta TR vatandaşlık programı uygunluk bayrağı
+- **Proje / Blok / Daire No:** Toplu konut için hiyerarşik yapı
 
-### Detay Sayfası
-- **Galeri:** Fotoğraf/video, lightbox, thumbnail navigasyon
-- **Hızlı Bilgi:** Oda, m², banyo, kat, yaş, ısıtma
-- **Detaylı Bilgiler:** Tüm özellikler
-- **Fiyat Kartı (sağda):**
-  - İlan sahibi (müşteri sayfasına link)
-  - **Sahibini Ara** (tel: linki) — tek tıkla arama
-  - **E-posta Gönder** (mailto + ilan başlığı konuda)
-- **Konum** bilgisi
-- **İlgili Müşteriler Widget'ı:**
-  - Otomatik öneriler (talep profilindeki uyumluluğa göre skorlu)
-  - ✓ İlgileniyor / ✗ Reddet / Geri Al butonları
-  - **+ Ekle** — manuel müşteri arayıp bağlama
-  - Her satırda müşteri fotoğrafı (veya avatar), telefonu, eşleşme skoru
-- **Paylaş:** Linki panoya kopyalar veya mobilde sistem paylaşımı
+### İlan Detayı
+- Galeri (lightbox), hızlı bilgi kartları, detaylı özellikler, harita
+- **Fiyat kartı:** Sahibini ara (tel:), e-posta gönder
+- **İlgili Müşteriler widget'ı:** Skorlu otomatik öneri + manuel ekleme
 
-### Düzenleme
-- Durum değiştirme: **Aktif / Satıldı / Kiralandı / Pasif**
-- İlan sahibi değiştirme (müşteri arama ile)
-- Tüm detay alanları
-- Medya ekleme/çıkarma/yeniden sıralama
-
-### İlan Oluşturma
-- Zorunlu: Başlık, Satılık/Kiralık, Mülk Tipi, Fiyat
-- Medya sürükle-bırak yükleme (JPG, PNG, WEBP, MP4, MOV — 100 MB'a kadar)
-- Harita konumu (opsiyonel)
+![Yeni ilan](docs/screenshots/07-property-new.png)
 
 ---
 
-## 3. Otomatik Eşleştirme Motoru
+## 3. Sözleşme Yönetimi (Yeni)
+
+### Tipler
+- **KIRA** — Kiracı + ev sahibi + ilan + tutar + vade
+- **SATIS** — Alıcı + satıcı + ilan + tutar
+- **KOMISYON** — Tek başına komisyon kaydı (örn. iş bağlama)
+
+### Akış
+1. Tip seç → 2. Müşteri/sahip → 3. İlan (ops.) → 4. Tutar/tarih → 5. Komisyon dağılımı (otomatik) → 6. Notlar/Ekler → 7. Kaydet
+
+### Ekler & Durum
+- PDF, fotoğraf, dosya ekleyebilirsiniz (sözleşme örneği, makbuz vs.)
+- Durum: Taslak → Aktif → Süresi Doldu / Yenilendi / Feshedildi
+
+### Komisyon Hesaplayıcı
+Sol menüde **Komisyon Hesapla** — sözleşme oluşturmadan önce neti görmek için.
+
+![Sözleşme](docs/screenshots/12-contract-new.png)
+
+---
+
+## 4. Komisyon Politikası
+
+**Ayarlar → Komisyon** → şirket %, danışman %, ko-broker oranları yönetilir. Her şubeye/iş tipine farklı politika tanımlanabilir.
+
+Sözleşme oluşturulduğunda otomatik dağıtım: kim ne kadar alacak, KDV dahil/hariç hesaplama.
+
+---
+
+## 5. Otomatik Eşleştirme Motoru
 
 Sistem, müşterinin talep profiliyle ilanları karşılaştırır:
 
 | Kriter | Puan |
 |--------|------|
-| **Bütçe uyumu** (±%10 tolerans) | +40 (uyum yoksa elenir) |
-| **Mülk tipi** uyumu | +30 (yoksa -10) |
-| **Şehir** uyumu | +20 (uyum yoksa elenir) |
-| **İlçe** uyumu | +5 |
-| **m²** uyumu | +10 |
+| **Bütçe uyumu** (±%10) | +40 (uyum yoksa elenir) |
+| **Mülk tipi** | +30 |
+| **Şehir** | +20 (uyum yoksa elenir) |
+| **İlçe** | +5 |
+| **m²** | +10 |
 
-Minimum skor **30** altındakiler öneri listesine girmez. Sistem otomatik hesaplar, danışman **✓ İlgileniyor** olarak işaretleyince üste taşınır; **✗ Reddet** dediklerini bir daha önermez.
+Minimum skor 30 altındakiler önerilmez. Danışman **✓ İlgileniyor** dediği müşteriyi üste taşır; **✗ Reddet** dediklerini bir daha önermez.
 
 **Manuel ekleme:** Otomatik önerilmese bile, müşteri sayfasından ilan, ilan sayfasından müşteri manuel bağlanabilir.
 
 ---
 
-## 4. Takvim & Randevu
+## 6. Takvim & Randevu
 
-- **Aylık, haftalık, günlük görünüm**
-- **Tür:** Gösterim / Toplantı / Diğer
-- **Müşteri ve ilan bağlantısı** — randevu oluştururken aranan müşteri/ilan dropdown'undan seçilir
-- **Durum akışı:** Planlandı → Tamamlandı / İptal
-- **Kenar ajanda:** Bugünün tüm randevuları özet halde
-
----
-
-## 5. Görev Yönetimi
-
-- Kendinize veya başka danışmana atama
-- **Öncelik:** Düşük / Orta / Yüksek
-- **Durum:** Yapılacak / Devam Ediyor / Tamamlandı (Kanban benzeri üç sütun)
-- Son tarih, açıklama
-- Atayan kişi görünümü
+- Aylık, haftalık, günlük görünüm
+- Tür: Gösterim / Toplantı / Diğer
+- Müşteri ve ilan bağlantısı (dropdown arama ile)
+- Durum akışı: Planlandı → Tamamlandı / İptal
+- Kenar ajanda: bugünün tüm randevuları
 
 ---
 
-## 6. Dashboard & Raporlar
+## 7. Görev Yönetimi
+
+- Atama (kendinize / ekibe), öncelik, son tarih
+- 3 sütunlu Kanban: Yapılacak / Devam Ediyor / Tamamlandı
+- Atayan / atanan kim açık görünür
+
+---
+
+## 8. Hatırlatmalar (Yeni)
+
+Her hedef tipi için (müşteri, ilan, sözleşme, randevu, görev) zamanlı hatırlatma kurulabilir. Tarih geldiğinde:
+- Sağ üstte bildirim ikonunda görünür
+- Dashboard'da "Bugün" listesinde
+- E-posta bildirimi (opsiyonel, Faz 2)
+
+---
+
+## 9. Finans (Yeni)
+
+Sözleşme verilerini kullanarak otomatik beslenir:
+- Tahsil edilen / bekleyen komisyonlar
+- Kira tahsilat takvimi
+- Aylık ciro özeti
+- Sözleşme bazında gelir görünümü
+
+Manuel veri girişi gerektirmez — sözleşme imzaladığınız anda finans tablosuna düşer.
+
+---
+
+## 10. Dashboard & Raporlar
 
 - **Dashboard:** Günlük özet — toplam müşteri, aktif ilan, bu ay kapanan satış, bu haftaki randevular
 - **Raporlar:**
-  - Aylık müşteri/ilan/satış trendleri (grafik)
+  - Aylık müşteri/ilan/satış trendleri
   - Danışman performans karşılaştırması
   - Şubelere göre dağılım
-  - Kaynak analizi (hangi reklam kanalı daha fazla lead getiriyor?)
+  - Kaynak analizi
+  - **Ciro raporları** (sözleşme tipine göre)
 
 ---
 
-## 7. KVKK Uyumluluk
+## 11. KVKK Uyumluluk (Genişletildi)
 
 Emlak sektöründe kişisel veri fazlasıyla işleniyor — KVKK denetiminde ilk bakılan sistemlerden biri CRM olur.
 
+### Standart Koruma
 - **Açık Rıza / Aydınlatma / Pazarlama** izinleri ayrı ayrı tutulur
-- TC Kimlik Numarası **AES-256** ile şifreli saklanır — veritabanı kopyalansa bile okunamaz
-- **Denetim Kayıtları (Audit Log):** Kim, ne zaman, hangi müşterinin verisini görüntüledi / değiştirdi / sildi? IP adresi dahil kayıt altında.
-- **Unutulma Hakkı:** Müşteri talep ederse verileri **anonimleştirilir** (silinmez, "Anonim Kullanıcı" olarak bırakılır; raporların bütünlüğü korunur).
+- TC Kimlik Numarası **AES-256** ile şifreli saklanır — DB kopyalansa bile okunamaz
+- **Denetim Kayıtları (AuditLog):** Kim, ne zaman, hangi müşterinin verisini görüntüledi/değiştirdi/sildi? IP adresi dahil
+- **Unutulma Hakkı:** Anonimleştirme
+
+### Hassas Veri Erişim Denetimi (Yeni)
+Standart denetim kayıtlarının ötesinde, **AGENT** (danışman) rolü için aktif kontrol katmanı:
+
+- **Telefon / E-posta / TC** alanları varsayılan olarak **maskelenir** (`5** *** ** 23`)
+- Görmek isteyen danışman **gerekçe + kategori** vermek zorundadır (Görüşme / Takip / Teklif / Sözleşme / Diğer)
+- Sayfadan ayrılırken **sonuç notu zorunlu** (*"Ne konuşuldu / ne yapıldı?"*)
+- Notsuz tab kapatma → oturum **"Notsuz Kapandı"** olarak işaretlenir
+- **Yönetici raporu** (`/access-logs`) → kim, ne zaman, hangi gerekçeyle, hangi sonuçla?
+
+**Kötüye kullanım göstergeleri** (yöneticiye uyarı):
+- Aynı kullanıcı kısa sürede çok farklı müşteriye erişim
+- Yüksek "Notsuz Kapandı" oranı
+- "Diğer" kategorisi sıklığı
+
+> **Önemli:** AGENT, kendi eklediği (veya atanan) müşterilerin hassas verisini gerekçe vermeden açık görür. Bu kural, danışmanın kendi portföyüne sürtüşmesiz erişimini sağlar; başka danışmanın müşterisine yetkisiz bakışı engeller.
+
+![Erişim logları](docs/screenshots/17-access-logs.png)
 
 ---
 
-## 8. Rol Tabanlı Yetkilendirme (RBAC)
+## 12. Rol Tabanlı Yetkilendirme (RBAC)
 
-| Rol | Görüşü |
+| Rol | Kapsam |
 |-----|--------|
-| **Yönetici (ADMIN)** | Tüm şubeler, tüm müşteri/ilanlar, kullanıcı yönetimi, denetim kayıtları |
-| **Şube Müdürü (MANAGER)** | Kendi şubesindeki tüm müşteri/ilanlar, kendi şubesinde danışman atama |
-| **Danışman (AGENT)** | Yalnızca kendisine atanmış müşteri ve ilanlar |
+| **Yönetici (ADMIN)** | Tüm sistem, kullanıcı yönetimi, denetim ve erişim logları |
+| **Şube Müdürü (MANAGER)** | Kendi şubesindeki tüm müşteri/ilanlar, danışman atama, şube içi erişim logları |
+| **Danışman (AGENT)** | Tüm müşterileri görür (hassas veri maskeli), kendi şubesinin ilanları, atanmış kayıtlarını düzenler |
 
-Bu sayede danışmanlar başka danışmanın müşterisine dokunamaz, şube müdürleri başka şubenin verilerini göremez.
+Bu sayede danışmanlar başka danışmanın müşterisine dokunamaz, şube müdürleri başka şubenin verilerini düzenleyemez, hassas veri sorumluluğu kayıtlı kalır.
 
 ---
 
-## 9. Kullanıcı Deneyimi Detayları
+## 13. Kullanıcı Deneyimi Detayları
 
 - **Fotoğraflı çalışan profili** — tabloda, navigasyon barında, her atamada görünür
-- **Arama** tüm sayfalarda (üst bar)
-- **Tek tıkla eylemler** — müşteri listesinden arama kaydetme, WhatsApp/e-posta kaydetme
-- **Mobil uyumlu** responsive tasarım (tablet, telefon, masaüstü)
+- **Üst arama barı** tüm sayfalarda
+- **Tek tıkla eylemler** — müşteri listesinden arama/WhatsApp/e-posta kaydetme
+- **Mobil uyumlu** responsive tasarım
 - **Yardım merkezi** — kullanım kılavuzu PDF'i tek tıkla açılır
+- **Aktif/Pasif kullanıcı** — Tek tıkla kullanıcıyı pasife alın veya geri aktif edin
 
 ---
 
-## 10. Teknoloji Altyapısı
+## 14. Teknoloji Altyapısı
 
 | Katman | Teknoloji |
 |--------|-----------|
-| Frontend | Next.js 16, React 19, Tailwind CSS |
-| Backend | Next.js API Routes, Node.js |
+| Frontend | Next.js 16, React 19, Tailwind CSS, motion/react |
+| Backend | Next.js App Router API, Node.js |
 | Veritabanı | PostgreSQL 16 |
 | ORM | Prisma 7 |
 | Kimlik Doğrulama | NextAuth v5 (JWT) |
 | Şifreleme | AES-256 (TC Kimlik), bcrypt (şifre) |
 | Medya | Yerel dosya sistemi (cloud'a taşınabilir) |
-| Deploy | Docker Compose / Vercel / self-hosted |
+| Deploy | Docker Compose + systemd + nginx (self-hosted) |
+| SSL | Let's Encrypt (otomatik yenileme) |
 
 ---
 
-## 11. Teslim Paketi
+## 15. Teslim Paketi
 
-Size verilen:
 - Kaynak kod (Git repo)
-- Production build — deploy edilmeye hazır
-- Kullanım kılavuzu (PDF + Word)
+- Production build — deploy edilmiş, çalışır halde
+- Kullanım kılavuzu (Markdown + üretilebilir PDF/DOCX)
 - Admin hesabı — ilk girişten sonra şifre değiştirilir
 - 2 örnek şube + 4 örnek kullanıcı + 5 örnek müşteri + 3 örnek ilan (seed data)
 - Veritabanı şeması ve migration dosyaları
+- **Yedekleme sistemi:** Her release otomatik yedek (`/home/crmadmin/backups/<TAG>/`) — DB, schema, uploads, sistem dosyaları
+- **Geri alma (rollback):** Tek komutla önceki sürüme dön
+- **Disaster recovery:** Her yedek içinde RESTORE-TEMPLATE.md kılavuzu
 
 ---
 
-## 12. Canlı Demo Akışı (sunum önerisi)
+## 16. Canlı Demo Akışı (Sunum Önerisi)
 
 1. **Panel'e giriş** — günün özetine bakalım
-2. **Yeni müşteri oluştur** — talep profili dolduralım
-3. **Müşterinin "İlgili İlanlar" sekmesi** — sistem zaten otomatik önermiş!
-4. **İlan detayına geçiş** — sahibiyle tek tıkla iletişim
-5. **İlgili Müşteriler widget'ı** — manuel müşteri ekleme
-6. **Takvime geç** — yeni gösterim randevusu oluştur
-7. **Raporlara bak** — bu ay performans
-8. **Ayarlar → Kullanıcılar** — yeni danışman ekleme (fotoğraflı)
+2. **Yeni müşteri oluştur** — talep profili dolduralım, "ekleyen siz" oldunuz
+3. **Müşterinin "İlgili İlanlar" sekmesi** — sistem zaten otomatik önermiş
+4. **AGENT olarak** başka danışmanın müşterisine bakalım — telefon maskeli, "Göster" tıklayalım, gerekçe verelim
+5. **Sayfadan çıkış** — sonuç notu zorunlu modal
+6. **İlan detayına geçiş** — sahibiyle tek tıkla iletişim
+7. **Yeni sözleşme** — KIRA seçelim, komisyon otomatik hesaplandı
+8. **Finans sekmesi** — sözleşme imzalanır imzalanmaz ciroda göründü
+9. **ADMIN olarak** Erişim Logları sayfası — tüm gerekçe ve sonuç notlarını görelim
+10. **Ayarlar → Kullanıcılar** — yeni danışman ekleme, Excel izni, pasifi geri aktife alma
 
 ---
 
 ## Son Söz
 
-Sistem, gerçek bir ofisin günlük akışını yalınlaştırmak için tasarlandı — **yeni müşteri geldiğinde**, **ilan satıldığında**, **randevu iptal olduğunda** hangi tuşa basılacağının belirsizliği ortadan kalkar. Teknik bilgiye sahip olmayan danışmanlar bile 15 dakikalık bir tanıtımla sistemi kullanabilir.
+Sistem, gerçek bir ofisin günlük akışını yalınlaştırmak için tasarlandı — **yeni müşteri geldiğinde**, **ilan satıldığında**, **sözleşme imzalandığında**, **bir danışman başka birinin müşterisine baktığında** hangi tuşa basılacağının belirsizliği ortadan kalkar.
+
+Teknik bilgiye sahip olmayan danışmanlar bile 15 dakikalık bir tanıtımla sistemi kullanabilir.
 
 Teslim günü destek hizmetimiz **30 gün** dahildir; ilk hafta ayrıca ofise gelip ekibe eğitim verilir.

@@ -132,6 +132,7 @@ export async function POST(req: NextRequest) {
       ...data,
       tcKimlikNo: tcKimlikNo ? encrypt(tcKimlikNo) : null,
       assignedAgentId: data.assignedAgentId || (user.id as string),
+      createdById: user.id as string,
       branchId: data.branchId || (user.branchId as string),
       consents: {
         createMany: {

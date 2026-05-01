@@ -6,6 +6,7 @@ import { createAuditLog } from "@/lib/audit";
 import { customerUpdateSchema } from "@/lib/validations/customer";
 import { runCustomerMatching } from "@/lib/matching";
 import { canEditCustomer, extractActor } from "@/lib/rbac";
+import { applyAccessMask, requiresAccessGateFor, type SensitiveField } from "@/lib/access-control";
 
 // GET /api/customers/:id
 export async function GET(
@@ -45,9 +46,44 @@ export async function GET(
   }
 
   // Decrypt TC Kimlik No for display
-  const decryptedCustomer = {
+  const decryptedTc = customer.tcKimlikNo ? decrypt(customer.tcKimlikNo) : null;
+
+  // Hassas veri erişim kapısı (AGENT için, müşteri kendi ekledikleri hariç)
+  const actor = extractActor(session);
+  const gated = requiresAccessGateFor(actor, { createdById: customer.createdById });
+  let revealedFields: SensitiveField[] = [];
+  let activeAccessSession: { id: string; reasonCategory: string; reason: string; startedAt: Date; fields: string[] } | null = null;
+
+  if (gated && actor) {
+    const active = await prisma.customerAccessSession.findFirst({
+      where: { customerId: id, userId: actor.id, status: "ACTIVE" },
+      orderBy: { startedAt: "desc" },
+      select: { id: true, reasonCategory: true, reason: true, startedAt: true, fields: true },
+    });
+    if (active) {
+      activeAccessSession = active;
+      revealedFields = active.fields.filter((f: string): f is SensitiveField =>
+        f === "phone" || f === "email" || f === "tc"
+      );
+    }
+  }
+
+  const masked = applyAccessMask(
+    { phone: customer.phone, email: customer.email, tcKimlikNo: decryptedTc, createdById: customer.createdById },
+    actor,
+    { revealedFields }
+  );
+
+  const responseCustomer = {
     ...customer,
-    tcKimlikNo: customer.tcKimlikNo ? decrypt(customer.tcKimlikNo) : null,
+    phone: masked.phone,
+    email: masked.email,
+    tcKimlikNo: masked.tcKimlikNo,
+    phoneMasked: masked.phoneMasked,
+    emailMasked: masked.emailMasked,
+    tcKimlikNoMasked: masked.tcKimlikNoMasked,
+    sensitiveGated: masked.sensitiveGated,
+    activeAccessSession,
   };
 
   await createAuditLog({
@@ -58,7 +94,7 @@ export async function GET(
     ipAddress: req.headers.get("x-forwarded-for") || undefined,
   });
 
-  return NextResponse.json(decryptedCustomer);
+  return NextResponse.json(responseCustomer);
   } catch {
     return NextResponse.json({ error: "Sunucu hatası" }, { status: 500 });
   }
@@ -121,6 +157,19 @@ export async function PUT(
   if (updateData.desiredMoveDate) updateData.desiredMoveDate = new Date(updateData.desiredMoveDate as string);
   if (updateData.nextFollowUpDate) updateData.nextFollowUpDate = new Date(updateData.nextFollowUpDate as string);
   if (updateData.lastContactDate) updateData.lastContactDate = new Date(updateData.lastContactDate as string);
+
+  // KVKK: AGENT (kendi eklemediği müşteri için) hassas alanı yalnızca aktif gerekçeli oturumla güncelleyebilir.
+  // Kendi eklediği müşteri ise her zaman güncelleyebilir.
+  if (requiresAccessGateFor(actor, { createdById: oldCustomer.createdById })) {
+    const active = await prisma.customerAccessSession.findFirst({
+      where: { customerId: id, userId: actor!.id, status: "ACTIVE" },
+      select: { fields: true },
+    });
+    const revealed = new Set(active?.fields ?? []);
+    if (!revealed.has("phone")) delete updateData.phone;
+    if (!revealed.has("email")) delete updateData.email;
+    if (!revealed.has("tc")) delete updateData.tcKimlikNo;
+  }
 
   const customer = await prisma.customer.update({
     where: { id },

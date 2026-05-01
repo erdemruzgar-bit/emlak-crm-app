@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import {
   LayoutDashboard,
   Home,
@@ -34,12 +35,19 @@ const navigation = [
   { name: "Hatırlatmalar", href: "/reminders", icon: Bell },
   { name: "Otomasyon", href: "/automation", icon: Zap, badge: "Yeni" },
   { name: "Raporlar", href: "/reports", icon: BarChart3 },
+  { name: "Erişim Logları", href: "/access-logs", icon: ShieldCheck, roles: ["ADMIN", "MANAGER"] as const },
   { name: "Komisyon Hesapla", href: "/tools/commission-calculator", icon: Calculator },
   { name: "Ayarlar", href: "/settings/users", icon: Settings },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const { data: session } = useSession();
+  const role = (session?.user as unknown as { role?: string } | undefined)?.role;
+  const visibleNav = navigation.filter((item) => {
+    if (!("roles" in item) || !item.roles) return true;
+    return role ? (item.roles as readonly string[]).includes(role) : false;
+  });
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 bg-surface-container-low flex flex-col p-6 z-50 rounded-r-3xl transition-all duration-300">
@@ -62,7 +70,7 @@ export default function Sidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 min-h-0 overflow-y-auto space-y-2 -mx-2 px-2">
-        {navigation.map((item) => {
+        {visibleNav.map((item) => {
           const Icon = item.icon;
           const isActive =
             pathname === item.href || pathname.startsWith(item.href + "/");

@@ -59,6 +59,8 @@ export default function NewContractPage() {
   const [commissionRate, setCommissionRate] = useState("");
   const [notes, setNotes] = useState("");
   const [attachments, setAttachments] = useState<DocumentItem[]>([]);
+  // ACTIVE seçilirse, kaydedilince ilişkili ilan otomatik olarak SATILDI/KIRALANDI'ya geçer
+  const [isSigned, setIsSigned] = useState(true);
 
   const [properties, setProperties] = useState<PropertyOption[]>([]);
   const [customers, setCustomers] = useState<CustomerOption[]>([]);
@@ -167,6 +169,8 @@ export default function NewContractPage() {
     if (commissionRate) payload.commissionRate = parseFloat(commissionRate);
     if (calculatedCommission !== null) payload.commissionAmount = calculatedCommission;
     if (notes.trim()) payload.notes = notes.trim();
+    payload.status = isSigned ? "ACTIVE" : "DRAFT";
+    if (isSigned) payload.signedAt = new Date().toISOString();
 
     try {
       const res = await fetch("/api/contracts", {
@@ -460,6 +464,42 @@ export default function NewContractPage() {
             placeholder="Özel şartlar, müzakere notları..."
             className="w-full px-4 py-3 bg-surface-container-low rounded-xl text-sm border-none outline-none focus:ring-2 focus:ring-primary/20 resize-none"
           />
+        </div>
+
+        {/* Sözleşme Durumu */}
+        <div className="bg-surface-container-lowest rounded-3xl p-6 shadow-[0_8px_24px_rgba(25,28,30,0.04)]">
+          <h3 className="text-sm font-black uppercase tracking-wider text-on-surface-variant mb-3">
+            Sözleşme Durumu
+          </h3>
+          <p className="text-xs text-on-surface-variant mb-4">
+            <strong>İmzalandı (Aktif)</strong> seçili ise, kaydedildiğinde ilişkili ilan otomatik olarak{" "}
+            {contractType === "KIRA" ? "Kiralandı" : contractType === "SATIS" ? "Satıldı" : "—"}
+            {" "}durumuna geçer.
+          </p>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setIsSigned(true)}
+              className={`flex-1 px-4 py-3 rounded-xl text-sm font-bold border-2 transition-all ${
+                isSigned
+                  ? "bg-primary text-white border-primary shadow-md shadow-primary/20"
+                  : "bg-surface-container-low text-on-surface-variant border-transparent hover:border-outline-variant"
+              }`}
+            >
+              İmzalandı (Aktif)
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsSigned(false)}
+              className={`flex-1 px-4 py-3 rounded-xl text-sm font-bold border-2 transition-all ${
+                !isSigned
+                  ? "bg-on-surface text-surface-container-lowest border-on-surface shadow-md"
+                  : "bg-surface-container-low text-on-surface-variant border-transparent hover:border-outline-variant"
+              }`}
+            >
+              Taslak (henüz imzalanmadı)
+            </button>
+          </div>
         </div>
 
         {/* Eklentiler */}

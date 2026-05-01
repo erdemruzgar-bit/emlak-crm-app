@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { UserPlus, Loader2, X, AlertCircle, Pencil, UserX, ShieldAlert, Camera } from "lucide-react";
+import { UserPlus, Loader2, X, AlertCircle, Pencil, UserX, UserCheck, ShieldAlert, Camera } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
 
@@ -149,6 +149,21 @@ export default function UsersSettingsPage() {
     }
   }
 
+  async function activate(id: string) {
+    if (!confirm("Bu kullanıcıyı tekrar aktife almak istiyor musunuz?")) return;
+    const res = await fetch(`/api/users/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ isActive: true }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      setUsers(users.map((u) => u.id === id ? { ...u, isActive: true } : u));
+    } else {
+      alert(data.error || "İşlem başarısız");
+    }
+  }
+
   const roleOptions = sessionRole ? allowedRoles(sessionRole) : [];
   // Is the edit modal showing for own profile or a lower-rank user?
   const isEditingSelf = editUser?.id === sessionId;
@@ -243,6 +258,13 @@ export default function UsersSettingsPage() {
                           className="p-2 hover:bg-error-container/30 rounded-lg transition-colors text-on-surface-variant hover:text-error"
                           title="Pasife Al">
                           <UserX className="w-4 h-4" />
+                        </button>
+                      )}
+                      {!u.isActive && canDeactivate(u) && (
+                        <button onClick={() => activate(u.id)}
+                          className="p-2 hover:bg-green-100 rounded-lg transition-colors text-on-surface-variant hover:text-green-700"
+                          title="Aktife Al">
+                          <UserCheck className="w-4 h-4" />
                         </button>
                       )}
                     </div>

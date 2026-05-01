@@ -200,12 +200,14 @@ model User {
 
   branch              Branch?               @relation(fields: [branchId], references: [id])
   assignedCustomers   Customer[]            @relation("AssignedAgent")
+  createdCustomers    Customer[]            @relation("CreatedCustomers")
   assignedProperties  Property[]            @relation("AssignedAgent")
   appointments        Appointment[]
   tasks               Task[]                @relation("TaskOwner")
   assignedTasks       Task[]                @relation("TaskAssigner")
   customerNotes       CustomerNote[]
   customerInteractions CustomerInteraction[]
+  customerAccessSessions CustomerAccessSession[]
   auditLogs           AuditLog[]
   contractsCreated    Contract[]
   contractAttachmentsUploaded ContractAttachment[]
@@ -247,6 +249,7 @@ model Customer {
   photoUrl       String?
   isAnonymized   Boolean      @default(false)
   assignedAgentId String?
+  createdById    String?      // Müşteriyi sisteme ekleyen kullanıcı (KVKK: kendi eklediğini açık görür)
   branchId       String?
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
@@ -285,9 +288,11 @@ model Customer {
   nextFollowUpDate   DateTime?
 
   assignedAgent  User?               @relation("AssignedAgent", fields: [assignedAgentId], references: [id])
+  createdBy      User?               @relation("CreatedCustomers", fields: [createdById], references: [id])
   branch         Branch?             @relation(fields: [branchId], references: [id])
   consents       CustomerConsent[]
   notes          CustomerNote[]
+  accessSessions CustomerAccessSession[]
   interactions   CustomerInteraction[]
   propertyMatches PropertyMatch[]
   ownedProperties Property[]          @relation("PropertyOwner")
@@ -296,6 +301,7 @@ model Customer {
   ownedContracts Contract[]          @relation("ContractOwner")
 
   @@index([assignedAgentId])
+  @@index([createdById])
   @@index([branchId])
   @@index([stage])
   @@index([urgency])
@@ -328,6 +334,37 @@ model CustomerNote {
 
   customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
   user     User     @relation(fields: [userId], references: [id])
+
+  accessSessionExits CustomerAccessSession[] @relation("ExitNote")
+}
+
+// ─── KVKK: Hassas Veri Erişim Oturumu ───
+// AGENT rolü hassas alanları (telefon, email, TC) görmek için bir oturum açar:
+// 1) Giriş gerekçesi + kategori verir       → session row created
+// 2) Sayfadan ayrılırken sonuç notu zorunlu  → CustomerNote oluşur, session.exitNoteId & endedAt set edilir
+// Not yazılmadan tab kapatılırsa ABANDONED, aksi halde COMPLETED olarak işaretlenir.
+model CustomerAccessSession {
+  id              String    @id @default(cuid())
+  customerId      String
+  userId          String
+  reasonCategory  String    // GORUSME, TAKIP, TEKLIF, SOZLESME, DIGER
+  reason          String    @db.Text
+  fields          String[]  // İlk açılışta hangi alan istendi: ["phone"], ["email"], ["tc"]
+  startedAt       DateTime  @default(now())
+  endedAt         DateTime?
+  exitNoteId      String?
+  status          String    @default("ACTIVE") // ACTIVE, COMPLETED, ABANDONED
+  ipAddress       String?
+  userAgent       String?
+
+  customer Customer       @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  user     User           @relation(fields: [userId], references: [id])
+  exitNote CustomerNote?  @relation("ExitNote", fields: [exitNoteId], references: [id])
+
+  @@index([customerId])
+  @@index([userId])
+  @@index([startedAt])
+  @@index([status])
 }
 
 model CustomerInteraction {

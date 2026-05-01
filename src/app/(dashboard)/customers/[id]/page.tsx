@@ -14,6 +14,27 @@ import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
 import { EditableText, EditableSelect, EditableTextarea } from "@/components/ui/editable-field";
 
+interface ActiveAccessSession {
+  id: string;
+  reasonCategory: string;
+  reason: string;
+  startedAt: string;
+  fields: string[];
+}
+
+interface AccessSessionRecord {
+  id: string;
+  reasonCategory: string;
+  reason: string;
+  fields: string[];
+  status: "ACTIVE" | "COMPLETED" | "ABANDONED";
+  startedAt: string;
+  endedAt: string | null;
+  ipAddress: string | null;
+  user: { id: string; name: string; role: string };
+  exitNote: { id: string; content: string; createdAt: string } | null;
+}
+
 interface Customer {
   id: string;
   firstName: string;
@@ -21,6 +42,12 @@ interface Customer {
   email: string | null;
   phone: string | null;
   tcKimlikNo: string | null;
+  // Hassas veri kapısı (KVKK) — AGENT için maskelenir
+  phoneMasked?: string | null;
+  emailMasked?: string | null;
+  tcKimlikNoMasked?: string | null;
+  sensitiveGated?: boolean;
+  activeAccessSession?: ActiveAccessSession | null;
   address: string | null;
   customerType: string;
   source: string | null;
@@ -123,7 +150,19 @@ const tabs = [
   { key: "matches", label: "İlgili İlanlar", icon: Home },
   { key: "contracts", label: "Sözleşmeler", icon: FileSignature },
   { key: "kvkk", label: "KVKK Rızaları", icon: ShieldCheck },
+  { key: "access", label: "Erişim Geçmişi", icon: Clock },
 ] as const;
+
+const ACCESS_REASON_OPTIONS = [
+  { code: "GORUSME", label: "Görüşme / Arama" },
+  { code: "TAKIP", label: "Takip / Hatırlatma" },
+  { code: "TEKLIF", label: "Teklif Hazırlama" },
+  { code: "SOZLESME", label: "Sözleşme İşlemi" },
+  { code: "DIGER", label: "Diğer" },
+];
+const ACCESS_REASON_LABELS: Record<string, string> = Object.fromEntries(
+  ACCESS_REASON_OPTIONS.map((o) => [o.code, o.label])
+);
 
 interface CustomerContract {
   id: string;
@@ -154,7 +193,12 @@ export default function CustomerDetailPage() {
   const { data: session } = useSession();
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"info" | "demand" | "notes" | "interactions" | "appointments" | "matches" | "contracts" | "kvkk">("info");
+  const [activeTab, setActiveTab] = useState<"info" | "demand" | "notes" | "interactions" | "appointments" | "matches" | "contracts" | "kvkk" | "access">("info");
+  // Hassas veri erişim kapısı (KVKK)
+  const [revealModal, setRevealModal] = useState<{ field: "phone" | "email" | "tc"; reasonCategory: string; reason: string; saving: boolean; error: string | null } | null>(null);
+  const [exitModal, setExitModal] = useState<{ note: string; saving: boolean; error: string | null; pendingNav: string | null } | null>(null);
+  const [accessHistory, setAccessHistory] = useState<AccessSessionRecord[]>([]);
+  const [accessHistoryLoading, setAccessHistoryLoading] = useState(false);
   const [contracts, setContracts] = useState<CustomerContract[]>([]);
   const [contractsLoading, setContractsLoading] = useState(false);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -245,6 +289,36 @@ export default function CustomerDetailPage() {
       .catch(() => {});
   }, []);
 
+  // Erişim geçmişi: tab açıldığında fetch et
+  useEffect(() => {
+    if (activeTab !== "access" || !customer) return;
+    setAccessHistoryLoading(true);
+    fetch(`/api/customers/${customer.id}/access-sessions`)
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => setAccessHistory(Array.isArray(data) ? data : []))
+      .catch(() => setAccessHistory([]))
+      .finally(() => setAccessHistoryLoading(false));
+  }, [activeTab, customer?.id]);
+
+  // Aktif erişim oturumu varsa, sayfadan ayrılırken (tab kapatma / refresh) tarayıcıya uyarı bastır.
+  // Servis arkaplanda beacon ile oturumu ABANDONED olarak işaretler.
+  useEffect(() => {
+    const active = customer?.activeAccessSession;
+    if (!active) return;
+    const handler = (e: BeforeUnloadEvent) => {
+      // Beacon: tab kapanırsa oturumu ABANDONED olarak yaz
+      try {
+        const blob = new Blob([JSON.stringify({ abandon: true })], { type: "application/json" });
+        navigator.sendBeacon(`/api/customers/${customer!.id}/access-sessions/${active.id}`, blob);
+      } catch {}
+      e.preventDefault();
+      e.returnValue = "Aktif bir erişim oturumunuz var. Sonuç notunuzu kaydetmediniz.";
+      return e.returnValue;
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [customer?.activeAccessSession?.id, customer?.id]);
+
   // Müşterinin tercih ettiği tipler arasında oda kavramı olan en az bir tip varsa oda alanları görünür
   const showRoomFields = useMemo(() => {
     const types = customer?.preferredTypes ?? [];
@@ -268,9 +342,20 @@ export default function CustomerDetailPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link href="/customers" className="h-10 w-10 rounded-full bg-surface-container-low flex items-center justify-center text-on-surface-variant hover:bg-surface-container transition-all">
+          <button
+            type="button"
+            onClick={(e) => {
+              if (customer.activeAccessSession) {
+                e.preventDefault();
+                setExitModal({ note: "", saving: false, error: null, pendingNav: "BACK" });
+              } else {
+                router.push("/customers");
+              }
+            }}
+            className="h-10 w-10 rounded-full bg-surface-container-low flex items-center justify-center text-on-surface-variant hover:bg-surface-container transition-all"
+          >
             <ArrowLeft className="w-5 h-5" />
-          </Link>
+          </button>
           {/* Avatar / Photo */}
           {customer.photoUrl ? (
             <img src={customer.photoUrl} alt={`${customer.firstName} ${customer.lastName}`}
@@ -398,15 +483,48 @@ export default function CustomerDetailPage() {
               <EditableText icon={User} label="Soyad" editing={editingInfo}
                 value={customer.lastName}
                 onChange={(v) => setCustomer({ ...customer, lastName: v })} />
-              <EditableText icon={Mail} label="E-posta" editing={editingInfo} type="email"
-                value={customer.email}
-                onChange={(v) => setCustomer({ ...customer, email: v })} />
-              <EditableText icon={Phone} label="Telefon" editing={editingInfo} type="tel"
-                value={customer.phone}
-                onChange={(v) => setCustomer({ ...customer, phone: v })} />
-              <EditableText icon={Fingerprint} label="TC Kimlik No" editing={false}
-                value={customer.tcKimlikNo ? `***${customer.tcKimlikNo.slice(-4)}` : null}
-                onChange={() => {}} />
+              {(() => {
+                const gated = customer.sensitiveGated === true;
+                const phoneRevealed = !gated || customer.phone != null;
+                const emailRevealed = !gated || customer.email != null;
+                const tcRevealed = !gated || customer.tcKimlikNo != null;
+                return (
+                  <>
+                    <SensitiveField
+                      icon={Mail}
+                      label="E-posta"
+                      revealed={emailRevealed}
+                      maskedValue={customer.emailMasked ?? null}
+                      value={customer.email}
+                      editable={editingInfo && emailRevealed}
+                      type="email"
+                      onChange={(v) => setCustomer({ ...customer, email: v })}
+                      onReveal={() => setRevealModal({ field: "email", reasonCategory: "GORUSME", reason: "", saving: false, error: null })}
+                    />
+                    <SensitiveField
+                      icon={Phone}
+                      label="Telefon"
+                      revealed={phoneRevealed}
+                      maskedValue={customer.phoneMasked ?? null}
+                      value={customer.phone}
+                      editable={editingInfo && phoneRevealed}
+                      type="tel"
+                      onChange={(v) => setCustomer({ ...customer, phone: v })}
+                      onReveal={() => setRevealModal({ field: "phone", reasonCategory: "GORUSME", reason: "", saving: false, error: null })}
+                    />
+                    <SensitiveField
+                      icon={Fingerprint}
+                      label="TC Kimlik No"
+                      revealed={tcRevealed}
+                      maskedValue={customer.tcKimlikNoMasked ?? null}
+                      value={customer.tcKimlikNo}
+                      editable={false}
+                      onChange={() => {}}
+                      onReveal={() => setRevealModal({ field: "tc", reasonCategory: "SOZLESME", reason: "", saving: false, error: null })}
+                    />
+                  </>
+                );
+              })()}
               <EditableSelect icon={Tag} label="Müşteri Tipi" editing={editingInfo}
                 value={customer.customerType}
                 onChange={(v) => setCustomer({ ...customer, customerType: v })}
@@ -1207,8 +1325,300 @@ export default function CustomerDetailPage() {
             ))}
           </motion.div>
         )}
+
+        {activeTab === "access" && (
+          <motion.div key="access" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+            className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-8 space-y-4 border border-outline-variant/10"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-bold text-on-surface">Hassas Veri Erişim Geçmişi</h3>
+                <p className="text-xs text-on-surface-variant mt-1">Kim, ne zaman, hangi gerekçeyle bu müşterinin telefon/email/TC bilgisine baktı? (KVKK)</p>
+              </div>
+              <button
+                onClick={() => {
+                  setAccessHistoryLoading(true);
+                  fetch(`/api/customers/${customer.id}/access-sessions`)
+                    .then((r) => (r.ok ? r.json() : []))
+                    .then((data) => setAccessHistory(Array.isArray(data) ? data : []))
+                    .finally(() => setAccessHistoryLoading(false));
+                }}
+                className="text-xs text-primary font-bold hover:underline flex items-center gap-1"
+              >
+                Yenile
+              </button>
+            </div>
+
+            {accessHistoryLoading ? (
+              <div className="flex items-center justify-center py-12 text-on-surface-variant">
+                <Loader2 className="w-5 h-5 animate-spin mr-2" /> Yükleniyor...
+              </div>
+            ) : accessHistory.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-on-surface-variant">
+                <Clock className="w-10 h-10 opacity-30 mb-2" />
+                Henüz erişim kaydı yok
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {accessHistory.map((s) => (
+                  <div key={s.id} className="p-4 bg-surface-container-low rounded-2xl border border-outline-variant/5">
+                    <div className="flex items-start justify-between gap-3 flex-wrap">
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-sm font-bold text-on-surface">{s.user.name}</span>
+                          <span className="text-[10px] px-2 py-0.5 bg-surface-container rounded font-bold uppercase tracking-wider text-on-surface-variant">{s.user.role}</span>
+                          <span className={cn("text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider",
+                            s.status === "COMPLETED" ? "bg-green-100 text-green-700" :
+                            s.status === "ABANDONED" ? "bg-error-container text-on-error-container" :
+                            "bg-tertiary-fixed text-tertiary"
+                          )}>
+                            {s.status === "COMPLETED" ? "Tamamlandı" : s.status === "ABANDONED" ? "Notsuz Kapandı" : "Aktif"}
+                          </span>
+                          <span className="text-[10px] px-2 py-0.5 bg-primary-fixed text-primary rounded font-bold uppercase tracking-wider">
+                            {ACCESS_REASON_LABELS[s.reasonCategory] || s.reasonCategory}
+                          </span>
+                        </div>
+                        <p className="text-sm text-on-surface mt-2">{s.reason}</p>
+                        <p className="text-[11px] text-on-surface-variant mt-1">
+                          Erişilen alanlar: {s.fields.join(", ") || "-"}
+                        </p>
+                      </div>
+                      <div className="text-right text-[11px] text-on-surface-variant">
+                        <p>{new Date(s.startedAt).toLocaleString("tr-TR")}</p>
+                        {s.endedAt && (
+                          <p className="mt-0.5">→ {new Date(s.endedAt).toLocaleString("tr-TR")}</p>
+                        )}
+                      </div>
+                    </div>
+                    {s.exitNote && (
+                      <div className="mt-3 p-3 bg-surface-container rounded-xl">
+                        <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1">Sonuç Notu</p>
+                        <p className="text-sm text-on-surface">{s.exitNote.content}</p>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Reveal Modal — Hassas alana erişim gerekçesi */}
+      <AnimatePresence>
+        {revealModal && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4"
+            onClick={() => { if (!revealModal.saving) setRevealModal(null); }}
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 10 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 10 }}
+              className="bg-surface-container-lowest rounded-3xl shadow-2xl w-full max-w-md p-6 space-y-5"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-primary-fixed rounded-xl flex items-center justify-center text-primary">
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-on-surface">Hassas Veri Erişimi</h3>
+                  <p className="text-xs text-on-surface-variant">
+                    {revealModal.field === "phone" ? "Telefon numarası" : revealModal.field === "email" ? "E-posta adresi" : "TC Kimlik No"} açılacak. Lütfen gerekçenizi belirtin.
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Gerekçe Kategorisi</label>
+                <select
+                  value={revealModal.reasonCategory}
+                  onChange={(e) => setRevealModal({ ...revealModal, reasonCategory: e.target.value, error: null })}
+                  className="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm font-medium outline-none"
+                >
+                  {ACCESS_REASON_OPTIONS.map((o) => (
+                    <option key={o.code} value={o.code}>{o.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Açıklama (zorunlu)</label>
+                <textarea
+                  value={revealModal.reason}
+                  onChange={(e) => setRevealModal({ ...revealModal, reason: e.target.value, error: null })}
+                  placeholder="Örn: 'Yarın gösterimi teyit etmek için arıyorum.'"
+                  rows={3}
+                  className="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm outline-none resize-none focus:ring-2 focus:ring-primary/20"
+                />
+              </div>
+
+              {revealModal.error && (
+                <p className="text-xs text-error font-bold">{revealModal.error}</p>
+              )}
+
+              <div className="flex items-center gap-3 justify-end">
+                <button
+                  type="button"
+                  disabled={revealModal.saving}
+                  onClick={() => setRevealModal(null)}
+                  className="px-5 py-2.5 rounded-xl text-sm font-bold bg-surface-container text-on-surface-variant"
+                >
+                  Vazgeç
+                </button>
+                <button
+                  type="button"
+                  disabled={revealModal.saving || revealModal.reason.trim().length < 3}
+                  onClick={async () => {
+                    setRevealModal({ ...revealModal, saving: true, error: null });
+                    const fieldKey = revealModal.field;
+                    const res = await fetch(`/api/customers/${customer.id}/access-sessions`, {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        reasonCategory: revealModal.reasonCategory,
+                        reason: revealModal.reason.trim(),
+                        fields: [fieldKey],
+                      }),
+                    });
+                    if (!res.ok) {
+                      const err = await res.json().catch(() => ({}));
+                      setRevealModal({ ...revealModal, saving: false, error: err.error || "İşlem başarısız" });
+                      return;
+                    }
+                    // Müşteriyi yeniden yükle: API artık ilgili alanı açık döner
+                    const refreshed = await fetch(`/api/customers/${customer.id}`).then((r) => r.json()).catch(() => null);
+                    if (refreshed) setCustomer(refreshed);
+                    setRevealModal(null);
+                  }}
+                  className="px-5 py-2.5 rounded-xl text-sm font-bold primary-gradient text-white shadow-lg shadow-primary/10 disabled:opacity-50 flex items-center gap-2"
+                >
+                  {revealModal.saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
+                  Gerekçeyi Onayla & Aç
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Exit Modal — Sonuç notu zorunlu */}
+      <AnimatePresence>
+        {exitModal && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 10 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 10 }}
+              className="bg-surface-container-lowest rounded-3xl shadow-2xl w-full max-w-md p-6 space-y-5"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-tertiary-fixed rounded-xl flex items-center justify-center text-tertiary">
+                  <StickyNote className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-on-surface">Sonuç Notu Zorunlu</h3>
+                  <p className="text-xs text-on-surface-variant">Bu müşterinin hassas verisine eriştiniz. Ne konuşuldu / ne yapıldı?</p>
+                </div>
+              </div>
+
+              <textarea
+                value={exitModal.note}
+                onChange={(e) => setExitModal({ ...exitModal, note: e.target.value, error: null })}
+                placeholder="Örn: 'Müşteriyi aradım, gösterim Cumartesi 14:00 olarak kararlaştırıldı.'"
+                rows={4}
+                autoFocus
+                className="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm outline-none resize-none focus:ring-2 focus:ring-primary/20"
+              />
+
+              {exitModal.error && (
+                <p className="text-xs text-error font-bold">{exitModal.error}</p>
+              )}
+
+              <div className="flex items-center gap-3 justify-end">
+                <button
+                  type="button"
+                  disabled={exitModal.saving || exitModal.note.trim().length < 3}
+                  onClick={async () => {
+                    if (!customer.activeAccessSession) { setExitModal(null); return; }
+                    setExitModal({ ...exitModal, saving: true, error: null });
+                    const res = await fetch(`/api/customers/${customer.id}/access-sessions/${customer.activeAccessSession.id}`, {
+                      method: "PATCH",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ exitNote: exitModal.note.trim() }),
+                    });
+                    if (!res.ok) {
+                      const err = await res.json().catch(() => ({}));
+                      setExitModal({ ...exitModal, saving: false, error: err.error || "Kayıt başarısız" });
+                      return;
+                    }
+                    const pendingNav = exitModal.pendingNav;
+                    setExitModal(null);
+                    setCustomer({ ...customer, activeAccessSession: null });
+                    if (pendingNav === "BACK") {
+                      router.push("/customers");
+                    } else if (pendingNav) {
+                      router.push(pendingNav);
+                    }
+                  }}
+                  className="px-5 py-2.5 rounded-xl text-sm font-bold primary-gradient text-white shadow-lg shadow-primary/10 disabled:opacity-50 flex items-center gap-2"
+                >
+                  {exitModal.saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                  Notu Kaydet & Çık
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
       </AnimatePresence>
     </motion.div>
+  );
+}
+
+// Hassas alan kart — maskeli iken "Göster" butonu, açıkken EditableText
+function SensitiveField({
+  icon: Icon, label, revealed, maskedValue, value, editable, type, onChange, onReveal,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  revealed: boolean;
+  maskedValue: string | null;
+  value: string | null;
+  editable: boolean;
+  type?: "email" | "tel" | "text";
+  onChange: (v: string) => void;
+  onReveal: () => void;
+}) {
+  if (revealed) {
+    return (
+      <EditableText icon={Icon} label={label} editing={editable} type={type ?? "text"}
+        value={value}
+        onChange={onChange} />
+    );
+  }
+  return (
+    <div className="p-4 bg-surface-container-low rounded-2xl border border-outline-variant/10">
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-primary shadow-sm shrink-0">
+          <Icon className="w-5 h-5" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-[10px] text-on-surface-variant uppercase tracking-widest font-bold">{label}</p>
+          <p className="text-sm font-bold text-on-surface mt-0.5 truncate">{maskedValue ?? "-"}</p>
+        </div>
+        {maskedValue && (
+          <button
+            type="button"
+            onClick={onReveal}
+            className="text-xs font-bold px-3 py-2 rounded-xl bg-primary-fixed text-primary hover:bg-primary-container transition-all flex items-center gap-1.5"
+          >
+            <ShieldCheck className="w-3.5 h-3.5" />
+            Göster
+          </button>
+        )}
+      </div>
+    </div>
   );
 }
 

@@ -1410,12 +1410,12 @@ export default function CustomerDetailPage() {
         {revealModal && (
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-2 sm:p-4"
             onClick={() => { if (!revealModal.saving) setRevealModal(null); }}
           >
             <motion.div
               initial={{ scale: 0.95, y: 10 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 10 }}
-              className="bg-surface-container-lowest rounded-3xl shadow-2xl w-full max-w-md p-6 space-y-5"
+              className="bg-surface-container-lowest rounded-3xl shadow-2xl w-full max-w-md p-6 space-y-5 max-h-[92vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center gap-3">
@@ -1508,11 +1508,11 @@ export default function CustomerDetailPage() {
         {exitModal && (
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-2 sm:p-4"
           >
             <motion.div
               initial={{ scale: 0.95, y: 10 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 10 }}
-              className="bg-surface-container-lowest rounded-3xl shadow-2xl w-full max-w-md p-6 space-y-5"
+              className="bg-surface-container-lowest rounded-3xl shadow-2xl w-full max-w-md p-6 space-y-5 max-h-[92vh] overflow-y-auto"
             >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-tertiary-fixed rounded-xl flex items-center justify-center text-tertiary">

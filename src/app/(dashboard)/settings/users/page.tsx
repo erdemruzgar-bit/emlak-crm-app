@@ -319,24 +319,26 @@ export default function UsersSettingsPage() {
       <AnimatePresence>
         {showModal && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4"
             onClick={(e) => e.target === e.currentTarget && setShowModal(false)}>
             <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-surface-container-lowest rounded-3xl shadow-2xl w-full max-w-md p-8 space-y-6">
-              <div className="flex items-center justify-between">
+              className="bg-surface-container-lowest rounded-3xl shadow-2xl w-full max-w-2xl max-h-[92vh] flex flex-col overflow-hidden">
+              {/* Sticky header */}
+              <div className="flex items-center justify-between px-6 sm:px-8 py-5 border-b border-outline-variant/10 shrink-0">
                 <h2 className="text-xl font-black text-on-surface">{editUser ? "Kullanıcıyı Düzenle" : "Yeni Kullanıcı"}</h2>
                 <button onClick={() => setShowModal(false)} className="p-2 hover:bg-surface-container rounded-xl text-on-surface-variant">
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
-              {formError && (
-                <div className="bg-error-container text-on-error-container text-sm p-3 rounded-xl flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 shrink-0" />{formError}
-                </div>
-              )}
-
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0">
+                {/* Scroll-able body */}
+                <div className="flex-1 overflow-y-auto px-6 sm:px-8 py-6 space-y-4">
+                  {formError && (
+                    <div className="bg-error-container text-on-error-container text-sm p-3 rounded-xl flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4 shrink-0" />{formError}
+                    </div>
+                  )}
                 {/* Fotoğraf yükleme */}
                 <div className="flex items-center gap-4 p-4 bg-surface-container-low rounded-2xl">
                   {form.photoUrl ? (
@@ -485,8 +487,9 @@ export default function UsersSettingsPage() {
                     <strong className="text-primary">Yöneticiler</strong> Excel dışa/içe aktarma yetkilerine otomatik sahiptir.
                   </div>
                 )}
-
-                <div className="flex gap-3 pt-2">
+                </div>
+                {/* Sticky footer */}
+                <div className="flex gap-3 px-6 sm:px-8 py-4 border-t border-outline-variant/10 bg-surface-container-lowest shrink-0">
                   <button type="button" onClick={() => setShowModal(false)}
                     className="flex-1 py-3 text-sm font-bold bg-surface-container-low hover:bg-surface-container rounded-xl transition-all">İptal</button>
                   <button type="submit" disabled={saving}

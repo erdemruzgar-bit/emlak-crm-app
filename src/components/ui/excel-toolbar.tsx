@@ -176,7 +176,7 @@ export function ExcelToolbar({ exportUrl, importUrl, templateUrl, label = "veri"
       <AnimatePresence>
         {done && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4"
             onClick={() => setDone(null)}>
             <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }}
               className="bg-surface-container-lowest rounded-3xl p-8 max-w-md w-full text-center"
@@ -203,7 +203,7 @@ export function ExcelToolbar({ exportUrl, importUrl, templateUrl, label = "veri"
       <AnimatePresence>
         {guideOpen && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4"
             onClick={(e) => e.target === e.currentTarget && setGuideOpen(false)}>
             <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }}
               className="bg-surface-container-lowest rounded-3xl shadow-2xl max-w-xl w-full max-h-[85vh] flex flex-col overflow-hidden">
@@ -317,7 +317,7 @@ export function ExcelToolbar({ exportUrl, importUrl, templateUrl, label = "veri"
       <AnimatePresence>
         {preview && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4"
             onClick={(e) => e.target === e.currentTarget && !applying && setPreview(null)}>
             <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }}
               className="bg-surface-container-lowest rounded-3xl shadow-2xl max-w-4xl w-full max-h-[85vh] flex flex-col overflow-hidden">

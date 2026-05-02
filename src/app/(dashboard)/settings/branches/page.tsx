@@ -140,10 +140,10 @@ export default function BranchesSettingsPage() {
       <AnimatePresence>
         {showModal && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4"
             onClick={(e) => e.target === e.currentTarget && setShowModal(false)}>
             <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-surface-container-lowest rounded-3xl shadow-2xl w-full max-w-md p-8 space-y-6">
+              className="bg-surface-container-lowest rounded-3xl shadow-2xl w-full max-w-md p-6 sm:p-8 space-y-6 max-h-[92vh] overflow-y-auto">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-black text-on-surface">{editBranch ? "Şubeyi Düzenle" : "Yeni Şube"}</h2>
                 <button onClick={() => setShowModal(false)} className="p-2 hover:bg-surface-container rounded-xl text-on-surface-variant"><X className="w-5 h-5" /></button>

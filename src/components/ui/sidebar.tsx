@@ -114,15 +114,13 @@ export default function Sidebar() {
           <span>Yeni İlan</span>
         </Link>
 
-        <a
-          href="/Emlak-CRM-Kullanim-Kilavuzu.pdf"
-          target="_blank"
-          rel="noopener noreferrer"
+        <Link
+          href="/yardim"
           className="w-full flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container/50 rounded-xl transition-colors"
         >
           <HelpCircle className="w-5 h-5" />
           <span className="text-sm font-medium">Yardım / Kullanım Kılavuzu</span>
-        </a>
+        </Link>
 
         <div className="flex items-center gap-2 px-4 py-2 text-xs text-on-surface-variant">
           <ShieldCheck className="w-4 h-4 text-green-600" />

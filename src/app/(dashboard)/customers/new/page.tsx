@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, ShieldCheck, Info, AlertCircle, Loader2, Target } from "lucide-react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
 
@@ -98,6 +99,7 @@ export default function NewCustomerPage() {
       return;
     }
 
+    toast.success("Müşteri eklendi");
     router.push("/customers");
   }
 

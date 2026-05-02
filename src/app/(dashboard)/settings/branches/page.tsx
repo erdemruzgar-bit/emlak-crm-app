@@ -71,8 +71,10 @@ export default function BranchesSettingsPage() {
 
     if (editBranch) {
       setBranches(branches.map((b) => b.id === editBranch.id ? data : b));
+      toast.success("Şube güncellendi");
     } else {
       setBranches([data, ...branches]);
+      toast.success("Şube eklendi");
     }
     setShowModal(false);
   }

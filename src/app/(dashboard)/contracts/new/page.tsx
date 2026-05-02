@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { FileSignature, ArrowLeft, Save, Calculator } from "lucide-react";
+import { toast } from "sonner";
 import { motion } from "motion/react";
 import { DocumentUploader, DocumentItem } from "@/components/ui/document-uploader";
 
@@ -203,6 +204,7 @@ export default function NewContractPage() {
         });
       }
 
+      toast.success("Sözleşme oluşturuldu");
       router.push(`/contracts/${contract.id}`);
     } catch {
       setError("Bağlantı hatası");

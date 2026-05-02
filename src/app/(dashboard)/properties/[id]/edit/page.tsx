@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { ArrowLeft, Loader2, AlertCircle, CheckCircle, User, X } from "lucide-react";
+import { toast } from "sonner";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { MediaUploader, type MediaItem } from "@/components/ui/media-uploader";
@@ -291,6 +292,7 @@ export default function EditPropertyPage() {
 
     setSaving(false);
     setSuccess(true);
+    toast.success("İlan güncellendi");
     setTimeout(() => router.push(`/properties/${params.id}`), 1000);
   }
 

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, AlertCircle, Loader2, User, X } from "lucide-react";
+import { toast } from "sonner";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { MediaUploader, type MediaItem } from "@/components/ui/media-uploader";
@@ -201,6 +202,7 @@ export default function NewPropertyPage() {
       });
     }
 
+    toast.success("İlan eklendi");
     router.push(`/properties/${data.id}`);
   }
 

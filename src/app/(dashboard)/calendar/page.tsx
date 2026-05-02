@@ -301,6 +301,7 @@ export default function CalendarPage() {
       return;
     }
 
+    toast.success(editAppointment ? "Randevu güncellendi" : "Randevu oluşturuldu");
     setShowModal(false);
     fetchAppointments();
   }

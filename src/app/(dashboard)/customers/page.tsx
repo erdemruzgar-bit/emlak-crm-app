@@ -224,7 +224,7 @@ function CustomersPageInner() {
       </div>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-surface-container-lowest rounded-2xl p-4 border border-outline-variant/10 flex items-center gap-3">
           <div className="w-10 h-10 bg-primary-fixed rounded-xl flex items-center justify-center"><Users className="w-5 h-5 text-primary" /></div>
           <div><p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Toplam</p><p className="text-xl font-black text-on-surface">{totalCount}</p></div>

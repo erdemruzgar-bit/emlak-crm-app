@@ -606,6 +606,7 @@ export default function CustomerDetailPage() {
                   setInfoSaving(false);
                   setInfoSaved(true);
                   setEditingInfo(false);
+                  toast.success("Bilgiler kaydedildi");
                   setTimeout(() => setInfoSaved(false), 2000);
                 }} disabled={infoSaving}
                   className={cn("px-8 py-3 rounded-xl text-sm font-bold flex items-center gap-2 transition-all",
@@ -853,6 +854,7 @@ export default function CustomerDetailPage() {
                   });
                   setDemandSaving(false);
                   setDemandSaved(true);
+                  toast.success("Talep profili kaydedildi");
                   setTimeout(() => setDemandSaved(false), 2000);
                 }}
                 disabled={demandSaving}

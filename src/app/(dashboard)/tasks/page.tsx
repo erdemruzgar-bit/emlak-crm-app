@@ -78,6 +78,9 @@ export default function TasksPage() {
       const task = await res.json();
       setTasks([task, ...tasks]);
       setFormTitle(""); setFormDesc(""); setFormPriority("MEDIUM"); setFormDue(""); setFormAssignee(""); setShowForm(false);
+      toast.success("Görev oluşturuldu");
+    } else {
+      toast.error("Görev oluşturulamadı");
     }
     setSaving(false);
   }

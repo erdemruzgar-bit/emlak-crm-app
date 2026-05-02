@@ -115,7 +115,10 @@ export default function RemindersPage() {
       setPriority("MEDIUM");
       setAssignUserId("");
       setShowForm(false);
+      toast.success("Hatırlatma eklendi");
       await load();
+    } else {
+      toast.error("Hatırlatma eklenemedi");
     }
     setSaving(false);
   }

@@ -300,7 +300,7 @@ function PropertiesPageInner() {
                       </button>
                     )}
                   </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6 gap-3">
                     <select value={propertyType} onChange={(e) => setPropertyType(e.target.value)}
                       className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm">
                       <option value="">Emlak Tipi</option>

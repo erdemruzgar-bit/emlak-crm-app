@@ -214,7 +214,7 @@ export default function Sidebar() {
           <button
             type="button"
             onClick={() => setMobileOpen(false)}
-            className="lg:hidden p-1.5 rounded-lg hover:bg-surface-container/50"
+            className="lg:hidden p-2.5 rounded-lg hover:bg-surface-container/50"
             aria-label="Menüyü kapat"
           >
             <X className="w-4 h-4" />

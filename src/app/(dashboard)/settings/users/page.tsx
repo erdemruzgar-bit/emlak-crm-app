@@ -144,8 +144,10 @@ export default function UsersSettingsPage() {
 
     if (editUser) {
       setUsers(users.map((u) => u.id === editUser.id ? { ...u, ...data } : u));
+      toast.success("Kullanıcı güncellendi");
     } else {
       setUsers([data, ...users]);
+      toast.success("Kullanıcı eklendi");
     }
     setShowModal(false);
   }

@@ -209,11 +209,44 @@ export async function POST(req: NextRequest) {
       });
       updated++;
     } else {
+      // KVKK: Excel'le toplu içe aktarımda da müşterinin rıza kayıtlarını oluştur.
+      // Toplu importta ofiste yazılı/sözlü rıza alındığı varsayımıyla AÇIK_RIZA ve
+      // AYDINLATMA otomatik granted yazılır; PAZARLAMA rızası muhafazakar şekilde
+      // false (kullanıcı sonradan müşteri detayından açabilir).
+      const ip = req.headers.get("x-forwarded-for") || "import";
+      const importNote = "Excel toplu içe aktarımda kaydedildi";
       await prisma.customer.create({
         data: {
           ...payload,
           assignedAgentId: defaultAgentId,
           branchId: defaultBranchId,
+          createdById: actor.id,
+          consents: {
+            createMany: {
+              data: [
+                {
+                  consentType: "ACIK_RIZA",
+                  consentText: `Açık rıza — ${importNote}`,
+                  isGranted: true,
+                  grantedAt: new Date(),
+                  ipAddress: ip,
+                },
+                {
+                  consentType: "AYDINLATMA",
+                  consentText: `Aydınlatma metni — ${importNote}`,
+                  isGranted: true,
+                  grantedAt: new Date(),
+                  ipAddress: ip,
+                },
+                {
+                  consentType: "PAZARLAMA",
+                  consentText: `Pazarlama izni — ${importNote}`,
+                  isGranted: false,
+                  ipAddress: ip,
+                },
+              ],
+            },
+          },
         },
       });
       created++;

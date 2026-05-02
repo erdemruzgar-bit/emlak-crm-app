@@ -7,6 +7,7 @@ import { ArrowLeft, AlertCircle, Loader2, User, X } from "lucide-react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { MediaUploader, type MediaItem } from "@/components/ui/media-uploader";
+import { CollapsibleSection } from "@/components/ui/collapsible-section";
 import { TURKEY_CITIES, getDistrictsOf } from "@/lib/turkey-locations";
 
 interface CustomerResult { id: string; label: string; }
@@ -222,14 +223,19 @@ export default function NewPropertyPage() {
 
         {/* Genel Bilgiler */}
         <div className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-8 space-y-5 border border-outline-variant/10">
-          <h2 className="text-lg font-bold text-on-surface tracking-tight">Genel Bilgiler</h2>
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <h2 className="text-lg font-bold text-on-surface tracking-tight">Genel Bilgiler</h2>
+            <p className="text-xs text-on-surface-variant">
+              <span className="text-error font-bold">*</span> işaretli alanlar zorunludur
+            </p>
+          </div>
           <div>
-            <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">İlan Başlığı *</label>
+            <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">İlan Başlığı <span className="text-error">*</span></label>
             <input name="title" required className={inputClass} placeholder="Kadıköy'de Deniz Manzaralı 3+1 Daire" />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">İlan Tipi *</label>
+              <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">İlan Tipi <span className="text-error">*</span></label>
               <select name="listingType" required className={inputClass} defaultValue="">
                 <option value="" disabled>Seçiniz</option>
                 {listingTypes.map((t) => (
@@ -238,7 +244,7 @@ export default function NewPropertyPage() {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Fiyat (TL) *</label>
+              <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Fiyat (TL) <span className="text-error">*</span></label>
               <input name="price" type="number" required className={inputClass} />
             </div>
           </div>
@@ -351,9 +357,8 @@ export default function NewPropertyPage() {
           )}
         </div>
 
-        {/* Tapu Bilgileri */}
-        <div className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-8 space-y-5 border border-outline-variant/10">
-          <h2 className="text-lg font-bold text-on-surface tracking-tight">Tapu Bilgileri</h2>
+        {/* Tapu Bilgileri (collapsible) */}
+        <CollapsibleSection title="Tapu Bilgileri" description="Ada, pafta, parsel, kat mülkiyeti">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div>
               <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Ada</label>
@@ -419,11 +424,10 @@ export default function NewPropertyPage() {
               </select>
             </div>
           </div>
-        </div>
+        </CollapsibleSection>
 
-        {/* Sakin / Kullanım / Vatandaşlık */}
-        <div className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-8 space-y-5 border border-outline-variant/10">
-          <h2 className="text-lg font-bold text-on-surface tracking-tight">Sakin ve Kullanım</h2>
+        {/* Sakin / Kullanım / Vatandaşlık (collapsible) */}
+        <CollapsibleSection title="Sakin ve Kullanım" description="Sakin durumu, kullanım türü, vatandaşlık">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Sakin Durumu</label>
@@ -465,11 +469,10 @@ export default function NewPropertyPage() {
               <p className="text-[10px] text-on-surface-variant mt-1">Yabancıya satışta TR vatandaşlığı için uygun mülk</p>
             </div>
           </div>
-        </div>
+        </CollapsibleSection>
 
-        {/* Ek Özellikler */}
-        <div className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-8 space-y-5 border border-outline-variant/10">
-          <h2 className="text-lg font-bold text-on-surface tracking-tight">Ek Özellikler</h2>
+        {/* Ek Özellikler (collapsible) */}
+        <CollapsibleSection title="Ek Özellikler" description="Asansör, otopark, balkon, cephe, mutfak">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {[
               { name: "hasElevator", label: "Asansör" },
@@ -566,7 +569,7 @@ export default function NewPropertyPage() {
               )}
             </div>
           </div>
-        </div>
+        </CollapsibleSection>
 
         {/* Detaylar */}
         <div className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-8 space-y-5 border border-outline-variant/10">

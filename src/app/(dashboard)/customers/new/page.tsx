@@ -131,16 +131,21 @@ export default function NewCustomerPage() {
         )}
 
         <div className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-8 space-y-5 border border-outline-variant/10">
-          <h2 className="text-lg font-bold text-on-surface tracking-tight">
-            Kişisel Bilgiler
-          </h2>
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <h2 className="text-lg font-bold text-on-surface tracking-tight">
+              Kişisel Bilgiler
+            </h2>
+            <p className="text-xs text-on-surface-variant">
+              <span className="text-error font-bold">*</span> işaretli alanlar zorunludur
+            </p>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Ad *</label>
+              <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Ad <span className="text-error">*</span></label>
               <input name="firstName" required className={inputClass} />
             </div>
             <div>
-              <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Soyad *</label>
+              <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Soyad <span className="text-error">*</span></label>
               <input name="lastName" required className={inputClass} />
             </div>
             <div>
@@ -156,7 +161,7 @@ export default function NewCustomerPage() {
               <input name="tcKimlikNo" maxLength={11} className={inputClass} placeholder="Şifrelenecektir (KVKK)" />
             </div>
             <div>
-              <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Müşteri Tipi *</label>
+              <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Müşteri Tipi <span className="text-error">*</span></label>
               <select name="customerType" required className={inputClass} defaultValue="">
                 <option value="" disabled>Seçiniz</option>
                 {customerTypeOptions.map((t) => (

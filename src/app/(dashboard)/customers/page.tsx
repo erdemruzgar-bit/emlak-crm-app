@@ -7,6 +7,8 @@ import { Search, UserPlus, ChevronLeft, ChevronRight, Loader2, UserX, SlidersHor
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
 import { ExcelToolbar } from "@/components/ui/excel-toolbar";
+import { TableSkeleton, CardGridSkeleton } from "@/components/ui/skeleton";
+import { DEFAULT_CUSTOMER_TYPE_LABELS as DEFAULT_TYPE_LABELS, customerTypeBadgeClass } from "@/lib/customer-type-styles";
 
 interface Customer {
   id: string;
@@ -37,8 +39,6 @@ interface Pagination {
   totalPages: number;
 }
 
-const DEFAULT_TYPE_LABELS: Record<string, string> = { BUYER: "Alıcı", SELLER: "Satıcı", TENANT: "Kiracı", TENANT_CANDIDATE: "Kiracı Adayı", LANDLORD: "Ev Sahibi" };
-const typeBadgeColors: Record<string, string> = { BUYER: "bg-secondary-container text-on-secondary-container", SELLER: "bg-primary-fixed text-on-primary-fixed-variant", TENANT: "bg-tertiary-fixed text-on-tertiary-fixed-variant", TENANT_CANDIDATE: "bg-tertiary-container text-on-tertiary-container", LANDLORD: "bg-surface-container-high text-on-surface-variant" };
 const stageLabels: Record<string, string> = { LEAD: "Aday", QUALIFIED: "Nitelikli", ACTIVE: "Aktif Takip", SHOWING: "Gösterimde", OFFER: "Teklif Aşaması", CONTRACT: "Sözleşme Aşaması", CLOSED: "Kazanıldı", LOST: "Kaybedildi" };
 const stageColors: Record<string, string> = { LEAD: "bg-surface-container text-on-surface-variant", QUALIFIED: "bg-secondary-container text-on-secondary-container", ACTIVE: "bg-primary-fixed text-primary", SHOWING: "bg-tertiary-fixed text-tertiary", OFFER: "bg-tertiary-container text-on-tertiary-container", CONTRACT: "bg-primary-container text-on-primary-container", CLOSED: "bg-green-100 text-green-700", LOST: "bg-error-container text-on-error-container" };
 const urgencyDots: Record<string, string> = { LOW: "bg-green-500", MEDIUM: "bg-yellow-500", HIGH: "bg-orange-500", URGENT: "bg-red-500" };
@@ -337,7 +337,7 @@ function CustomersPageInner() {
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan={9} className="px-6 py-12 text-center text-on-surface-variant"><Loader2 className="w-5 h-5 animate-spin inline mr-2" /> Yükleniyor...</td></tr>
+                  <TableSkeleton rows={6} cols={9} />
                 ) : customers.length === 0 ? (
                   <tr><td colSpan={9} className="px-6 py-16 text-center text-on-surface-variant">
                     <UserX className="w-12 h-12 opacity-30 mx-auto mb-3" />
@@ -363,7 +363,7 @@ function CustomersPageInner() {
                           {c.stage ? <span className={cn("text-[10px] px-2.5 py-1 rounded-lg font-bold uppercase", stageColors[c.stage])}>{stageLabels[c.stage] || c.stage}</span> : <span className="text-xs text-on-surface-variant">-</span>}
                         </td>
                         <td className="px-5 py-4">
-                          <span className={cn("text-[10px] px-2.5 py-1 rounded-lg font-bold uppercase tracking-wider", typeBadgeColors[c.customerType])}>{typeLabels[c.customerType]}</span>
+                          <span className={cn("text-[10px] px-2.5 py-1 rounded-lg font-bold uppercase tracking-wider", customerTypeBadgeClass(c.customerType))}>{typeLabels[c.customerType]}</span>
                         </td>
                         <td className="px-5 py-4 text-xs font-medium text-on-surface">{formatBudget(c.minBudget, c.maxBudget)}</td>
                         <td className="px-5 py-4">
@@ -412,7 +412,9 @@ function CustomersPageInner() {
       {/* Card Grid View — list seçili olsa da mobilde kanban gösteririz (overflow tablo yerine) */}
       {(viewMode === "kanban" || viewMode === "list") && (
         <div className={cn(viewMode === "list" && "md:hidden")}>
-          {kanbanCustomers.length === 0 && !loading ? (
+          {loading && kanbanCustomers.length === 0 ? (
+            <CardGridSkeleton count={8} />
+          ) : kanbanCustomers.length === 0 && !loading ? (
             <div className="flex flex-col items-center justify-center py-20 text-on-surface-variant">
               <UserX className="w-12 h-12 opacity-30 mb-3" />
               <p className="text-base font-bold text-on-surface mb-1">{search || activeFilterCount > 0 ? "Filtreye uyan müşteri yok" : "Henüz müşteri yok"}</p>

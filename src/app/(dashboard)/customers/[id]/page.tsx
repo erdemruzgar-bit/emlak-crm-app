@@ -13,6 +13,7 @@ import {
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
 import { EditableText, EditableSelect, EditableTextarea } from "@/components/ui/editable-field";
+import { DEFAULT_CUSTOMER_TYPE_LABELS } from "@/lib/customer-type-styles";
 
 interface ActiveAccessSession {
   id: string;
@@ -136,7 +137,7 @@ interface PropertyMatchResult {
   };
 }
 
-const DEFAULT_TYPE_LABELS: Record<string, string> = { BUYER: "Alıcı", SELLER: "Satıcı", TENANT: "Kiracı", TENANT_CANDIDATE: "Kiracı Adayı", LANDLORD: "Ev Sahibi" };
+const DEFAULT_TYPE_LABELS = DEFAULT_CUSTOMER_TYPE_LABELS;
 const consentLabels: Record<string, string> = { ACIK_RIZA: "Açık Rıza", AYDINLATMA: "Aydınlatma Metni", PAZARLAMA: "Pazarlama İzni" };
 const interactionLabels: Record<string, string> = { CALL: "Telefon", EMAIL: "E-posta", VISIT: "Ziyaret", WHATSAPP: "WhatsApp" };
 const interactionIcons: Record<string, React.ComponentType<{ className?: string }>> = { CALL: Phone, EMAIL: Mail, VISIT: MapPin, WHATSAPP: MessageCircle };

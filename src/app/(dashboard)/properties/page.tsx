@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { PropertyCard, type PropertyCardData, formatPrice } from "@/components/ui/property-card";
 import { PropertyDetail } from "@/components/ui/property-detail";
 import { ExcelToolbar } from "@/components/ui/excel-toolbar";
+import { CardGridSkeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { TURKEY_CITIES } from "@/lib/turkey-locations";
 
@@ -409,9 +410,7 @@ function PropertiesPageInner() {
 
         {/* Content */}
         {loading ? (
-          <div className="flex items-center justify-center py-20 text-on-surface-variant">
-            <Loader2 className="w-5 h-5 animate-spin mr-2" />Yükleniyor...
-          </div>
+          <CardGridSkeleton count={8} />
         ) : properties.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-on-surface-variant">
             <Home className="w-12 h-12 mb-4 opacity-30" />

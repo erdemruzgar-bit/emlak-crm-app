@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { UserPlus, Loader2, X, AlertCircle, Pencil, UserX, UserCheck, ShieldAlert, Camera } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
+import { TableSkeleton } from "@/components/ui/skeleton";
 
 interface User {
   id: string;
@@ -214,9 +215,7 @@ export default function UsersSettingsPage() {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={6} className="text-center py-12 text-on-surface-variant">
-                <Loader2 className="w-5 h-5 animate-spin inline mr-2" />Yükleniyor...
-              </td></tr>
+              <TableSkeleton rows={5} cols={6} />
             ) : users.length === 0 ? (
               <tr><td colSpan={6} className="text-center py-12 text-on-surface-variant">Kullanıcı bulunamadı</td></tr>
             ) : (

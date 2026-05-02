@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Info, Loader2, FileText, Filter, X } from "lucide-react";
+import { Info, FileText, Filter, X } from "lucide-react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
+import { TableSkeleton } from "@/components/ui/skeleton";
 
 interface AuditLog {
   id: string;
@@ -167,9 +168,7 @@ export default function AuditLogPage() {
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={6} className="px-6 py-12 text-center text-on-surface-variant">
-                  <Loader2 className="w-5 h-5 animate-spin inline mr-2" />Yükleniyor...
-                </td></tr>
+                <TableSkeleton rows={8} cols={6} />
               ) : !data || data.logs.length === 0 ? (
                 <tr><td colSpan={6} className="px-6 py-12 text-center text-on-surface-variant">
                   <FileText className="w-10 h-10 opacity-30 mx-auto mb-2" />

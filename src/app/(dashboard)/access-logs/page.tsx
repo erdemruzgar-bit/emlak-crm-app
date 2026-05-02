@@ -2,9 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ShieldCheck, Loader2, Filter, Clock, AlertTriangle, CheckCircle2, X } from "lucide-react";
+import { ShieldCheck, Filter, Clock, AlertTriangle, CheckCircle2, X } from "lucide-react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const REASON_LABELS: Record<string, string> = {
   GORUSME: "Görüşme / Arama",
@@ -163,8 +164,18 @@ export default function AccessLogsPage() {
       {/* Liste */}
       <div className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-6 border border-outline-variant/10">
         {loading ? (
-          <div className="flex items-center justify-center py-12 text-on-surface-variant">
-            <Loader2 className="w-5 h-5 animate-spin mr-2" /> Yükleniyor...
+          <div className="space-y-3">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="p-4 bg-surface-container-low rounded-2xl border border-outline-variant/5 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-4 w-16 rounded-full" />
+                  <Skeleton className="h-4 w-24 rounded-full" />
+                </div>
+                <Skeleton className="h-3 w-3/4" />
+                <Skeleton className="h-3 w-1/2" />
+              </div>
+            ))}
           </div>
         ) : !data || data.items.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-on-surface-variant">

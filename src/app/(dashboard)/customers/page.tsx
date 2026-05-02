@@ -518,8 +518,8 @@ function CustomersPageInner() {
                         )}
                       </div>
 
-                      {/* Quick actions */}
-                      <div className="flex items-center gap-2 mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {/* Quick actions — mobil/dokunmatik cihazlarda her zaman görünür, sadece hover-cihazlarda hover ile gizli/görünür */}
+                      <div className="flex items-center gap-2 mt-3 opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 transition-opacity">
                         {c.phone && (
                           <a href={`tel:${c.phone}`}
                             className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-primary-fixed text-primary rounded-xl text-xs font-bold hover:bg-primary hover:text-white transition-all">

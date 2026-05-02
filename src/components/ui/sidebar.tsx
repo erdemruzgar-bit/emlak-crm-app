@@ -114,12 +114,19 @@ export default function Sidebar() {
           className="fixed inset-0 z-40 bg-black/40 lg:hidden"
         />
       )}
-    <aside className={cn(
-      "fixed left-0 top-0 h-screen w-64 bg-surface-container-low/90 backdrop-blur-xl flex flex-col p-6 z-50 rounded-r-3xl transition-transform duration-300 border-r border-outline-variant/10",
-      // lg ekranda her zaman görünür; mobilde drawer (state ile toggle)
-      "lg:translate-x-0",
-      mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-    )}>
+    <aside
+      style={{
+        paddingLeft: "max(1.5rem, env(safe-area-inset-left))",
+        paddingTop: "max(1.5rem, env(safe-area-inset-top))",
+        paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))",
+      }}
+      className={cn(
+        "fixed left-0 top-0 h-screen w-64 bg-surface-container-low/90 backdrop-blur-xl flex flex-col pr-6 z-50 rounded-r-3xl transition-transform duration-300 border-r border-outline-variant/10",
+        // lg ekranda her zaman görünür; mobilde drawer (state ile toggle)
+        "lg:translate-x-0",
+        mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+      )}
+    >
       {/* Logo */}
       <div className="mb-10 px-2 pt-2">
         <div className="flex items-center gap-3">

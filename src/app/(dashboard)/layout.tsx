@@ -16,7 +16,10 @@ export default function DashboardLayout({
         <Sidebar />
         <div className="flex-1 lg:ml-64 flex flex-col min-h-screen min-w-0">
           <Header />
-          <main className="flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
+          <main className="flex-1 p-4 sm:p-6 lg:p-8">
+            {/* 4K+ ekranlarda içeriği max-w-screen-2xl ile sınırla, ortala — okunabilirlik için */}
+            <div className="max-w-screen-2xl mx-auto w-full">{children}</div>
+          </main>
         </div>
       </div>
       <KeyboardShortcuts />

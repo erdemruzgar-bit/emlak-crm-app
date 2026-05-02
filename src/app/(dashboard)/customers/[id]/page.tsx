@@ -389,7 +389,7 @@ export default function CustomerDetailPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex bg-surface-container-low p-1 rounded-xl w-fit">
+      <div className="flex bg-surface-container-low p-1 rounded-xl w-fit max-w-full overflow-x-auto no-scrollbar">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const count = tab.key === "notes" ? customer.notes.length : tab.key === "interactions" ? customer.interactions.length : tab.key === "appointments" ? appointments.length : tab.key === "matches" ? propertyMatches.length : tab.key === "contracts" ? contracts.length : null;

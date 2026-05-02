@@ -70,6 +70,32 @@ body {
   font-family: "Inter", system-ui, -apple-system, sans-serif;
   background-color: var(--color-background);
   color: var(--color-on-background);
+  /* iPhone notch/home indicator emniyet alanı */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* iOS Safari'de font-size < 16px input'a fokuslanınca otomatik zoom yapar.
+ * Mobilde tüm form elementlerini 16px'ye sabitle (Tailwind sınıflarına
+ * dokunmadan input zoom'u engelle). 640px üzerinde Tailwind tasarımına
+ * geri döner. */
+@media (max-width: 639px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
+
+/* Touch hedefleri — dokunmatik cihazlarda min 44px erişilebilirlik */
+@media (hover: none) and (pointer: coarse) {
+  button,
+  [role="button"],
+  a {
+    min-height: 32px;
+    /* Daha fazla zorlamak istemiyoruz; kompakt UI'da çok büyür.
+     * Sadece dokunmatik cihazlarda hafif minimum. */
+  }
 }
 
 /* ─── Dark mode token override (Material 3 dark palette) ─── */
@@ -129,9 +155,10 @@ body {
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 
-/* Glass Effects */
+/* Glass Effects (Safari için -webkit- fallback dahil) */
 .glass-badge {
   background: rgba(255, 255, 255, 0.8);
+  -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
 }
 .dark .glass-badge {
@@ -140,10 +167,50 @@ body {
 
 .glass-card {
   background: rgba(255, 255, 255, 0.7);
+  -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
 }
 .dark .glass-card {
   background: rgba(30, 30, 35, 0.7);
+}
+
+/* ─── Print: Sözleşme / rapor yazdırırken sidebar/header gizlensin ─── */
+@media print {
+  aside,
+  header,
+  nav,
+  /* Drawer butonu, modal'lar, bildirim noktaları */
+  [aria-label="Menü"],
+  [role="dialog"] {
+    display: none !important;
+  }
+  /* Layout main wrapper: kenarlıkları sıfırla */
+  main {
+    margin: 0 !important;
+    padding: 1rem !important;
+  }
+  body {
+    background: #fff !important;
+    color: #000 !important;
+    padding: 0 !important;
+  }
+  /* Kart gölgelerini kaldır — yazıcıda gri görünür */
+  .shadow-sm,
+  .shadow-md,
+  .shadow-lg,
+  .shadow-xl,
+  .shadow-2xl,
+  [class*="shadow-["] {
+    box-shadow: none !important;
+  }
+  /* Linkler kağıtta tıklanamaz; rengi koru */
+  a {
+    color: inherit !important;
+    text-decoration: none !important;
+  }
+  /* Sayfa kırılma denetimi */
+  .page-break-before { page-break-before: always; }
+  .page-break-avoid  { page-break-inside: avoid; }
 }
 
 /* Primary Gradient */

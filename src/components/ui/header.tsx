@@ -4,12 +4,14 @@ import { useSession, signOut } from "next-auth/react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Search, Bell, LogOut, Users, Home, Menu } from "lucide-react";
+import { Search, Bell, LogOut, Users, Home, Menu, Moon, Sun } from "lucide-react";
+import { useTheme } from "@/components/theme-provider";
 
 
 export default function Header() {
   const { data: session } = useSession();
   const router = useRouter();
+  const { darkMode, toggleDarkMode } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchType, setSearchType] = useState<"customers" | "properties">("customers");
@@ -101,7 +103,18 @@ export default function Header() {
       </div>
 
       {/* Right: Notifications + User */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 sm:gap-4">
+        {/* Dark mode toggle */}
+        <button
+          type="button"
+          onClick={toggleDarkMode}
+          title={darkMode ? "Açık moda geç" : "Koyu moda geç"}
+          aria-label={darkMode ? "Açık moda geç" : "Koyu moda geç"}
+          className="p-2 text-on-surface-variant hover:bg-surface-container rounded-lg transition-colors"
+        >
+          {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+        </button>
+
         <Link
           href="/reminders"
           title={pendingCount > 0 ? `${pendingCount} bekleyen hatırlatma` : "Hatırlatmalar"}

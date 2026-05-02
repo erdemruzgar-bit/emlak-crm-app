@@ -5,6 +5,7 @@ import { createContext, useContext, useEffect, useState, useCallback } from "rea
 export interface ThemeState {
   backgroundUrl: string | null; // null = varsayılan (düz renk)
   overlayOpacity: number; // 0-100 arka planı bulanıklaştırma
+  darkMode: boolean;
 }
 
 const STORAGE_KEY = "emlak-crm-theme";
@@ -12,11 +13,14 @@ const STORAGE_KEY = "emlak-crm-theme";
 const defaultTheme: ThemeState = {
   backgroundUrl: null,
   overlayOpacity: 85,
+  darkMode: false,
 };
 
 interface ThemeContextValue extends ThemeState {
   setBackgroundUrl: (url: string | null) => void;
   setOverlayOpacity: (n: number) => void;
+  setDarkMode: (v: boolean) => void;
+  toggleDarkMode: () => void;
   reset: () => void;
 }
 
@@ -39,6 +43,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(theme)); } catch { /* ignore */ }
   }, [theme, mounted]);
 
+  // Dark mode class'ı document.documentElement'e uygulanır.
+  useEffect(() => {
+    if (!mounted) return;
+    document.documentElement.classList.toggle("dark", theme.darkMode);
+  }, [theme.darkMode, mounted]);
+
   const setBackgroundUrl = useCallback((url: string | null) => {
     setTheme((prev) => ({ ...prev, backgroundUrl: url }));
   }, []);
@@ -47,10 +57,18 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setTheme((prev) => ({ ...prev, overlayOpacity: Math.max(0, Math.min(100, n)) }));
   }, []);
 
+  const setDarkMode = useCallback((v: boolean) => {
+    setTheme((prev) => ({ ...prev, darkMode: v }));
+  }, []);
+
+  const toggleDarkMode = useCallback(() => {
+    setTheme((prev) => ({ ...prev, darkMode: !prev.darkMode }));
+  }, []);
+
   const reset = useCallback(() => setTheme(defaultTheme), []);
 
   return (
-    <ThemeContext.Provider value={{ ...theme, setBackgroundUrl, setOverlayOpacity, reset }}>
+    <ThemeContext.Provider value={{ ...theme, setBackgroundUrl, setOverlayOpacity, setDarkMode, toggleDarkMode, reset }}>
       {/* Arka plan katmanı — sayfaların arkasında, z-index -10 */}
       {mounted && theme.backgroundUrl && (
         <>

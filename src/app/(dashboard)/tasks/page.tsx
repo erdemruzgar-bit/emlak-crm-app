@@ -122,18 +122,18 @@ export default function TasksPage() {
             className="bg-surface-container-lowest rounded-3xl p-6 space-y-4 border border-outline-variant/10 shadow-[0_12px_32px_rgba(25,28,30,0.06)]">
             <h3 className="text-sm font-bold text-on-surface">Yeni Görev Oluştur</h3>
             <div>
-              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Başlık *</label>
+              <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Başlık *</label>
               <input value={formTitle} onChange={(e) => setFormTitle(e.target.value)} required placeholder="Görev başlığı..."
                 className="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/20 outline-none text-sm" />
             </div>
             <div>
-              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Açıklama</label>
+              <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Açıklama</label>
               <textarea value={formDesc} onChange={(e) => setFormDesc(e.target.value)} rows={2} placeholder="Opsiyonel..."
                 className="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/20 outline-none text-sm" />
             </div>
             <div className="flex gap-4">
               <div className="flex-1">
-                <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Öncelik</label>
+                <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Öncelik</label>
                 <div className="flex gap-2">
                   {Object.entries(priorityLabels).map(([k, v]) => (
                     <button key={k} type="button" onClick={() => setFormPriority(k)}
@@ -144,13 +144,13 @@ export default function TasksPage() {
                 </div>
               </div>
               <div>
-                <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Son Tarih</label>
+                <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Son Tarih</label>
                 <input type="date" value={formDue} onChange={(e) => setFormDue(e.target.value)}
                   className="px-4 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm" />
               </div>
               {users.length > 0 && (
                 <div>
-                  <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Atanan Kişi</label>
+                  <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Atanan Kişi</label>
                   <select value={formAssignee} onChange={(e) => setFormAssignee(e.target.value)}
                     className="px-4 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm">
                     <option value="">Kendim (varsayılan)</option>

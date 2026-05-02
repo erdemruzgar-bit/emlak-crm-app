@@ -415,7 +415,8 @@ function PropertiesPageInner() {
         ) : properties.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-on-surface-variant">
             <Home className="w-12 h-12 mb-4 opacity-30" />
-            <p className="text-lg font-medium">İlan bulunamadı</p>
+            <p className="text-base font-bold text-on-surface mb-1">{search || activeFilterCount > 0 ? "Filtreye uyan ilan yok" : "Henüz ilan yok"}</p>
+            <p className="text-xs">{search || activeFilterCount > 0 ? "Aramayı veya filtreleri değiştirin." : "İlk ilanı eklemek için sol menüden ‘Yeni İlan’ butonunu kullanın."}</p>
           </div>
         ) : viewMode === "grid" ? (
           <div className={cn("grid gap-6 pb-10", selectedProperty ? "grid-cols-1" : "grid-cols-1 xl:grid-cols-2")}>
@@ -449,7 +450,7 @@ function PropertiesPageInner() {
                     { label: "Grş.", field: null },
                     { label: "Danışman", field: null },
                   ].map(({ label, field }) => (
-                    <th key={label} className="text-left px-4 py-4 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">
+                    <th key={label} className="text-left px-4 py-4 text-xs font-black text-on-surface-variant uppercase tracking-widest">
                       {field ? (
                         <button onClick={() => toggleSort(field)} className="flex items-center gap-1 hover:text-primary transition-colors">
                           {label}

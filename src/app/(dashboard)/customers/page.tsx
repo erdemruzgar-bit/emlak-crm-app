@@ -317,28 +317,32 @@ function CustomersPageInner() {
             <table className="w-full">
               <thead className="bg-surface-container-low">
                 <tr>
-                  <th onClick={() => handleSort("firstName")} className="text-left px-6 py-4 text-[10px] font-black text-on-surface-variant uppercase tracking-widest cursor-pointer hover:text-primary transition-colors select-none">
+                  <th onClick={() => handleSort("firstName")} className="text-left px-6 py-4 text-xs font-black text-on-surface-variant uppercase tracking-widest cursor-pointer hover:text-primary transition-colors select-none">
                     <span className="flex items-center gap-1">Ad Soyad <SortIcon field="firstName" /></span>
                   </th>
-                  <th onClick={() => handleSort("stage")} className="text-left px-5 py-4 text-[10px] font-black text-on-surface-variant uppercase tracking-widest cursor-pointer hover:text-primary transition-colors select-none">
+                  <th onClick={() => handleSort("stage")} className="text-left px-5 py-4 text-xs font-black text-on-surface-variant uppercase tracking-widest cursor-pointer hover:text-primary transition-colors select-none">
                     <span className="flex items-center gap-1">Aşama <SortIcon field="stage" /></span>
                   </th>
-                  <th onClick={() => handleSort("customerType")} className="text-left px-5 py-4 text-[10px] font-black text-on-surface-variant uppercase tracking-widest cursor-pointer hover:text-primary transition-colors select-none">
+                  <th onClick={() => handleSort("customerType")} className="text-left px-5 py-4 text-xs font-black text-on-surface-variant uppercase tracking-widest cursor-pointer hover:text-primary transition-colors select-none">
                     <span className="flex items-center gap-1">Tip <SortIcon field="customerType" /></span>
                   </th>
-                  <th className="text-left px-5 py-4 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Bütçe</th>
-                  <th className="text-left px-5 py-4 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Aciliyet</th>
-                  <th className="text-left px-5 py-4 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Tercih</th>
-                  <th className="text-left px-5 py-4 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Son İletişim</th>
-                  <th className="text-left px-5 py-4 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Danışman</th>
-                  <th className="px-5 py-4 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Kayıt</th>
+                  <th className="text-left px-5 py-4 text-xs font-black text-on-surface-variant uppercase tracking-widest">Bütçe</th>
+                  <th className="text-left px-5 py-4 text-xs font-black text-on-surface-variant uppercase tracking-widest">Aciliyet</th>
+                  <th className="text-left px-5 py-4 text-xs font-black text-on-surface-variant uppercase tracking-widest">Tercih</th>
+                  <th className="text-left px-5 py-4 text-xs font-black text-on-surface-variant uppercase tracking-widest">Son İletişim</th>
+                  <th className="text-left px-5 py-4 text-xs font-black text-on-surface-variant uppercase tracking-widest">Danışman</th>
+                  <th className="px-5 py-4 text-xs font-black text-on-surface-variant uppercase tracking-widest">Kayıt</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
                   <tr><td colSpan={9} className="px-6 py-12 text-center text-on-surface-variant"><Loader2 className="w-5 h-5 animate-spin inline mr-2" /> Yükleniyor...</td></tr>
                 ) : customers.length === 0 ? (
-                  <tr><td colSpan={9} className="px-6 py-12 text-center text-on-surface-variant"><UserX className="w-10 h-10 opacity-30 mx-auto mb-2" />Müşteri bulunamadı</td></tr>
+                  <tr><td colSpan={9} className="px-6 py-16 text-center text-on-surface-variant">
+                    <UserX className="w-12 h-12 opacity-30 mx-auto mb-3" />
+                    <p className="text-base font-bold text-on-surface mb-1">{search || activeFilterCount > 0 ? "Filtreye uyan müşteri yok" : "Henüz müşteri yok"}</p>
+                    <p className="text-xs">{search || activeFilterCount > 0 ? "Aramayı veya filtreleri değiştirin." : "İlk müşteriyi eklemek için sağ üstteki ‘Yeni Müşteri’ butonuna basın."}</p>
+                  </td></tr>
                 ) : (
                   customers.map((c) => {
                     const lastContact = relativeDate(c.lastContactDate);
@@ -368,14 +372,14 @@ function CustomersPageInner() {
                         <td className="px-5 py-4"><span className={cn("text-xs font-medium", lastContact.color)}>{lastContact.text}</span></td>
                         <td className="px-5 py-4 text-xs text-on-surface-variant">{c.assignedAgent?.name || "-"}</td>
                         <td className="px-5 py-4">
-                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="flex items-center gap-1">
                             {["CALL", "WHATSAPP", "EMAIL"].map((type) => {
                               const Icon = type === "CALL" ? Phone : type === "WHATSAPP" ? MessageCircle : Mail;
                               const logged = loggedIds.has(`${c.id}-${type}`);
                               return (
                                 <button key={type} onClick={() => logInteraction(c.id, type)} title={type === "CALL" ? "Arama Kaydet" : type === "WHATSAPP" ? "WhatsApp Kaydet" : "E-posta Kaydet"}
                                   className={cn("p-1.5 rounded-lg transition-all text-sm",
-                                    logged ? "bg-green-100 text-green-600" : "hover:bg-surface-container text-on-surface-variant hover:text-primary"
+                                    logged ? "bg-green-100 text-green-600" : "bg-surface-container-low text-on-surface-variant hover:bg-primary-fixed hover:text-primary"
                                   )}>
                                   {logged ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Icon className="w-3.5 h-3.5" />}
                                 </button>
@@ -410,7 +414,8 @@ function CustomersPageInner() {
           {kanbanCustomers.length === 0 && !loading ? (
             <div className="flex flex-col items-center justify-center py-20 text-on-surface-variant">
               <UserX className="w-12 h-12 opacity-30 mb-3" />
-              <p className="text-sm font-medium">Müşteri bulunamadı</p>
+              <p className="text-base font-bold text-on-surface mb-1">{search || activeFilterCount > 0 ? "Filtreye uyan müşteri yok" : "Henüz müşteri yok"}</p>
+              <p className="text-xs">{search || activeFilterCount > 0 ? "Aramayı veya filtreleri değiştirin." : "İlk müşteriyi eklemek için sağ üstteki ‘Yeni Müşteri’ butonuna basın."}</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

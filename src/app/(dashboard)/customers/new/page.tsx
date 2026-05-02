@@ -136,27 +136,27 @@ export default function NewCustomerPage() {
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Ad *</label>
+              <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Ad *</label>
               <input name="firstName" required className={inputClass} />
             </div>
             <div>
-              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Soyad *</label>
+              <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Soyad *</label>
               <input name="lastName" required className={inputClass} />
             </div>
             <div>
-              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">E-posta</label>
+              <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">E-posta</label>
               <input name="email" type="email" className={inputClass} />
             </div>
             <div>
-              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Telefon</label>
+              <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Telefon</label>
               <input name="phone" className={inputClass} />
             </div>
             <div>
-              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">TC Kimlik No</label>
+              <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">TC Kimlik No</label>
               <input name="tcKimlikNo" maxLength={11} className={inputClass} placeholder="Şifrelenecektir (KVKK)" />
             </div>
             <div>
-              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Müşteri Tipi *</label>
+              <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Müşteri Tipi *</label>
               <select name="customerType" required className={inputClass} defaultValue="">
                 <option value="" disabled>Seçiniz</option>
                 {customerTypeOptions.map((t) => (
@@ -166,11 +166,11 @@ export default function NewCustomerPage() {
             </div>
           </div>
           <div>
-            <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Adres</label>
+            <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Adres</label>
             <textarea name="address" rows={2} className={inputClass} />
           </div>
           <div>
-            <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Kaynak</label>
+            <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Kaynak</label>
             <select name="source" className={inputClass}>
               <option value="">Seçiniz</option>
               <option value="referans">Referans</option>
@@ -190,7 +190,7 @@ export default function NewCustomerPage() {
             Talep Bilgileri (Opsiyonel)
           </h2>
           <div>
-            <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-3">Aciliyet</label>
+            <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3">Aciliyet</label>
             <div className="flex gap-2">
               {[{ key: "LOW", label: "Düşük" }, { key: "MEDIUM", label: "Orta" }, { key: "HIGH", label: "Yüksek" }, { key: "URGENT", label: "Acil" }].map((u) => (
                 <button key={u.key} type="button" onClick={() => setUrgency(u.key)}
@@ -202,16 +202,16 @@ export default function NewCustomerPage() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Min Bütçe (₺)</label>
+              <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Min Bütçe (₺)</label>
               <input name="minBudget" type="number" className={inputClass} />
             </div>
             <div>
-              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Max Bütçe (₺)</label>
+              <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Max Bütçe (₺)</label>
               <input name="maxBudget" type="number" className={inputClass} />
             </div>
           </div>
           <div>
-            <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-3">Tercih Edilen Mülk Tipi</label>
+            <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3">Tercih Edilen Mülk Tipi</label>
             <div className="flex flex-wrap gap-2">
               {[{ key: "DAIRE", label: "Daire" }, { key: "VILLA", label: "Villa" }, { key: "ARSA", label: "Arsa" }, { key: "ISYERI", label: "İşyeri" }, { key: "MUSTAKILEV", label: "Müstakil Ev" }].map((pt) => (
                 <button key={pt.key} type="button" onClick={() => setPreferredTypes((prev) => prev.includes(pt.key) ? prev.filter((t) => t !== pt.key) : [...prev, pt.key])}
@@ -224,7 +224,7 @@ export default function NewCustomerPage() {
           {showRoomFields && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Min Oda Tipi</label>
+                <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Min Oda Tipi</label>
                 <select value={minRooms} onChange={(e) => setMinRooms(e.target.value)} className={inputClass}>
                   <option value="">Seçiniz</option>
                   {roomTypeOptions.map((rt) => (
@@ -233,7 +233,7 @@ export default function NewCustomerPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Max Oda Tipi</label>
+                <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Max Oda Tipi</label>
                 <select value={maxRooms} onChange={(e) => setMaxRooms(e.target.value)} className={inputClass}>
                   <option value="">Seçiniz</option>
                   {roomTypeOptions.map((rt) => (
@@ -244,11 +244,11 @@ export default function NewCustomerPage() {
             </div>
           )}
           <div>
-            <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Tercih Edilen Şehirler</label>
+            <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Tercih Edilen Şehirler</label>
             <input name="preferredCities" className={inputClass} placeholder="İstanbul, Ankara (virgülle ayırın)" />
           </div>
           <div>
-            <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-3">İstenen Özellikler</label>
+            <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3">İstenen Özellikler</label>
             <div className="flex flex-wrap gap-2">
               {["Otopark", "Havuz", "Asansör", "Balkon", "Güvenlik", "Bahçe", "Manzara", "Metro Yakın"].map((f) => (
                 <button key={f} type="button" onClick={() => setPreferredFeatures((prev) => prev.includes(f) ? prev.filter((x) => x !== f) : [...prev, f])}

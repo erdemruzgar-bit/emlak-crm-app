@@ -85,7 +85,7 @@ function SearchDropdown({
 
   return (
     <div ref={ref} className="relative">
-      <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">{label}</label>
+      <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">{label}</label>
       {selected ? (
         <div className="flex items-center gap-2 px-4 py-3 bg-primary-fixed rounded-xl">
           <Icon className="w-4 h-4 text-primary shrink-0" />
@@ -526,7 +526,7 @@ export default function CalendarPage() {
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Başlık *</label>
+                  <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Başlık *</label>
                   <input
                     name="title"
                     required
@@ -537,7 +537,7 @@ export default function CalendarPage() {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Tip</label>
+                    <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Tip</label>
                     <select name="type" defaultValue={editAppointment?.type || "GOSTERIM"} className="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl outline-none text-sm">
                       <option value="GOSTERIM">Gösterim</option>
                       <option value="TOPLANTI">Toplantı</option>
@@ -546,7 +546,7 @@ export default function CalendarPage() {
                   </div>
                   {editAppointment && (
                     <div>
-                      <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Durum</label>
+                      <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Durum</label>
                       <select name="status" defaultValue={editAppointment.status} className="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl outline-none text-sm">
                         <option value="PLANNED">Planlandı</option>
                         <option value="COMPLETED">Tamamlandı</option>
@@ -558,7 +558,7 @@ export default function CalendarPage() {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Başlangıç *</label>
+                    <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Başlangıç *</label>
                     <input
                       name="startDate"
                       type="datetime-local"
@@ -568,7 +568,7 @@ export default function CalendarPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Bitiş *</label>
+                    <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Bitiş *</label>
                     <input
                       name="endDate"
                       type="datetime-local"
@@ -606,7 +606,7 @@ export default function CalendarPage() {
                 />
 
                 <div>
-                  <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Konum</label>
+                  <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Konum</label>
                   <input
                     name="location"
                     defaultValue={editAppointment?.location || ""}
@@ -614,7 +614,7 @@ export default function CalendarPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Notlar</label>
+                  <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Notlar</label>
                   <textarea
                     name="notes"
                     rows={2}

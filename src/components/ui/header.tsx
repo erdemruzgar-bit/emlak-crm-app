@@ -4,7 +4,7 @@ import { useSession, signOut } from "next-auth/react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Search, Bell, LogOut } from "lucide-react";
+import { Search, Bell, LogOut, Users, Home } from "lucide-react";
 
 
 export default function Header() {
@@ -72,14 +72,21 @@ export default function Header() {
             placeholder={searchType === "customers" ? "Müşteri ara (ad, telefon, e-posta)..." : "İlan ara (başlık, şehir, ilçe)..."}
             type="text"
           />
-          <select
-            value={searchType}
-            onChange={(e) => setSearchType(e.target.value as "customers" | "properties")}
-            className="absolute right-1 top-1/2 -translate-y-1/2 bg-white text-xs font-bold px-2.5 py-1.5 rounded-lg outline-none cursor-pointer"
-          >
-            <option value="customers">Müşteriler</option>
-            <option value="properties">İlanlar</option>
-          </select>
+          <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-1.5 bg-white px-2 py-1.5 rounded-lg shadow-sm border border-outline-variant/10">
+            {searchType === "customers" ? (
+              <Users className="w-3.5 h-3.5 text-primary shrink-0" />
+            ) : (
+              <Home className="w-3.5 h-3.5 text-primary shrink-0" />
+            )}
+            <select
+              value={searchType}
+              onChange={(e) => setSearchType(e.target.value as "customers" | "properties")}
+              className="text-xs font-bold outline-none cursor-pointer bg-transparent"
+            >
+              <option value="customers">Müşteriler</option>
+              <option value="properties">İlanlar</option>
+            </select>
+          </div>
         </form>
       </div>
 

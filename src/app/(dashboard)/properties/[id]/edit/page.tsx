@@ -406,7 +406,7 @@ export default function EditPropertyPage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Proje</label>
+                <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Proje</label>
                 <select
                   value={projectId}
                   onChange={(e) => { setProjectId(e.target.value); setBlockId(""); }}
@@ -419,7 +419,7 @@ export default function EditPropertyPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Blok</label>
+                <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Blok</label>
                 <select
                   value={blockId}
                   onChange={(e) => setBlockId(e.target.value)}
@@ -433,7 +433,7 @@ export default function EditPropertyPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Daire No</label>
+                <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Daire No</label>
                 <input value={form.unitNumber} onChange={(e) => set("unitNumber", e.target.value)} placeholder="örn: 026" className={inputClass} />
               </div>
             </div>
@@ -445,23 +445,23 @@ export default function EditPropertyPage() {
           <h2 className="text-lg font-bold text-on-surface">Tapu Bilgileri</h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div>
-              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Ada</label>
+              <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Ada</label>
               <input value={form.ada} onChange={(e) => set("ada", e.target.value)} className={inputClass} />
             </div>
             <div>
-              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Pafta</label>
+              <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Pafta</label>
               <input value={form.pafta} onChange={(e) => set("pafta", e.target.value)} className={inputClass} />
             </div>
             <div>
-              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Parsel</label>
+              <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Parsel</label>
               <input value={form.parsel} onChange={(e) => set("parsel", e.target.value)} className={inputClass} />
             </div>
             <div>
-              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Bağımsız Bölüm No</label>
+              <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Bağımsız Bölüm No</label>
               <input value={form.bagimsizBolumNo} onChange={(e) => set("bagimsizBolumNo", e.target.value)} className={inputClass} />
             </div>
             <div className="col-span-2">
-              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Kat Mülkiyeti Tipi</label>
+              <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Kat Mülkiyeti Tipi</label>
               <select
                 value={form.katMulkiyetiTipi}
                 onChange={(e) => {
@@ -483,7 +483,7 @@ export default function EditPropertyPage() {
               </select>
             </div>
             <div className="col-span-2">
-              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Tapu Kaydı</label>
+              <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Tapu Kaydı</label>
               <select value={form.hasTitleDeed} onChange={(e) => set("hasTitleDeed", e.target.value)} className={inputClass}>
                 <option value="">—</option>
                 <option value="true">Var</option>
@@ -491,7 +491,7 @@ export default function EditPropertyPage() {
               </select>
             </div>
             <div className="col-span-2">
-              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">İnşaat Durumu</label>
+              <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">İnşaat Durumu</label>
               <select value={form.constructionStatus} onChange={(e) => set("constructionStatus", e.target.value)} className={inputClass}>
                 <option value="">Seçiniz</option>
                 <option value="OTURUMA_HAZIR">Oturuma Hazır</option>
@@ -506,7 +506,7 @@ export default function EditPropertyPage() {
           <h2 className="text-lg font-bold text-on-surface">Sakin ve Kullanım</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Sakin Durumu</label>
+              <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Sakin Durumu</label>
               <select value={form.occupancyStatus} onChange={(e) => set("occupancyStatus", e.target.value)} className={inputClass}>
                 <option value="">Seçiniz</option>
                 <option value="SAHIBI_OTURUYOR">Sahibi Oturuyor</option>
@@ -516,7 +516,7 @@ export default function EditPropertyPage() {
               </select>
             </div>
             <div>
-              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Kullanım Türü</label>
+              <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Kullanım Türü</label>
               <select value={form.usageType} onChange={(e) => set("usageType", e.target.value)} className={inputClass}>
                 <option value="">Seçiniz</option>
                 <option value="KONUT">Konut</option>
@@ -527,7 +527,7 @@ export default function EditPropertyPage() {
               </select>
             </div>
             <div>
-              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Sahip Vatandaşlığı</label>
+              <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Sahip Vatandaşlığı</label>
               <select value={form.ownerCitizenship} onChange={(e) => set("ownerCitizenship", e.target.value)} className={inputClass}>
                 <option value="">Seçiniz</option>
                 <option value="TC">TC</option>
@@ -536,7 +536,7 @@ export default function EditPropertyPage() {
               </select>
             </div>
             <div>
-              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Vatandaşlığa Uygun</label>
+              <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Vatandaşlığa Uygun</label>
               <select value={form.isCitizenshipEligible} onChange={(e) => set("isCitizenshipEligible", e.target.value)} className={inputClass}>
                 <option value="">—</option>
                 <option value="true">Evet</option>
@@ -557,7 +557,7 @@ export default function EditPropertyPage() {
               { name: "hasBalcony", label: "Balkon" },
             ].map((f) => (
               <div key={f.name}>
-                <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">{f.label}</label>
+                <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">{f.label}</label>
                 <select value={form[f.name]} onChange={(e) => set(f.name, e.target.value)} className={inputClass}>
                   <option value="">—</option>
                   <option value="true">Var</option>
@@ -566,7 +566,7 @@ export default function EditPropertyPage() {
               </div>
             ))}
             <div>
-              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Cephe</label>
+              <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Cephe</label>
               <select value={form.facingDirection} onChange={(e) => set("facingDirection", e.target.value)} className={inputClass}>
                 <option value="">Seçiniz</option>
                 <option value="KUZEY">Kuzey</option>
@@ -580,7 +580,7 @@ export default function EditPropertyPage() {
               </select>
             </div>
             <div>
-              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Mutfak</label>
+              <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Mutfak</label>
               <select value={form.kitchenType} onChange={(e) => set("kitchenType", e.target.value)} className={inputClass}>
                 <option value="">Seçiniz</option>
                 <option value="ACIK">Açık</option>
@@ -594,12 +594,12 @@ export default function EditPropertyPage() {
         <div className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-8 space-y-5 border border-outline-variant/10">
           <h2 className="text-lg font-bold text-on-surface">Genel Bilgiler</h2>
           <div>
-            <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">İlan Başlığı *</label>
+            <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">İlan Başlığı *</label>
             <input value={form.title} onChange={(e) => set("title", e.target.value)} required className={inputClass} />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">İlan Tipi *</label>
+              <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">İlan Tipi *</label>
               <select value={form.listingType} onChange={(e) => set("listingType", e.target.value)} className={inputClass}>
                 {/* Eski değer listede yoksa onu da göster */}
                 {form.listingType && !listingTypes.find((t) => t.code === form.listingType) && (
@@ -611,12 +611,12 @@ export default function EditPropertyPage() {
               </select>
             </div>
             <div>
-              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Fiyat *</label>
+              <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Fiyat *</label>
               <input type="number" value={form.price} onChange={(e) => set("price", e.target.value)} required className={inputClass} />
             </div>
           </div>
           <div>
-            <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-3">Emlak Tipi</label>
+            <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3">Emlak Tipi</label>
             <div className="flex flex-wrap gap-2">
               {propertyTypes.map((pt) => (
                 <button key={pt.value} type="button" onClick={() => setPropertyType(pt.value)}
@@ -641,12 +641,12 @@ export default function EditPropertyPage() {
               { field: "age", label: "Bina Yaşı", type: "number" },
             ].map(({ field, label, type }) => (
               <div key={field}>
-                <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">{label}</label>
+                <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">{label}</label>
                 <input type={type} value={form[field]} onChange={(e) => set(field, e.target.value)} className={inputClass} />
               </div>
             ))}
             <div className="col-span-2">
-              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Isıtma</label>
+              <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Isıtma</label>
               <select value={form.heating} onChange={(e) => set("heating", e.target.value)} className={inputClass}>
                 <option value="">Seçiniz</option>
                 <option value="DOGALGAZ">Doğalgaz</option>
@@ -664,7 +664,7 @@ export default function EditPropertyPage() {
           <h2 className="text-lg font-bold text-on-surface">Konum</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Şehir</label>
+              <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Şehir</label>
               <select
                 value={form.city}
                 onChange={(e) => { set("city", e.target.value); set("district", ""); }}
@@ -681,7 +681,7 @@ export default function EditPropertyPage() {
               </select>
             </div>
             <div>
-              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">İlçe</label>
+              <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">İlçe</label>
               <select
                 value={form.district}
                 onChange={(e) => set("district", e.target.value)}
@@ -698,19 +698,19 @@ export default function EditPropertyPage() {
               </select>
             </div>
             <div>
-              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Mahalle</label>
+              <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Mahalle</label>
               <input value={form.neighborhood} onChange={(e) => set("neighborhood", e.target.value)} className={inputClass} />
             </div>
           </div>
           <div>
-            <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Adres</label>
+            <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Adres</label>
             <input value={form.address} onChange={(e) => set("address", e.target.value)} className={inputClass} />
           </div>
         </div>
 
         {/* Açıklama */}
         <div className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-8 border border-outline-variant/10">
-          <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Açıklama</label>
+          <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Açıklama</label>
           <textarea value={form.description} onChange={(e) => set("description", e.target.value)} rows={4} className={inputClass} />
         </div>
 

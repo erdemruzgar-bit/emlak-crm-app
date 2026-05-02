@@ -157,12 +157,12 @@ export default function AuditLogPage() {
           <table className="w-full">
             <thead className="bg-surface-container-low">
               <tr>
-                <th className="text-left px-6 py-4 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Tarih</th>
-                <th className="text-left px-6 py-4 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Kullanıcı</th>
-                <th className="text-left px-6 py-4 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">İşlem</th>
-                <th className="text-left px-6 py-4 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Varlık</th>
-                <th className="text-left px-6 py-4 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">ID</th>
-                <th className="text-left px-6 py-4 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">IP</th>
+                <th className="text-left px-6 py-4 text-xs font-black text-on-surface-variant uppercase tracking-widest">Tarih</th>
+                <th className="text-left px-6 py-4 text-xs font-black text-on-surface-variant uppercase tracking-widest">Kullanıcı</th>
+                <th className="text-left px-6 py-4 text-xs font-black text-on-surface-variant uppercase tracking-widest">İşlem</th>
+                <th className="text-left px-6 py-4 text-xs font-black text-on-surface-variant uppercase tracking-widest">Varlık</th>
+                <th className="text-left px-6 py-4 text-xs font-black text-on-surface-variant uppercase tracking-widest">ID</th>
+                <th className="text-left px-6 py-4 text-xs font-black text-on-surface-variant uppercase tracking-widest">IP</th>
               </tr>
             </thead>
             <tbody>

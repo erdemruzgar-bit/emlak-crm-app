@@ -208,7 +208,7 @@ export default function UsersSettingsPage() {
           <thead className="bg-surface-container-low">
             <tr>
               {["Ad Soyad", "E-posta", "Rol", "Şube", "Durum", "İşlem"].map((h) => (
-                <th key={h} className="text-left px-6 py-4 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">{h}</th>
+                <th key={h} className="text-left px-6 py-4 text-xs font-black text-on-surface-variant uppercase tracking-widest">{h}</th>
               ))}
             </tr>
           </thead>
@@ -362,15 +362,15 @@ export default function UsersSettingsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Ad Soyad *</label>
+                  <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Ad Soyad *</label>
                   <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required className={inputClass} />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">E-posta *</label>
+                  <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">E-posta *</label>
                   <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required className={inputClass} />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">
+                  <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">
                     {editUser ? "Yeni Şifre (boş bırakılırsa değişmez)" : "Şifre *"}
                   </label>
                   <input type="password" value={form.password}
@@ -379,7 +379,7 @@ export default function UsersSettingsPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Rol</label>
+                    <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Rol</label>
                     {canChangeRole ? (
                       <select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} className={inputClass}>
                         {roleOptions.map((r) => (
@@ -396,7 +396,7 @@ export default function UsersSettingsPage() {
                     )}
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Şube</label>
+                    <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Şube</label>
                     <select value={form.branchId} onChange={(e) => setForm({ ...form, branchId: e.target.value })} className={inputClass}>
                       <option value="">Seçiniz</option>
                       {branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
@@ -404,14 +404,14 @@ export default function UsersSettingsPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Telefon</label>
+                  <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Telefon</label>
                   <input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className={inputClass} />
                 </div>
 
                 {/* Excel izinleri — sadece ADMIN düzenleyebilir */}
                 {sessionRole === "ADMIN" && form.role !== "ADMIN" && (
                   <div className="bg-surface-container-low rounded-xl p-4 space-y-3">
-                    <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Excel İzinleri</p>
+                    <p className="text-xs font-black text-on-surface-variant uppercase tracking-widest">Excel İzinleri</p>
                     <label className="flex items-start gap-3 cursor-pointer">
                       <input type="checkbox" checked={form.canExport}
                         onChange={(e) => setForm({ ...form, canExport: e.target.checked })}

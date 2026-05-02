@@ -602,7 +602,7 @@ export default function PropertyDetailPage() {
               {property.owner ? (
                 <div className="space-y-3 mt-6">
                   <div className="bg-surface-container-low p-4 rounded-2xl">
-                    <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-1">İlan Sahibi</p>
+                    <p className="text-xs font-black text-on-surface-variant uppercase tracking-widest mb-1">İlan Sahibi</p>
                     <Link href={`/customers/${property.owner.id}`}
                       className="text-sm font-bold text-primary hover:underline">
                       {property.owner.firstName} {property.owner.lastName}

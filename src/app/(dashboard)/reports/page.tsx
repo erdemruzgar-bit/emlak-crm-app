@@ -183,7 +183,7 @@ export default function ReportsPage() {
                 <thead className="bg-surface-container-low">
                   <tr>
                     {["Danışman", "Satış", "Müşteri", "Ciro", "Dönüşüm"].map((h) => (
-                      <th key={h} className="text-left px-6 py-4 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">{h}</th>
+                      <th key={h} className="text-left px-6 py-4 text-xs font-black text-on-surface-variant uppercase tracking-widest">{h}</th>
                     ))}
                   </tr>
                 </thead>

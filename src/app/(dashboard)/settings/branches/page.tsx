@@ -157,15 +157,15 @@ export default function BranchesSettingsPage() {
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Şube Adı *</label>
+                  <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Şube Adı *</label>
                   <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required className={inputClass} />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Adres</label>
+                  <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Adres</label>
                   <input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} className={inputClass} />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Telefon</label>
+                  <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Telefon</label>
                   <input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className={inputClass} />
                 </div>
                 <div className="flex gap-3 pt-2">

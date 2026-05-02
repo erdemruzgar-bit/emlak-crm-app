@@ -94,7 +94,7 @@ export default function AppearancePage() {
               )}
             </div>
             <div>
-              <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Mevcut Arka Plan</p>
+              <p className="text-xs font-black text-on-surface-variant uppercase tracking-widest">Mevcut Arka Plan</p>
               <p className="text-sm font-bold text-on-surface mt-1">
                 {backgroundUrl ? "Özel görsel aktif" : "Varsayılan (düz renk)"}
               </p>

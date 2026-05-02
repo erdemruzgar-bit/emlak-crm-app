@@ -442,7 +442,7 @@ export default function CustomerDetailPage() {
                 </div>
               )}
               <div className="flex-1">
-                <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-1">Profil Fotoğrafı</p>
+                <p className="text-xs font-black text-on-surface-variant uppercase tracking-widest mb-1">Profil Fotoğrafı</p>
                 <p className="text-sm font-bold text-on-surface">{customer.firstName} {customer.lastName}</p>
                 {editingInfo && (
                   <div className="flex items-center gap-2 mt-2">
@@ -612,7 +612,7 @@ export default function CustomerDetailPage() {
             <div className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-8 space-y-5 border border-outline-variant/10">
               <h3 className="text-sm font-bold text-on-surface">Müşteri Aşaması & Aciliyet</h3>
               <div>
-                <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-3">Aşama</label>
+                <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3">Aşama</label>
                 <div className="flex flex-wrap gap-2">
                   {Object.entries(stageLabels).map(([key, label]) => (
                     <button key={key} type="button" onClick={() => setCustomer({ ...customer, stage: key })}
@@ -622,7 +622,7 @@ export default function CustomerDetailPage() {
                 </div>
               </div>
               <div>
-                <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-3">Aciliyet</label>
+                <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3">Aciliyet</label>
                 <div className="flex gap-2">
                   {Object.entries(urgencyLabels).map(([key, label]) => (
                     <button key={key} type="button" onClick={() => setCustomer({ ...customer, urgency: key })}
@@ -633,18 +633,18 @@ export default function CustomerDetailPage() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Sonraki Takip Tarihi</label>
+                  <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Sonraki Takip Tarihi</label>
                   <input type="date" value={customer.nextFollowUpDate?.split("T")[0] || ""} onChange={(e) => setCustomer({ ...customer, nextFollowUpDate: e.target.value || null })}
                     className="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/20 outline-none text-sm" />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Taşınma Tarihi</label>
+                  <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Taşınma Tarihi</label>
                   <input type="date" value={customer.desiredMoveDate?.split("T")[0] || ""} onChange={(e) => setCustomer({ ...customer, desiredMoveDate: e.target.value || null })}
                     className="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/20 outline-none text-sm" />
                 </div>
               </div>
               <div>
-                <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Kısa Özet Not</label>
+                <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Kısa Özet Not</label>
                 <textarea value={customer.notesSummary || ""} onChange={(e) => setCustomer({ ...customer, notesSummary: e.target.value || null })} rows={2}
                   className="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/20 outline-none text-sm" placeholder="Danışman için kısa özet..." />
               </div>
@@ -655,17 +655,17 @@ export default function CustomerDetailPage() {
               <h3 className="text-sm font-bold text-on-surface">Bütçe & Finansman</h3>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div>
-                  <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Min Bütçe (₺)</label>
+                  <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Min Bütçe (₺)</label>
                   <input type="number" value={customer.minBudget || ""} onChange={(e) => setCustomer({ ...customer, minBudget: e.target.value ? parseFloat(e.target.value) : null })}
                     className="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/20 outline-none text-sm" />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Max Bütçe (₺)</label>
+                  <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Max Bütçe (₺)</label>
                   <input type="number" value={customer.maxBudget || ""} onChange={(e) => setCustomer({ ...customer, maxBudget: e.target.value ? parseFloat(e.target.value) : null })}
                     className="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/20 outline-none text-sm" />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Finansman</label>
+                  <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Finansman</label>
                   <select value={customer.financingMethod || ""} onChange={(e) => setCustomer({ ...customer, financingMethod: e.target.value || null })}
                     className="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl outline-none text-sm">
                     <option value="">Seçiniz</option>
@@ -675,13 +675,13 @@ export default function CustomerDetailPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Peşinat %</label>
+                  <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Peşinat %</label>
                   <input type="number" min={0} max={100} value={customer.downPaymentPercent || ""} onChange={(e) => setCustomer({ ...customer, downPaymentPercent: e.target.value ? parseFloat(e.target.value) : null })}
                     className="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/20 outline-none text-sm" />
                 </div>
               </div>
               <div>
-                <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Ön Onay Durumu</label>
+                <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Ön Onay Durumu</label>
                 <div className="flex gap-2">
                   {[{ key: "NONE", label: "Yok" }, { key: "PENDING", label: "Beklemede" }, { key: "APPROVED", label: "Onaylandı" }, { key: "REJECTED", label: "Reddedildi" }].map((opt) => (
                     <button key={opt.key} type="button" onClick={() => setCustomer({ ...customer, preApprovalStatus: opt.key })}
@@ -697,7 +697,7 @@ export default function CustomerDetailPage() {
             <div className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-8 space-y-5 border border-outline-variant/10">
               <h3 className="text-sm font-bold text-on-surface">Mülk Tercihleri</h3>
               <div>
-                <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-3">Mülk Tipi</label>
+                <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3">Mülk Tipi</label>
                 <div className="flex flex-wrap gap-2">
                   {propertyTypeOptions.map((pt) => (
                     <button key={pt} type="button" onClick={() => {
@@ -711,19 +711,19 @@ export default function CustomerDetailPage() {
               </div>
               <div className={cn("grid gap-4", showRoomFields ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-2")}>
                 <div>
-                  <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Min m²</label>
+                  <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Min m²</label>
                   <input type="number" value={customer.minArea || ""} onChange={(e) => setCustomer({ ...customer, minArea: e.target.value ? parseFloat(e.target.value) : null })}
                     className="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/20 outline-none text-sm" />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Max m²</label>
+                  <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Max m²</label>
                   <input type="number" value={customer.maxArea || ""} onChange={(e) => setCustomer({ ...customer, maxArea: e.target.value ? parseFloat(e.target.value) : null })}
                     className="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/20 outline-none text-sm" />
                 </div>
                 {showRoomFields && (
                   <>
                     <div>
-                      <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Min Oda Tipi</label>
+                      <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Min Oda Tipi</label>
                       <select value={customer.minRooms || ""} onChange={(e) => setCustomer({ ...customer, minRooms: e.target.value || null })}
                         className="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/20 outline-none text-sm">
                         <option value="">Seçiniz</option>
@@ -733,7 +733,7 @@ export default function CustomerDetailPage() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Max Oda Tipi</label>
+                      <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Max Oda Tipi</label>
                       <select value={customer.maxRooms || ""} onChange={(e) => setCustomer({ ...customer, maxRooms: e.target.value || null })}
                         className="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/20 outline-none text-sm">
                         <option value="">Seçiniz</option>
@@ -746,7 +746,7 @@ export default function CustomerDetailPage() {
                 )}
               </div>
               <div>
-                <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-3">İstenen Özellikler</label>
+                <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3">İstenen Özellikler</label>
                 <div className="flex flex-wrap gap-2">
                   {featureOptions.map((f) => (
                     <button key={f} type="button" onClick={() => {
@@ -760,12 +760,12 @@ export default function CustomerDetailPage() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Tercih Edilen Şehirler</label>
+                  <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Tercih Edilen Şehirler</label>
                   <input value={(customer.preferredCities || []).join(", ")} onChange={(e) => setCustomer({ ...customer, preferredCities: e.target.value.split(",").map((s) => s.trim()).filter(Boolean) })}
                     placeholder="İstanbul, Ankara" className="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/20 outline-none text-sm" />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Tercih Edilen İlçeler</label>
+                  <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Tercih Edilen İlçeler</label>
                   <input value={(customer.preferredDistricts || []).join(", ")} onChange={(e) => setCustomer({ ...customer, preferredDistricts: e.target.value.split(",").map((s) => s.trim()).filter(Boolean) })}
                     placeholder="Kadıköy, Beşiktaş" className="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/20 outline-none text-sm" />
                 </div>
@@ -1430,7 +1430,7 @@ export default function CustomerDetailPage() {
               </div>
 
               <div>
-                <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Gerekçe Kategorisi</label>
+                <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Gerekçe Kategorisi</label>
                 <select
                   value={revealModal.reasonCategory}
                   onChange={(e) => setRevealModal({ ...revealModal, reasonCategory: e.target.value, error: null })}
@@ -1443,7 +1443,7 @@ export default function CustomerDetailPage() {
               </div>
 
               <div>
-                <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Açıklama (zorunlu)</label>
+                <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Açıklama (zorunlu)</label>
                 <textarea
                   value={revealModal.reason}
                   onChange={(e) => setRevealModal({ ...revealModal, reason: e.target.value, error: null })}

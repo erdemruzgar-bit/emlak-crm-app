@@ -50,7 +50,7 @@ export default function Sidebar() {
   });
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-64 bg-surface-container-low flex flex-col p-6 z-50 rounded-r-3xl transition-all duration-300">
+    <aside className="fixed left-0 top-0 h-screen w-64 bg-surface-container-low/75 backdrop-blur-xl flex flex-col p-6 z-50 rounded-r-3xl transition-all duration-300 border-r border-outline-variant/10">
       {/* Logo */}
       <div className="mb-10 px-2 pt-2">
         <div className="flex items-center gap-3">

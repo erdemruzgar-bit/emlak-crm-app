@@ -427,6 +427,9 @@ model Property {
   ownerCitizenship      OwnerCitizenship?
   // Yabancıya satışta TR vatandaşlık programı için uygun mülk (sahibinin uyruğundan bağımsız mülk özelliği).
   isCitizenshipEligible Boolean?
+  // Vatandaşlığa uygun fiyatı için satış fiyatına eklenen fark (aynı para biriminde).
+  // Görüntülemede: vatandaşlık fiyatı = price + citizenshipPriceDiff
+  citizenshipPriceDiff  Float?
   usageType             UsageType?
 
   // ─── Ek özellikler ───

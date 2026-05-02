@@ -103,6 +103,7 @@ export default function EditPropertyPage() {
     occupancyStatus: "",
     ownerCitizenship: "",
     isCitizenshipEligible: "",
+    citizenshipPriceDiff: "",
     usageType: "",
     hasElevator: "",
     hasParking: "",
@@ -172,6 +173,7 @@ export default function EditPropertyPage() {
             data.isCitizenshipEligible === true || data.ownerCitizenship === "VATANDASLIGA_UYGUN"
               ? "true"
               : data.isCitizenshipEligible === false ? "false" : "",
+          citizenshipPriceDiff: data.citizenshipPriceDiff != null ? String(data.citizenshipPriceDiff) : "",
           usageType: data.usageType || "",
           hasElevator: data.hasElevator === true ? "true" : data.hasElevator === false ? "false" : "",
           hasParking: data.hasParking === true ? "true" : data.hasParking === false ? "false" : "",
@@ -251,6 +253,10 @@ export default function EditPropertyPage() {
       occupancyStatus: form.occupancyStatus || null,
       ownerCitizenship: form.ownerCitizenship || null,
       isCitizenshipEligible: boolOrNull(form.isCitizenshipEligible),
+      citizenshipPriceDiff:
+        form.isCitizenshipEligible === "true" && form.citizenshipPriceDiff
+          ? parseFloat(form.citizenshipPriceDiff)
+          : null,
       usageType: form.usageType || null,
 
       // Ek özellikler
@@ -537,7 +543,14 @@ export default function EditPropertyPage() {
             </div>
             <div>
               <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Vatandaşlığa Uygun</label>
-              <select value={form.isCitizenshipEligible} onChange={(e) => set("isCitizenshipEligible", e.target.value)} className={inputClass}>
+              <select
+                value={form.isCitizenshipEligible}
+                onChange={(e) => {
+                  set("isCitizenshipEligible", e.target.value);
+                  if (e.target.value !== "true") set("citizenshipPriceDiff", "");
+                }}
+                className={inputClass}
+              >
                 <option value="">—</option>
                 <option value="true">Evet</option>
                 <option value="false">Hayır</option>
@@ -545,6 +558,43 @@ export default function EditPropertyPage() {
               <p className="text-[10px] text-on-surface-variant mt-1">Yabancıya satışta TR vatandaşlığı için uygun mülk</p>
             </div>
           </div>
+
+          {/* Conditional: Vatandaşlığa Uygun = Evet → Fiyat Farkı + önizleme */}
+          {form.isCitizenshipEligible === "true" && (
+            <div className="bg-primary-fixed/40 rounded-2xl p-4 mt-4 space-y-3 border border-primary/20">
+              <div>
+                <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">
+                  Fiyat Farkı (vatandaşlık satışı için)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={form.citizenshipPriceDiff}
+                  onChange={(e) => set("citizenshipPriceDiff", e.target.value)}
+                  placeholder="0 (fark yoksa boş bırakın)"
+                  className={inputClass}
+                />
+                <p className="text-[10px] text-on-surface-variant mt-1">
+                  Vatandaşlık programı kapsamındaki yabancı alıcıdan istenen ek tutar.
+                </p>
+              </div>
+              {form.price && parseFloat(form.price) > 0 && (
+                <div className="bg-white/60 rounded-xl p-3">
+                  <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-1">
+                    Vatandaşlığa Uygun Fiyatı (önizleme)
+                  </p>
+                  <p className="text-lg font-black text-primary">
+                    {(parseFloat(form.price) + (parseFloat(form.citizenshipPriceDiff) || 0)).toLocaleString("tr-TR", { maximumFractionDigits: 2 })}
+                    <span className="text-xs text-on-surface-variant ml-2">
+                      = {parseFloat(form.price).toLocaleString("tr-TR")}
+                      {form.citizenshipPriceDiff && parseFloat(form.citizenshipPriceDiff) > 0 && ` + ${parseFloat(form.citizenshipPriceDiff).toLocaleString("tr-TR")}`}
+                    </span>
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Ek Özellikler */}

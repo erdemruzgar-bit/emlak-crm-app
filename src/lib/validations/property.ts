@@ -49,6 +49,7 @@ export const propertyCreateSchema = z.object({
   // POST/PUT route'ları bunu yeni alana (isCitizenshipEligible) çevirir.
   ownerCitizenship: z.enum(["TC", "YABANCI", "SIRKET", "VATANDASLIGA_UYGUN"]).nullable().optional(),
   isCitizenshipEligible: z.boolean().nullable().optional(),
+  citizenshipPriceDiff: z.number().nullable().optional(),
   usageType: z
     .enum(["KONUT", "ISYERI", "KARMA", "ARSA_IMARLI", "ARSA_IMARSIZ"])
     .nullable()

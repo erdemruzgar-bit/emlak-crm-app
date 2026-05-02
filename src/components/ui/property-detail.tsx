@@ -58,6 +58,7 @@ interface PropertyDetailData {
   occupancyStatus?: string | null;
   ownerCitizenship?: string | null;
   isCitizenshipEligible?: boolean | null;
+  citizenshipPriceDiff?: number | null;
   usageType?: string | null;
   hasElevator?: boolean | null;
   hasParking?: boolean | null;
@@ -361,6 +362,18 @@ export function PropertyDetail({ property, onClose }: PropertyDetailProps) {
                 )}
                 {(property.isCitizenshipEligible || property.ownerCitizenship === "VATANDASLIGA_UYGUN") && (
                   <InfoRow label="Vatandaşlığa Uygun" value="Evet (yabancıya satışta TR vatandaşlığı için)" />
+                )}
+                {property.isCitizenshipEligible && property.citizenshipPriceDiff != null && property.citizenshipPriceDiff > 0 && (
+                  <>
+                    <InfoRow
+                      label="Vatandaşlık Fiyat Farkı"
+                      value={`+${property.citizenshipPriceDiff.toLocaleString("tr-TR", { maximumFractionDigits: 2 })} ${property.currency || "TRY"}`}
+                    />
+                    <InfoRow
+                      label="Vatandaşlığa Uygun Fiyatı"
+                      value={`${(property.price + property.citizenshipPriceDiff).toLocaleString("tr-TR", { maximumFractionDigits: 2 })} ${property.currency || "TRY"}`}
+                    />
+                  </>
                 )}
                 {(property.ada || property.pafta || property.parsel) && (
                   <InfoRow

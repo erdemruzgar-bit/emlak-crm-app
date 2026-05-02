@@ -56,6 +56,11 @@ export default function NewPropertyPage() {
   const [katMulkiyetiTipi, setKatMulkiyetiTipi] = useState("");
   const [constructionStatus, setConstructionStatus] = useState("");
 
+  // Vatandaşlığa uygun + fiyat farkı (conditional)
+  const [citizenshipEligible, setCitizenshipEligible] = useState<"" | "true" | "false">("");
+  const [citizenshipPriceDiff, setCitizenshipPriceDiff] = useState("");
+  const [salePrice, setSalePrice] = useState(""); // Vatandaşlık fiyatı önizlemesi için satış fiyatını izleriz
+
   useEffect(() => {
     fetch("/api/projects")
       .then((r) => r.json())
@@ -154,6 +159,10 @@ export default function NewPropertyPage() {
       occupancyStatus: optStr("occupancyStatus"),
       ownerCitizenship: optStr("ownerCitizenship"),
       isCitizenshipEligible: optBool("isCitizenshipEligible"),
+      citizenshipPriceDiff:
+        citizenshipEligible === "true" && citizenshipPriceDiff
+          ? parseFloat(citizenshipPriceDiff)
+          : null,
       usageType: optStr("usageType"),
 
       // Ek özellikler
@@ -245,7 +254,14 @@ export default function NewPropertyPage() {
             </div>
             <div>
               <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Fiyat (TL) <span className="text-error">*</span></label>
-              <input name="price" type="number" required className={inputClass} />
+              <input
+                name="price"
+                type="number"
+                required
+                value={salePrice}
+                onChange={(e) => setSalePrice(e.target.value)}
+                className={inputClass}
+              />
             </div>
           </div>
           <div>
@@ -461,7 +477,16 @@ export default function NewPropertyPage() {
             </div>
             <div>
               <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Vatandaşlığa Uygun</label>
-              <select name="isCitizenshipEligible" className={inputClass} defaultValue="">
+              <select
+                name="isCitizenshipEligible"
+                value={citizenshipEligible}
+                onChange={(e) => {
+                  const v = e.target.value as "" | "true" | "false";
+                  setCitizenshipEligible(v);
+                  if (v !== "true") setCitizenshipPriceDiff("");
+                }}
+                className={inputClass}
+              >
                 <option value="">—</option>
                 <option value="true">Evet</option>
                 <option value="false">Hayır</option>
@@ -469,6 +494,44 @@ export default function NewPropertyPage() {
               <p className="text-[10px] text-on-surface-variant mt-1">Yabancıya satışta TR vatandaşlığı için uygun mülk</p>
             </div>
           </div>
+
+          {/* Vatandaşlığa Uygun = Evet seçilince conditional fiyat farkı alanı */}
+          {citizenshipEligible === "true" && (
+            <div className="bg-primary-fixed/40 rounded-2xl p-4 space-y-3 border border-primary/20">
+              <div>
+                <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">
+                  Fiyat Farkı (vatandaşlık satışı için)
+                </label>
+                <input
+                  name="citizenshipPriceDiff"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={citizenshipPriceDiff}
+                  onChange={(e) => setCitizenshipPriceDiff(e.target.value)}
+                  placeholder="0 (fark yoksa boş bırakın)"
+                  className={inputClass}
+                />
+                <p className="text-[10px] text-on-surface-variant mt-1">
+                  Vatandaşlık programı kapsamındaki yabancı alıcıdan istenen ek tutar (satış fiyatına eklenir).
+                </p>
+              </div>
+              {salePrice && parseFloat(salePrice) > 0 && (
+                <div className="bg-white/60 rounded-xl p-3">
+                  <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-1">
+                    Vatandaşlığa Uygun Fiyatı (önizleme)
+                  </p>
+                  <p className="text-lg font-black text-primary">
+                    {(parseFloat(salePrice) + (parseFloat(citizenshipPriceDiff) || 0)).toLocaleString("tr-TR", { maximumFractionDigits: 2 })}
+                    <span className="text-xs text-on-surface-variant ml-2">
+                      = {parseFloat(salePrice).toLocaleString("tr-TR")}
+                      {citizenshipPriceDiff && parseFloat(citizenshipPriceDiff) > 0 && ` + ${parseFloat(citizenshipPriceDiff).toLocaleString("tr-TR")}`}
+                    </span>
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
         </CollapsibleSection>
 
         {/* Ek Özellikler (collapsible) */}

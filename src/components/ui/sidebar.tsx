@@ -21,6 +21,7 @@ import {
   Zap,
   Bell,
   Calculator,
+  Globe,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -64,6 +65,7 @@ const navigationGroups: NavGroup[] = [
       { name: "Otomasyon", href: "/automation", icon: Zap, badge: "Yeni" },
       { name: "Raporlar", href: "/reports", icon: BarChart3 },
       { name: "Komisyon Hesapla", href: "/tools/commission-calculator", icon: Calculator },
+      { name: "Vatandaşlık Hesapla", href: "/tools/citizenship-calculator", icon: Globe },
     ],
   },
   {

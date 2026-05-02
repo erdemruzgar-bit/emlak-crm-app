@@ -165,6 +165,28 @@ export default function PropertyDetailPage() {
 
   const [contracts, setContracts] = useState<PropertyContract[]>([]);
 
+  // Galeri klavye navigasyonu — ←/→ ile foto geçişi, Esc lightbox kapama
+  useEffect(() => {
+    if (!property || property.images.length <= 1) return;
+    const handler = (e: KeyboardEvent) => {
+      // Form/input alanı odaklanmışsa karışmasın
+      const target = e.target as HTMLElement | null;
+      const tag = target?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || target?.isContentEditable) return;
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        setActiveImg((i) => (i - 1 + property.images.length) % property.images.length);
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault();
+        setActiveImg((i) => (i + 1) % property.images.length);
+      } else if (e.key === "Escape" && lightbox) {
+        setLightbox(false);
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [property, lightbox]);
+
   useEffect(() => {
     fetch(`/api/properties/${params.id}`)
       .then((res) => res.json())

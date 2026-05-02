@@ -32,6 +32,8 @@ import {
   Plus,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { toast } from "sonner";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { cn } from "@/lib/utils";
 
 interface MatchEntry {
@@ -144,6 +146,7 @@ export default function PropertyDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { data: session } = useSession();
+  const confirm = useConfirm();
   const [property, setProperty] = useState<Property | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeImg, setActiveImg] = useState(0);
@@ -276,14 +279,20 @@ export default function PropertyDetailPage() {
 
   async function handleDelete() {
     if (!property) return;
-    const confirmText = `"${property.title}" ilanı kalıcı olarak silinecek. Bu işlem geri alınamaz. Devam edilsin mi?`;
-    if (!window.confirm(confirmText)) return;
+    const ok = await confirm({
+      title: `"${property.title}" ilanını sil?`,
+      message: "Bu ilan ve tüm görselleri kalıcı olarak silinecek. Geri alınamaz.",
+      tone: "danger",
+      confirmText: "Sil",
+    });
+    if (!ok) return;
     const res = await fetch(`/api/properties/${property.id}`, { method: "DELETE" });
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      alert(data.error || "İlan silinemedi");
+      toast.error(data.error || "İlan silinemedi");
       return;
     }
+    toast.success("İlan silindi");
     router.push("/properties");
   }
 

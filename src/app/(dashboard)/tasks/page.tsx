@@ -3,8 +3,10 @@
 import { useEffect, useState } from "react";
 import { Plus, CheckCircle2, Circle, Clock, Loader2, Trash2, AlertTriangle, ChevronDown, User } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { ExcelToolbar } from "@/components/ui/excel-toolbar";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 
 interface Task {
   id: string;
@@ -37,6 +39,7 @@ const statusCols = [
 ];
 
 export default function TasksPage() {
+  const confirm = useConfirm();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -92,9 +95,20 @@ export default function TasksPage() {
   }
 
   async function deleteTask(id: string) {
-    if (!confirm("Bu görevi silmek istiyor musunuz?")) return;
+    const ok = await confirm({
+      title: "Görevi sil?",
+      message: "Bu işlem geri alınamaz.",
+      tone: "danger",
+      confirmText: "Sil",
+    });
+    if (!ok) return;
     const res = await fetch(`/api/tasks/${id}`, { method: "DELETE" });
-    if (res.ok) setTasks(tasks.filter((t) => t.id !== id));
+    if (res.ok) {
+      setTasks(tasks.filter((t) => t.id !== id));
+      toast.success("Görev silindi");
+    } else {
+      toast.error("Silinemedi");
+    }
   }
 
   const today = new Date().toISOString().split("T")[0];

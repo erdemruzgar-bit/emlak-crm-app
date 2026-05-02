@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { toast } from "sonner";
 import { Bell, Plus, Check, Trash2, Calendar, AlertTriangle, Loader2, X, User as UserIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 
 interface Reminder {
   id: string;
@@ -50,6 +52,7 @@ function daysUntil(iso: string): number {
 }
 
 export default function RemindersPage() {
+  const confirm = useConfirm();
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [loading, setLoading] = useState(true);
   const [scope, setScope] = useState<"me" | "team">("me");
@@ -127,9 +130,19 @@ export default function RemindersPage() {
   }
 
   async function deleteReminder(id: string) {
-    if (!confirm("Hatırlatmayı silmek istediğinize emin misiniz?")) return;
+    const ok = await confirm({
+      title: "Hatırlatmayı sil?",
+      tone: "danger",
+      confirmText: "Sil",
+    });
+    if (!ok) return;
     const res = await fetch(`/api/reminders/${id}`, { method: "DELETE" });
-    if (res.ok) load();
+    if (res.ok) {
+      toast.success("Hatırlatma silindi");
+      load();
+    } else {
+      toast.error("Silinemedi");
+    }
   }
 
   const overdue = reminders.filter((r) => !r.isDone && daysUntil(r.dueDate) < 0);

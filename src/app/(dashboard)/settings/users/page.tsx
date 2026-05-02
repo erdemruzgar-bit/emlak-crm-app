@@ -4,8 +4,10 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { UserPlus, Loader2, X, AlertCircle, Pencil, UserX, UserCheck, ShieldAlert, Camera } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { TableSkeleton } from "@/components/ui/skeleton";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 
 interface User {
   id: string;
@@ -55,6 +57,7 @@ function allowedRoles(sessionRole: string) {
 
 export default function UsersSettingsPage() {
   const { data: session } = useSession();
+  const confirm = useConfirm();
   const sessionRole = (session?.user as Record<string, unknown> | undefined)?.role as string | undefined;
   const sessionId = (session?.user as Record<string, unknown> | undefined)?.id as string | undefined;
 
@@ -151,25 +154,35 @@ export default function UsersSettingsPage() {
     const u = users.find((x) => x.id === id);
     const c = u?._count?.assignedCustomers ?? 0;
     const p = u?._count?.assignedProperties ?? 0;
-    let msg = "Bu kullanıcıyı pasife almak istiyor musunuz?";
+    let title = "Kullanıcıyı pasife al?";
+    let message = "Pasif kullanıcı sisteme giremez. Verileri korunur.";
     if (c > 0 || p > 0) {
       const parts: string[] = [];
       if (c > 0) parts.push(`${c} müşteri`);
       if (p > 0) parts.push(`${p} ilan`);
-      msg = `Bu kullanıcının üzerinde ${parts.join(" ve ")} atanmış durumda.\n\nKullanıcıyı pasife alırsanız bu kayıtlar başka bir danışmana devredilmediği sürece "yetkisiz danışmanda" görünür ve düzenlenemez.\n\nÖnce müşteri/ilanları başka danışmana atayın veya yine de devam edin.\n\nDevam edilsin mi?`;
+      title = `${parts.join(" ve ")} atanmış — devam edilsin mi?`;
+      message = `Pasife alırsanız bu kayıtlar düzenlenemez ("yetkisiz danışmanda" görünür). Önce başka bir danışmana atamanız önerilir.`;
     }
-    if (!confirm(msg)) return;
+    const ok = await confirm({ title, message, tone: "warning", confirmText: "Pasife Al" });
+    if (!ok) return;
     const res = await fetch(`/api/users/${id}`, { method: "DELETE" });
     const data = await res.json();
     if (res.ok) {
       setUsers(users.map((u) => u.id === id ? { ...u, isActive: false } : u));
+      toast.success("Kullanıcı pasife alındı");
     } else {
-      alert(data.error || "İşlem başarısız");
+      toast.error(data.error || "İşlem başarısız");
     }
   }
 
   async function activate(id: string) {
-    if (!confirm("Bu kullanıcıyı tekrar aktife almak istiyor musunuz?")) return;
+    const ok = await confirm({
+      title: "Kullanıcıyı aktife al?",
+      message: "Kullanıcı tekrar sisteme erişebilir.",
+      tone: "info",
+      confirmText: "Aktife Al",
+    });
+    if (!ok) return;
     const res = await fetch(`/api/users/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -178,8 +191,9 @@ export default function UsersSettingsPage() {
     const data = await res.json();
     if (res.ok) {
       setUsers(users.map((u) => u.id === id ? { ...u, isActive: true } : u));
+      toast.success("Kullanıcı aktife alındı");
     } else {
-      alert(data.error || "İşlem başarısız");
+      toast.error(data.error || "İşlem başarısız");
     }
   }
 

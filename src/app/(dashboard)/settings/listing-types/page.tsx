@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "motion/react";
+import { toast } from "sonner";
 import { Tags, Plus, Trash2, Loader2 } from "lucide-react";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 
 interface ListingTypeCatalog {
   id: string;
@@ -14,6 +16,7 @@ interface ListingTypeCatalog {
 }
 
 export default function ListingTypesSettingsPage() {
+  const confirm = useConfirm();
   const [items, setItems] = useState<ListingTypeCatalog[]>([]);
   const [loading, setLoading] = useState(true);
   const [newCode, setNewCode] = useState("");
@@ -61,13 +64,19 @@ export default function ListingTypesSettingsPage() {
   }
 
   async function deleteItem(id: string, label: string) {
-    if (!confirm(`"${label}" tipini silmek istediğinize emin misiniz?`)) return;
+    const ok = await confirm({
+      title: `"${label}" tipini sil?`,
+      tone: "danger",
+      confirmText: "Sil",
+    });
+    if (!ok) return;
     const res = await fetch(`/api/listing-types/${id}`, { method: "DELETE" });
     const data = await res.json();
     if (!res.ok) {
-      alert(data.error || "Silinemedi");
+      toast.error(data.error || "Silinemedi");
       return;
     }
+    toast.success("İlan tipi silindi");
     load();
   }
 

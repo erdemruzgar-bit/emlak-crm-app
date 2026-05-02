@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { Building2, MapPin, Phone, Loader2, Plus, X, AlertCircle, Pencil, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { toast } from "sonner";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 
 interface Branch {
   id: string;
@@ -16,6 +18,7 @@ interface Branch {
 const inputClass = "w-full px-4 py-3 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/20 outline-none text-sm";
 
 export default function BranchesSettingsPage() {
+  const confirm = useConfirm();
   const [branches, setBranches] = useState<Branch[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -75,12 +78,20 @@ export default function BranchesSettingsPage() {
   }
 
   async function deleteBranch(id: string) {
-    if (!confirm("Bu şubeyi silmek istediğinize emin misiniz? (Bağlı kullanıcılar varsa silinemez)")) return;
+    const ok = await confirm({
+      title: "Şubeyi sil?",
+      message: "Bağlı kullanıcı/müşteri/ilan varsa silinemez.",
+      tone: "danger",
+      confirmText: "Sil",
+    });
+    if (!ok) return;
     const res = await fetch(`/api/branches/${id}`, { method: "DELETE" });
-    if (res.ok) setBranches(branches.filter((b) => b.id !== id));
-    else {
+    if (res.ok) {
+      setBranches(branches.filter((b) => b.id !== id));
+      toast.success("Şube silindi");
+    } else {
       const data = await res.json();
-      alert(data.error || "Şube silinemedi");
+      toast.error(data.error || "Şube silinemedi");
     }
   }
 

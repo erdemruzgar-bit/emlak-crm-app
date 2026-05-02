@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "motion/react";
+import { toast } from "sonner";
 import { Calculator, Loader2, Save, Building2, RotateCcw, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 
 interface CommissionPolicy {
   id: string;
@@ -37,6 +39,7 @@ const inputClass =
   "w-full px-4 py-2.5 bg-surface-container-low rounded-xl text-sm border-none outline-none focus:ring-2 focus:ring-primary/20";
 
 export default function CommissionSettingsPage() {
+  const confirm = useConfirm();
   const [branches, setBranches] = useState<Branch[]>([]);
   const [selectedBranchId, setSelectedBranchId] = useState<string>(""); // "" = şirket geneli
   const [policy, setPolicy] = useState<CommissionPolicy | null>(null);
@@ -111,9 +114,20 @@ export default function CommissionSettingsPage() {
 
   async function removeOverride() {
     if (!selectedBranchId) return;
-    if (!confirm("Bu şubenin özel politikasını kaldır ve şirket geneline döndür?")) return;
+    const ok = await confirm({
+      title: "Şubenin özel politikası kaldırılsın mı?",
+      message: "Bu şube şirket geneli politikasına dönecek.",
+      tone: "warning",
+      confirmText: "Kaldır",
+    });
+    if (!ok) return;
     const res = await fetch(`/api/commission-policy?branchId=${selectedBranchId}`, { method: "DELETE" });
-    if (res.ok) loadPolicy();
+    if (res.ok) {
+      toast.success("Özel politika kaldırıldı");
+      loadPolicy();
+    } else {
+      toast.error("İşlem başarısız");
+    }
   }
 
   if (loading || !policy) {

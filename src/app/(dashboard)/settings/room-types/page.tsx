@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "motion/react";
+import { toast } from "sonner";
 import { DoorOpen, Plus, Trash2, Loader2 } from "lucide-react";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 
 interface RoomType {
   id: string;
@@ -12,6 +14,7 @@ interface RoomType {
 }
 
 export default function RoomTypesSettingsPage() {
+  const confirm = useConfirm();
   const [items, setItems] = useState<RoomType[]>([]);
   const [loading, setLoading] = useState(true);
   const [newName, setNewName] = useState("");
@@ -54,13 +57,19 @@ export default function RoomTypesSettingsPage() {
   }
 
   async function deleteItem(id: string, name: string) {
-    if (!confirm(`"${name}" oda tipini silmek istediğinize emin misiniz?`)) return;
+    const ok = await confirm({
+      title: `"${name}" oda tipini sil?`,
+      tone: "danger",
+      confirmText: "Sil",
+    });
+    if (!ok) return;
     const res = await fetch(`/api/room-types/${id}`, { method: "DELETE" });
     const data = await res.json();
     if (!res.ok) {
-      alert(data.error || "Silinemedi");
+      toast.error(data.error || "Silinemedi");
       return;
     }
+    toast.success("Oda tipi silindi");
     load();
   }
 

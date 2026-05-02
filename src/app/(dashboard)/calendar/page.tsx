@@ -3,8 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Plus, MapPin, Loader2, CalendarX, PlusCircle, Calendar, Pencil, Trash2, X, AlertCircle, User, Home } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { ExcelToolbar } from "@/components/ui/excel-toolbar";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 
 interface Appointment {
   id: string;
@@ -131,6 +133,7 @@ function SearchDropdown({
 }
 
 export default function CalendarPage() {
+  const confirm = useConfirm();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [loading, setLoading] = useState(true);
@@ -303,14 +306,21 @@ export default function CalendarPage() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Bu randevuyu iptal etmek istediğinize emin misiniz?")) return;
+    const ok = await confirm({
+      title: "Randevuyu iptal et?",
+      message: "Bu işlem geri alınamaz.",
+      tone: "danger",
+      confirmText: "İptal Et",
+    });
+    if (!ok) return;
     const res = await fetch(`/api/appointments/${id}`, { method: "DELETE" });
     if (res.ok) {
       setShowModal(false);
       fetchAppointments();
+      toast.success("Randevu iptal edildi");
     } else {
       const data = await res.json().catch(() => ({}));
-      alert(data.error || "Randevu silinemedi");
+      toast.error(data.error || "Randevu silinemedi");
     }
   }
 

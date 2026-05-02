@@ -11,6 +11,8 @@ import {
   FileSignature, Plus, Paperclip,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { toast } from "sonner";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { cn } from "@/lib/utils";
 import { EditableText, EditableSelect, EditableTextarea } from "@/components/ui/editable-field";
 import { DEFAULT_CUSTOMER_TYPE_LABELS } from "@/lib/customer-type-styles";
@@ -192,6 +194,7 @@ export default function CustomerDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { data: session } = useSession();
+  const confirm = useConfirm();
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"info" | "demand" | "notes" | "interactions" | "appointments" | "matches" | "contracts" | "kvkk" | "access">("info");
@@ -375,9 +378,20 @@ export default function CustomerDetailPage() {
         </div>
         {canAnonymize && (
           <button
-            onClick={() => {
-              if (confirm("Bu müşterinin verilerini anonimleştirmek istediğinize emin misiniz? (KVKK Unutulma Hakkı)")) {
-                fetch(`/api/customers/${customer.id}`, { method: "DELETE" }).then(() => router.push("/customers"));
+            onClick={async () => {
+              const ok = await confirm({
+                title: "Müşteri verisini anonimleştir?",
+                message: "KVKK Unutulma Hakkı kapsamında müşterinin kişisel bilgileri silinir, sözleşme/rapor bağları korunur. Bu işlem geri alınamaz.",
+                tone: "danger",
+                confirmText: "Anonimleştir",
+              });
+              if (!ok) return;
+              const res = await fetch(`/api/customers/${customer.id}`, { method: "DELETE" });
+              if (res.ok) {
+                toast.success("Müşteri verileri anonimleştirildi");
+                router.push("/customers");
+              } else {
+                toast.error("İşlem başarısız");
               }
             }}
             className="px-5 py-3 text-sm text-error bg-error-container/30 hover:bg-error-container/50 rounded-xl transition-all font-bold flex items-center gap-2"

@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "motion/react";
+import { toast } from "sonner";
 import { UserCog, Plus, Trash2, Loader2, Home, Building2 } from "lucide-react";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 
 interface CustomerTypeCatalog {
   id: string;
@@ -16,6 +18,7 @@ interface CustomerTypeCatalog {
 }
 
 export default function CustomerTypesSettingsPage() {
+  const confirm = useConfirm();
   const [items, setItems] = useState<CustomerTypeCatalog[]>([]);
   const [loading, setLoading] = useState(true);
   const [newCode, setNewCode] = useState("");
@@ -78,13 +81,20 @@ export default function CustomerTypesSettingsPage() {
   }
 
   async function deleteItem(id: string, label: string) {
-    if (!confirm(`"${label}" tipini silmek istediğinize emin misiniz?`)) return;
+    const ok = await confirm({
+      title: `"${label}" tipini sil?`,
+      message: "Bu tipi kullanan müşteriler varsa silme engellenebilir.",
+      tone: "danger",
+      confirmText: "Sil",
+    });
+    if (!ok) return;
     const res = await fetch(`/api/customer-types/${id}`, { method: "DELETE" });
     const data = await res.json();
     if (!res.ok) {
-      alert(data.error || "Silinemedi");
+      toast.error(data.error || "Silinemedi");
       return;
     }
+    toast.success("Tip silindi");
     load();
   }
 

@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { toast } from "sonner";
 import { Blocks, Plus, Trash2, X, Home as HomeIcon, ChevronDown, ChevronRight, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 
 interface Block {
   id: string;
@@ -24,6 +26,7 @@ interface Project {
 }
 
 export default function ProjectsSettingsPage() {
+  const confirm = useConfirm();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -90,13 +93,20 @@ export default function ProjectsSettingsPage() {
   }
 
   async function deleteProject(id: string, name: string) {
-    if (!confirm(`"${name}" projesini silmek istediğinize emin misiniz?`)) return;
+    const ok = await confirm({
+      title: `"${name}" projesini sil?`,
+      message: "Bağlı blok ve ilanlar varsa silme engellenebilir.",
+      tone: "danger",
+      confirmText: "Sil",
+    });
+    if (!ok) return;
     const res = await fetch(`/api/projects/${id}`, { method: "DELETE" });
     const data = await res.json();
     if (!res.ok) {
-      alert(data.error || "Silinemedi");
+      toast.error(data.error || "Silinemedi");
       return;
     }
+    toast.success("Proje silindi");
     load();
   }
 
@@ -120,13 +130,19 @@ export default function ProjectsSettingsPage() {
   }
 
   async function deleteBlock(projectId: string, blockId: string, name: string) {
-    if (!confirm(`"${name}" bloğunu silmek istediğinize emin misiniz?`)) return;
+    const ok = await confirm({
+      title: `"${name}" bloğunu sil?`,
+      tone: "danger",
+      confirmText: "Sil",
+    });
+    if (!ok) return;
     const res = await fetch(`/api/projects/${projectId}/blocks/${blockId}`, { method: "DELETE" });
     const data = await res.json();
     if (!res.ok) {
-      alert(data.error || "Silinemedi");
+      toast.error(data.error || "Silinemedi");
       return;
     }
+    toast.success("Blok silindi");
     load();
   }
 

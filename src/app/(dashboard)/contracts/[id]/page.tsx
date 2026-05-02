@@ -18,7 +18,9 @@ import {
   CheckCircle,
 } from "lucide-react";
 import { motion } from "motion/react";
+import { toast } from "sonner";
 import { DocumentUploader, DocumentItem } from "@/components/ui/document-uploader";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 
 interface Attachment {
   id: string;
@@ -157,6 +159,7 @@ function formatBytes(bytes: number): string {
 export default function ContractDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
+  const confirm = useConfirm();
   const [contract, setContract] = useState<Contract | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -191,9 +194,20 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
   }
 
   async function deleteContract() {
-    if (!confirm("Bu sözleşmeyi silmek istediğinize emin misiniz?")) return;
+    const ok = await confirm({
+      title: "Sözleşmeyi sil?",
+      message: "Sözleşme ve eklerinden geri dönülemez.",
+      tone: "danger",
+      confirmText: "Sil",
+    });
+    if (!ok) return;
     const res = await fetch(`/api/contracts/${id}`, { method: "DELETE" });
-    if (res.ok) router.push("/contracts");
+    if (res.ok) {
+      toast.success("Sözleşme silindi");
+      router.push("/contracts");
+    } else {
+      toast.error("Silinemedi");
+    }
   }
 
   async function uploadNewAttachments() {
@@ -219,7 +233,12 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
   }
 
   async function deleteAttachment(attachmentId: string) {
-    if (!confirm("Bu dosyayı silmek istediğinize emin misiniz?")) return;
+    const ok = await confirm({
+      title: "Dosyayı sil?",
+      tone: "danger",
+      confirmText: "Sil",
+    });
+    if (!ok) return;
     const res = await fetch(`/api/contracts/${id}/attachments/${attachmentId}`, {
       method: "DELETE",
     });

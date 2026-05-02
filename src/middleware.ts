@@ -5,6 +5,8 @@ import { authConfig } from "@/lib/auth.config";
 const { auth } = NextAuth(authConfig);
 
 const publicPaths = ["/login", "/forgot-password"];
+// PWA / mobil app metadata için public erişimi gereken dosyalar
+const publicFiles = ["/manifest.json", "/icon.svg", "/apple-touch-icon.png", "/favicon.ico", "/robots.txt"];
 
 export default auth((req) => {
   const { pathname } = req.nextUrl;
@@ -19,6 +21,11 @@ export default auth((req) => {
   }
 
   if (publicPaths.some((p) => pathname.startsWith(p))) {
+    return NextResponse.next();
+  }
+
+  // PWA / favicon / manifest gibi statik metadata dosyaları auth-free
+  if (publicFiles.includes(pathname)) {
     return NextResponse.next();
   }
 

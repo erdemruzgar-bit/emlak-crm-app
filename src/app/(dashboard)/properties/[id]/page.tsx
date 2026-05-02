@@ -423,14 +423,7 @@ export default function PropertyDetailPage() {
               <div className="flex flex-col items-center text-on-surface-variant/40">
                 <Home className="w-16 h-16" />
                 <span className="text-xs font-medium mt-2">Görsel yüklenemedi</span>
-                <a
-                  href={property.images[activeImg].url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-[10px] text-primary hover:underline mt-1 break-all max-w-[80%] text-center"
-                >
-                  Linki yeni sekmede aç
-                </a>
+                <span className="text-[10px] mt-1">Dosya bozuk olabilir veya silinmiş olabilir</span>
               </div>
             ) : (
               <img

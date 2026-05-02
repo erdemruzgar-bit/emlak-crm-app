@@ -4,7 +4,7 @@ import { useSession, signOut } from "next-auth/react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Search, Bell, LogOut, Users, Home, Menu, Moon, Sun } from "lucide-react";
+import { Search, Bell, LogOut, Users, Home, Menu, Moon, Sun, Keyboard } from "lucide-react";
 import { useTheme } from "@/components/theme-provider";
 
 
@@ -104,11 +104,26 @@ export default function Header() {
 
       {/* Right: Notifications + User */}
       <div className="flex items-center gap-2 sm:gap-4">
+        {/* Klavye kısayolları (?) */}
+        <button
+          type="button"
+          onClick={() => {
+            // ShortcutsHelp dispatches via "?" key — synthesize a keypress
+            const event = new KeyboardEvent("keydown", { key: "?" });
+            window.dispatchEvent(event);
+          }}
+          title="Klavye Kısayolları (?)"
+          aria-label="Klavye Kısayolları"
+          className="p-2 text-on-surface-variant hover:bg-surface-container rounded-lg transition-colors hidden sm:inline-flex"
+        >
+          <Keyboard className="w-5 h-5" />
+        </button>
+
         {/* Dark mode toggle */}
         <button
           type="button"
           onClick={toggleDarkMode}
-          title={darkMode ? "Açık moda geç" : "Koyu moda geç"}
+          title={darkMode ? "Açık moda geç (D)" : "Koyu moda geç (D)"}
           aria-label={darkMode ? "Açık moda geç" : "Koyu moda geç"}
           className="p-2 text-on-surface-variant hover:bg-surface-container rounded-lg transition-colors"
         >

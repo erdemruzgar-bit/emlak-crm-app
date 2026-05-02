@@ -366,7 +366,48 @@ Sol menüden **Raporlar**:
 
 ---
 
-## 17. Yedekleme ve Sürüm Yönetimi
+## 17. Klavye Kısayolları
+
+Sistem hızlı kullanım için aşağıdaki kısayolları destekler. Form/input alanına yazarken kısayollar devre dışıdır.
+
+### Genel
+
+| Tuş | İşlem |
+|-----|-------|
+| `?` | Tüm kısayolları gösteren yardım popup'ı |
+| `Ctrl+K` (Mac: `⌘K`) | **Komut paleti** — sayfa ara, hızlı eylem (Yeni Müşteri, Yeni İlan, vb.) |
+| `Ctrl+B` (`⌘B`) | Sidebar (sol menü) aç/kapa — özellikle mobilde drawer |
+| `D` | Koyu/açık mod değiştir |
+| `/` | Üst sağdaki arama kutusuna fokus |
+| `Esc` | Açık modal/popup kapat |
+
+### Liste Sayfaları (Müşteriler / Portföy / Sözleşmeler)
+
+| Tuş | İşlem |
+|-----|-------|
+| `N` | Yeni kayıt formunu aç (sayfa bağlamına göre Müşteri/İlan/Sözleşme) |
+
+### İlan Detayı — Galeri
+
+| Tuş | İşlem |
+|-----|-------|
+| `←` | Önceki foto/video |
+| `→` | Sonraki foto/video |
+| `Esc` | Lightbox (büyütülmüş görünüm) kapat |
+
+### Komut Paleti İçinde (Ctrl+K)
+
+| Tuş | İşlem |
+|-----|-------|
+| `↑` `↓` | Listede gez |
+| `Enter` | Seçili komutu çalıştır |
+| Yazma | Hızlı arama |
+
+> **İpucu:** Üst bardaki klavye ikonuna tıklayarak da yardım popup'ını açabilirsiniz.
+
+---
+
+## 18. Yedekleme ve Sürüm Yönetimi
 
 Sistem her release'de otomatik olarak `/home/crmadmin/backups/<TAG>/` altına yedek alır:
 - DB dump (`db.sql`)

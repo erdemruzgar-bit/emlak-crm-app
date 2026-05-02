@@ -93,6 +93,23 @@ Kendinin eklemediği müşterinin **telefon/e-posta/TC** alanları maskelidir (`
 
 ---
 
+## Klavye Kısayolları
+
+| Tuş | İşlem |
+|-----|-------|
+| `?` | Tüm kısayolları gösteren popup |
+| `Ctrl+K` (`⌘K`) | Komut paleti — sayfa ara, hızlı eylem |
+| `/` | Üst arama kutusuna git |
+| `N` | Liste sayfasında yeni kayıt formu |
+| `Ctrl+B` | Sidebar aç/kapa (mobilde drawer) |
+| `D` | Koyu/açık mod değiştir |
+| `Esc` | Açık modal/popup kapat |
+| `←` `→` | İlan galerisi: önceki/sonraki foto |
+
+> Üst barda **klavye ikonu** ile aynı yardım menüsünü açabilirsin.
+
+---
+
 ## Yedek & Sürüm
 Her sürümde otomatik yedek `/home/crmadmin/backups/<TAG>/` ve Google Drive'a alınır.
 **Geri al:** `~/emlak-crm-app/scripts/rollback.sh <TAG>`

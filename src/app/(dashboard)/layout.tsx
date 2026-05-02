@@ -1,6 +1,7 @@
 import Sidebar from "@/components/ui/sidebar";
 import Header from "@/components/ui/header";
 import Providers from "@/components/providers";
+import { KeyboardShortcuts } from "@/components/ui/keyboard-shortcuts";
 
 export default function DashboardLayout({
   children,
@@ -18,6 +19,7 @@ export default function DashboardLayout({
           <main className="flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
         </div>
       </div>
+      <KeyboardShortcuts />
     </Providers>
   );
 }

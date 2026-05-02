@@ -222,7 +222,7 @@ export default function NewPropertyPage() {
         )}
 
         {/* Genel Bilgiler */}
-        <div className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-8 space-y-5 border border-outline-variant/10">
+        <div className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-5 sm:p-8 space-y-5 border border-outline-variant/10">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <h2 className="text-lg font-bold text-on-surface tracking-tight">Genel Bilgiler</h2>
             <p className="text-xs text-on-surface-variant">
@@ -262,7 +262,7 @@ export default function NewPropertyPage() {
         </div>
 
         {/* İlan Sahibi */}
-        <div className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-8 space-y-4 border border-outline-variant/10">
+        <div className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-5 sm:p-8 space-y-4 border border-outline-variant/10">
           <h2 className="text-lg font-bold text-on-surface tracking-tight">İlan Sahibi</h2>
           <div ref={ownerRef} className="relative">
             {selectedOwner ? (
@@ -302,7 +302,7 @@ export default function NewPropertyPage() {
         </div>
 
         {/* Proje / Blok / Daire */}
-        <div className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-8 space-y-4 border border-outline-variant/10">
+        <div className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-5 sm:p-8 space-y-4 border border-outline-variant/10">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <h2 className="text-lg font-bold text-on-surface tracking-tight">Proje / Blok / Daire</h2>
             <Link
@@ -572,7 +572,7 @@ export default function NewPropertyPage() {
         </CollapsibleSection>
 
         {/* Detaylar */}
-        <div className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-8 space-y-5 border border-outline-variant/10">
+        <div className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-5 sm:p-8 space-y-5 border border-outline-variant/10">
           <h2 className="text-lg font-bold text-on-surface tracking-tight">Detaylar</h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {[
@@ -616,7 +616,7 @@ export default function NewPropertyPage() {
         </div>
 
         {/* Konum */}
-        <div className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-8 space-y-5 border border-outline-variant/10">
+        <div className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-5 sm:p-8 space-y-5 border border-outline-variant/10">
           <h2 className="text-lg font-bold text-on-surface tracking-tight">Konum</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
@@ -658,13 +658,13 @@ export default function NewPropertyPage() {
         </div>
 
         {/* Açıklama */}
-        <div className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-8 border border-outline-variant/10">
+        <div className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-5 sm:p-8 border border-outline-variant/10">
           <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Açıklama</label>
           <textarea name="description" rows={4} className={inputClass} />
         </div>
 
         {/* Fotoğraf & Video */}
-        <div className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-8 space-y-5 border border-outline-variant/10">
+        <div className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-5 sm:p-8 space-y-5 border border-outline-variant/10">
           <h2 className="text-lg font-bold text-on-surface tracking-tight">Fotoğraf ve Video</h2>
           <MediaUploader value={media} onChange={setMedia} />
         </div>

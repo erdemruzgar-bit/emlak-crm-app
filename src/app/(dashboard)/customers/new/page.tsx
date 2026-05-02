@@ -130,7 +130,7 @@ export default function NewCustomerPage() {
           </div>
         )}
 
-        <div className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-8 space-y-5 border border-outline-variant/10">
+        <div className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-5 sm:p-8 space-y-5 border border-outline-variant/10">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <h2 className="text-lg font-bold text-on-surface tracking-tight">
               Kişisel Bilgiler
@@ -189,7 +189,7 @@ export default function NewCustomerPage() {
         </div>
 
         {/* Talep Bilgileri */}
-        <div className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-8 space-y-5 border border-outline-variant/10">
+        <div className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-5 sm:p-8 space-y-5 border border-outline-variant/10">
           <h2 className="text-lg font-bold text-on-surface tracking-tight flex items-center gap-2">
             <Target className="w-5 h-5 text-primary" />
             Talep Bilgileri (Opsiyonel)
@@ -265,7 +265,7 @@ export default function NewCustomerPage() {
           </div>
         </div>
 
-        <div className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-8 space-y-5 border border-outline-variant/10">
+        <div className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-5 sm:p-8 space-y-5 border border-outline-variant/10">
           <h2 className="text-lg font-bold text-on-surface tracking-tight flex items-center gap-2">
             <ShieldCheck className="w-5 h-5 text-green-600" />
             KVKK Rıza Yönetimi

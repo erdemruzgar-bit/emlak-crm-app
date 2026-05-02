@@ -4,7 +4,7 @@ import { useSession, signOut } from "next-auth/react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Search, Bell, LogOut, Users, Home } from "lucide-react";
+import { Search, Bell, LogOut, Users, Home, Menu } from "lucide-react";
 
 
 export default function Header() {
@@ -51,7 +51,17 @@ export default function Header() {
     ] || "Kullanıcı";
 
   return (
-    <header className="flex items-center justify-between px-8 py-4 w-full sticky top-0 z-40 bg-background/70 backdrop-blur-xl">
+    <header className="flex items-center justify-between px-4 sm:px-8 py-4 w-full sticky top-0 z-40 bg-background/70 backdrop-blur-xl gap-3">
+      {/* Mobil hamburger — sadece lg altında görünür */}
+      <button
+        type="button"
+        onClick={() => window.dispatchEvent(new Event("toggle-sidebar"))}
+        className="lg:hidden p-2 rounded-lg hover:bg-surface-container text-on-surface-variant shrink-0"
+        aria-label="Menü"
+      >
+        <Menu className="w-5 h-5" />
+      </button>
+
       {/* Left: Search */}
       <div className="flex items-center gap-6 flex-1">
         <form

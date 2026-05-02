@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
 import {
   LayoutDashboard,
   Home,
@@ -20,6 +21,7 @@ import {
   Zap,
   Bell,
   Calculator,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -77,6 +79,19 @@ export default function Sidebar() {
   const pathname = usePathname();
   const { data: session } = useSession();
   const role = (session?.user as unknown as { role?: string } | undefined)?.role;
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Header'daki hamburger butonu → "toggle-sidebar" event emit eder
+  useEffect(() => {
+    const handler = () => setMobileOpen((v) => !v);
+    window.addEventListener("toggle-sidebar", handler);
+    return () => window.removeEventListener("toggle-sidebar", handler);
+  }, []);
+
+  // Route değişince mobil drawer'ı kapat
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
   const visibleGroups = navigationGroups
     .map((g) => ({
       ...g,
@@ -88,7 +103,21 @@ export default function Sidebar() {
     .filter((g) => g.items.length > 0);
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-64 bg-surface-container-low/75 backdrop-blur-xl flex flex-col p-6 z-50 rounded-r-3xl transition-all duration-300 border-r border-outline-variant/10">
+    <>
+      {/* Mobil backdrop */}
+      {mobileOpen && (
+        <div
+          aria-hidden
+          onClick={() => setMobileOpen(false)}
+          className="fixed inset-0 z-40 bg-black/40 lg:hidden"
+        />
+      )}
+    <aside className={cn(
+      "fixed left-0 top-0 h-screen w-64 bg-surface-container-low/90 backdrop-blur-xl flex flex-col p-6 z-50 rounded-r-3xl transition-transform duration-300 border-r border-outline-variant/10",
+      // lg ekranda her zaman görünür; mobilde drawer (state ile toggle)
+      "lg:translate-x-0",
+      mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+    )}>
       {/* Logo */}
       <div className="mb-10 px-2 pt-2">
         <div className="flex items-center gap-3">
@@ -167,11 +196,23 @@ export default function Sidebar() {
           <span className="text-sm font-medium">Yardım / Kullanım Kılavuzu</span>
         </Link>
 
-        <div className="flex items-center gap-2 px-4 py-2 text-xs text-on-surface-variant">
-          <ShieldCheck className="w-4 h-4 text-green-600" />
-          KVKK Uyumlu
+        <div className="flex items-center justify-between gap-2 px-4 py-2 text-xs text-on-surface-variant">
+          <span className="flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-green-600" />
+            KVKK Uyumlu
+          </span>
+          {/* Mobilde drawer kapatma butonu */}
+          <button
+            type="button"
+            onClick={() => setMobileOpen(false)}
+            className="lg:hidden p-1.5 rounded-lg hover:bg-surface-container/50"
+            aria-label="Menüyü kapat"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
       </div>
     </aside>
+    </>
   );
 }

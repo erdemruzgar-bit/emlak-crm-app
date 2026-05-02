@@ -130,7 +130,8 @@ function CustomersPageInner() {
   const activeFilterCount = [typeFilter, stageFilter, urgencyFilter, sourceFilter].filter(Boolean).length;
 
   useEffect(() => { fetchCustomers(); }, [page, search, typeFilter, stageFilter, urgencyFilter, sourceFilter, sortBy, sortOrder]);
-  useEffect(() => { if (viewMode === "kanban") fetchKanbanCustomers(); }, [viewMode, search, typeFilter, urgencyFilter, sourceFilter]);
+  // Kanban kartları her view'da hazır olsun: list mode iken md altında (mobilde) kart olarak gösteririz.
+  useEffect(() => { fetchKanbanCustomers(); }, [search, typeFilter, urgencyFilter, sourceFilter]);
 
   async function fetchCustomers() {
     setLoading(true);
@@ -310,9 +311,9 @@ function CustomersPageInner() {
         </AnimatePresence>
       </div>
 
-      {/* List View */}
+      {/* List View — md altında zorla kart görünümüne yönlendirilir */}
       {viewMode === "list" && (
-        <div className="bg-surface-container-lowest rounded-3xl overflow-hidden shadow-[0_12px_32px_rgba(25,28,30,0.06)] border border-outline-variant/10">
+        <div className="hidden md:block bg-surface-container-lowest rounded-3xl overflow-hidden shadow-[0_12px_32px_rgba(25,28,30,0.06)] border border-outline-variant/10">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-surface-container-low">
@@ -408,9 +409,9 @@ function CustomersPageInner() {
         </div>
       )}
 
-      {/* Card Grid View */}
-      {viewMode === "kanban" && (
-        <>
+      {/* Card Grid View — list seçili olsa da mobilde kanban gösteririz (overflow tablo yerine) */}
+      {(viewMode === "kanban" || viewMode === "list") && (
+        <div className={cn(viewMode === "list" && "md:hidden")}>
           {kanbanCustomers.length === 0 && !loading ? (
             <div className="flex flex-col items-center justify-center py-20 text-on-surface-variant">
               <UserX className="w-12 h-12 opacity-30 mb-3" />
@@ -555,7 +556,7 @@ function CustomersPageInner() {
               })}
             </div>
           )}
-        </>
+        </div>
       )}
     </motion.div>
   );

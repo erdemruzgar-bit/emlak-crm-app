@@ -12,7 +12,8 @@ export type Role = "ADMIN" | "MANAGER" | "AGENT";
 export interface SessionActor {
   id: string;
   role: Role;
-  branchId: string | null;
+  branchId: string | null;        // Ana şubesi (geriye dönük uyum)
+  branchIds: string[];            // Yetkili olduğu tüm şubeler (ana + ek). RBAC kontrollerinde bu kullanılır.
   canExport?: boolean;
   canImport?: boolean;
 }
@@ -22,13 +23,31 @@ export function extractActor(session: unknown): SessionActor | null {
   if (!user || typeof user.id !== "string") return null;
   const role = user.role as Role | undefined;
   if (role !== "ADMIN" && role !== "MANAGER" && role !== "AGENT") return null;
+
+  const branchId = typeof user.branchId === "string" ? user.branchId : null;
+  // session.user.authorizedBranchIds — auth callback'inde set edilir (string[])
+  const additional = Array.isArray(user.authorizedBranchIds)
+    ? (user.authorizedBranchIds as unknown[]).filter((x): x is string => typeof x === "string")
+    : [];
+  const branchIds = Array.from(new Set([...(branchId ? [branchId] : []), ...additional]));
+
   return {
     id: user.id,
     role,
-    branchId: (typeof user.branchId === "string" ? user.branchId : null),
+    branchId,
+    branchIds,
     canExport: user.canExport === true,
     canImport: user.canImport === true,
   };
+}
+
+// Kullanıcının verilen şubeye yetkili olup olmadığını kontrol eder.
+// ADMIN her zaman; MANAGER/AGENT ise branchIds.includes()
+export function isAuthorizedForBranch(actor: SessionActor | null, branchId: string | null): boolean {
+  if (!actor) return false;
+  if (actor.role === "ADMIN") return true;
+  if (!branchId) return false;
+  return actor.branchIds.includes(branchId);
 }
 
 // Excel dışa aktarma yetkisi: ADMIN her zaman, diğerleri sadece canExport=true ise
@@ -67,19 +86,19 @@ export function canEditCustomer(
 
 // -------- İlan --------
 
-// Görüntüleme: ADMIN ve MANAGER tüm şubeleri; AGENT sadece kendi şubesini
+// Görüntüleme: ADMIN ve MANAGER tüm şubeleri; AGENT yetkili olduğu şubeleri
 export function canViewProperty(
   actor: SessionActor | null,
   property: { branchId: string | null }
 ): boolean {
   if (!actor) return false;
   if (actor.role === "ADMIN" || actor.role === "MANAGER") return true;
-  if (!actor.branchId || !property.branchId) return false;
-  return actor.branchId === property.branchId;
+  if (!property.branchId) return false;
+  return actor.branchIds.includes(property.branchId);
 }
 
-// Düzenleme: atanmış danışman, aynı şube MANAGER, ADMIN
-// (MANAGER görüntülemeyi tüm şubelerde yapar ama düzenleme yalnızca kendi şubesinde)
+// Düzenleme: atanmış danışman, yetkili olduğu şubedeki MANAGER, ADMIN
+// (MANAGER görüntülemeyi tüm şubelerde yapar ama düzenleme yalnızca yetkili olduğu şubelerde)
 export function canEditProperty(
   actor: SessionActor | null,
   property: { assignedAgentId: string | null; branchId: string | null }
@@ -87,7 +106,8 @@ export function canEditProperty(
   if (!actor) return false;
   if (actor.role === "ADMIN") return true;
   if (actor.role === "MANAGER") {
-    return !!actor.branchId && actor.branchId === property.branchId;
+    if (!property.branchId) return false;
+    return actor.branchIds.includes(property.branchId);
   }
   // AGENT
   return property.assignedAgentId === actor.id;
@@ -95,11 +115,13 @@ export function canEditProperty(
 
 // Prisma where filtresi — liste endpointlerinde kullanılır
 // MANAGER artık tüm şubelerin ilanlarını listede görür (görsel listede izolasyon yok);
-// edit/delete RBAC üzerinden korunuyor.
+// edit/delete RBAC üzerinden korunuyor. AGENT yetkili olduğu şubeler.
 export function propertyListFilter(actor: SessionActor | null): Record<string, unknown> {
   if (!actor) return { branchId: "__no_branch__" };
   if (actor.role === "ADMIN" || actor.role === "MANAGER") return {};
-  return { branchId: actor.branchId ?? "__no_branch__" }; // AGENT — kendi şubesi
+  // AGENT — yetkili olduğu şubeler (ana + ek)
+  if (actor.branchIds.length === 0) return { branchId: "__no_branch__" };
+  return { branchId: { in: actor.branchIds } };
 }
 
 // -------- Randevu / Görev --------
@@ -114,7 +136,8 @@ export function canEditAppointment(
   if (appointment.userId === actor.id) return true;
   if (actor.role === "MANAGER") {
     const ownerBranch = appointment.user?.branchId ?? null;
-    return !!actor.branchId && ownerBranch === actor.branchId;
+    if (!ownerBranch) return false;
+    return actor.branchIds.includes(ownerBranch);
   }
   return false;
 }
@@ -125,9 +148,10 @@ export const canEditTask = canEditAppointment; // aynı kurgu
 export function appointmentListFilter(actor: SessionActor | null): Record<string, unknown> {
   if (!actor || actor.role === "ADMIN") return {};
   if (actor.role === "MANAGER") {
-    return { user: { branchId: actor.branchId ?? "__no_branch__" } };
+    if (actor.branchIds.length === 0) return { user: { branchId: "__no_branch__" } };
+    return { user: { branchId: { in: actor.branchIds } } };
   }
-  // AGENT
+  // AGENT — kendi randevuları/görevleri
   return { userId: actor.id };
 }
 

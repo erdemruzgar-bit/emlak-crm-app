@@ -177,7 +177,8 @@ model Branch {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  users            User[]
+  users            User[]                       // Ana şubesi bu olan kullanıcılar (User.branchId)
+  authorizedUsers  User[]   @relation("UserAuthorizedBranches")  // Yetkili olduğu ek şubeler (M:M)
   customers        Customer[]
   properties       Property[]
   contracts        Contract[]
@@ -195,11 +196,12 @@ model User {
   isActive     Boolean  @default(true)
   canExport    Boolean  @default(false)  // Excel dışa aktarma yetkisi (ADMIN her zaman yapabilir)
   canImport    Boolean  @default(false)  // Excel içe aktarma yetkisi
-  branchId     String?
+  branchId     String?  // Ana şube — kullanıcının "ait olduğu" şube (RBAC için)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
   branch              Branch?               @relation(fields: [branchId], references: [id])
+  authorizedBranches  Branch[]              @relation("UserAuthorizedBranches") // Ana şube DIŞINDA yetkili olduğu ek şubeler
   assignedCustomers   Customer[]            @relation("AssignedAgent")
   createdCustomers    Customer[]            @relation("CreatedCustomers")
   assignedProperties  Property[]            @relation("AssignedAgent")

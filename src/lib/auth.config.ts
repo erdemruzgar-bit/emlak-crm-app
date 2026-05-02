@@ -9,6 +9,7 @@ export const authConfig = {
           role: "ADMIN" | "MANAGER" | "AGENT";
           branchId: string | null;
           branchName: string | null;
+          authorizedBranchIds?: string[];
           photoUrl: string | null;
           canExport: boolean;
           canImport: boolean;
@@ -16,6 +17,7 @@ export const authConfig = {
         token.role = u.role;
         token.branchId = u.branchId;
         token.branchName = u.branchName;
+        token.authorizedBranchIds = u.authorizedBranchIds ?? [];
         token.photoUrl = u.photoUrl;
         token.canExport = u.canExport ?? false;
         token.canImport = u.canImport ?? false;
@@ -30,6 +32,7 @@ export const authConfig = {
         u.role = token.role;
         u.branchId = token.branchId;
         u.branchName = token.branchName;
+        u.authorizedBranchIds = (token.authorizedBranchIds as string[]) ?? [];
         u.photoUrl = token.photoUrl;
         u.canExport = token.canExport;
         u.canImport = token.canImport;

@@ -16,7 +16,9 @@ interface User {
   photoUrl: string | null;
   canExport: boolean;
   canImport: boolean;
-  branch: { name: string } | null;
+  branchId: string | null;
+  branch: { id: string; name: string } | null;
+  authorizedBranches?: { id: string; name: string }[];
   createdAt: string;
   _count?: {
     assignedCustomers: number;
@@ -64,7 +66,7 @@ export default function UsersSettingsPage() {
   const [formError, setFormError] = useState("");
   const [saving, setSaving] = useState(false);
   const [photoUploading, setPhotoUploading] = useState(false);
-  const [form, setForm] = useState({ name: "", email: "", password: "", role: "AGENT", branchId: "", phone: "", photoUrl: "", canExport: false, canImport: false });
+  const [form, setForm] = useState({ name: "", email: "", password: "", role: "AGENT", branchId: "", authorizedBranchIds: [] as string[], phone: "", photoUrl: "", canExport: false, canImport: false });
 
   useEffect(() => {
     Promise.all([
@@ -93,14 +95,14 @@ export default function UsersSettingsPage() {
 
   function openCreate() {
     setEditUser(null);
-    setForm({ name: "", email: "", password: "", role: "AGENT", branchId: "", phone: "", photoUrl: "", canExport: false, canImport: false });
+    setForm({ name: "", email: "", password: "", role: "AGENT", branchId: "", authorizedBranchIds: [], phone: "", photoUrl: "", canExport: false, canImport: false });
     setFormError("");
     setShowModal(true);
   }
 
   function openEdit(u: User) {
     setEditUser(u);
-    setForm({ name: u.name, email: u.email, password: "", role: u.role, branchId: "", phone: "", photoUrl: u.photoUrl || "", canExport: u.canExport, canImport: u.canImport });
+    setForm({ name: u.name, email: u.email, password: "", role: u.role, branchId: u.branchId || "", authorizedBranchIds: (u.authorizedBranches ?? []).map((b) => b.id), phone: "", photoUrl: u.photoUrl || "", canExport: u.canExport, canImport: u.canImport });
     setFormError("");
     setShowModal(true);
   }
@@ -115,6 +117,8 @@ export default function UsersSettingsPage() {
     if (form.phone) body.phone = form.phone;
     if (!editUser || form.password) body.password = form.password;
     body.photoUrl = form.photoUrl || null;
+    // Yetkili olduğu ek şubeler — ana şube zaten branchId, burada onun dışındakiler.
+    body.authorizedBranchIds = form.authorizedBranchIds.filter((id) => id !== form.branchId);
     // Yalnız ADMIN bu bayrakları göndermeli (API de filtreler ama UI'da da kısıtlayalım)
     if (sessionRole === "ADMIN") {
       body.canExport = form.canExport;
@@ -246,7 +250,19 @@ export default function UsersSettingsPage() {
                       {roleLabels[u.role]}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-sm text-on-surface-variant">{u.branch?.name || "-"}</td>
+                  <td className="px-6 py-4 text-sm text-on-surface-variant">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span>{u.branch?.name || "-"}</span>
+                      {(u.authorizedBranches?.length ?? 0) > 0 && (
+                        <span
+                          title={`Ek yetkili: ${u.authorizedBranches!.map((b) => b.name).join(", ")}`}
+                          className="text-[10px] px-2 py-0.5 rounded-md bg-primary-fixed text-primary font-bold"
+                        >
+                          +{u.authorizedBranches!.length} şube
+                        </span>
+                      )}
+                    </div>
+                  </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className={cn("text-[10px] px-2.5 py-1 rounded-lg font-bold uppercase",
@@ -395,13 +411,46 @@ export default function UsersSettingsPage() {
                     )}
                   </div>
                   <div>
-                    <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Şube</label>
+                    <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Ana Şube</label>
                     <select value={form.branchId} onChange={(e) => setForm({ ...form, branchId: e.target.value })} className={inputClass}>
                       <option value="">Seçiniz</option>
                       {branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
                     </select>
                   </div>
                 </div>
+
+                {/* Ek yetkili olduğu şubeler (multi-select) */}
+                {branches.length > 1 && (
+                  <div>
+                    <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Ek Yetkili Olduğu Şubeler</label>
+                    <p className="text-xs text-on-surface-variant mb-3">Ana şube dışında erişim/düzenleme yetkisi olan diğer şubeleri seçin. Yöneticiler/danışmanlar birden fazla şubeye atanabilir.</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {branches.filter((b) => b.id !== form.branchId).map((b) => {
+                        const checked = form.authorizedBranchIds.includes(b.id);
+                        return (
+                          <label key={b.id} className={cn(
+                            "flex items-center gap-2 p-3 rounded-xl border cursor-pointer transition-all",
+                            checked ? "bg-primary-fixed border-primary/30" : "bg-surface-container-low border-outline-variant/10 hover:bg-surface-container"
+                          )}>
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={(e) => {
+                                const next = e.target.checked
+                                  ? [...form.authorizedBranchIds, b.id]
+                                  : form.authorizedBranchIds.filter((id) => id !== b.id);
+                                setForm({ ...form, authorizedBranchIds: next });
+                              }}
+                              className="w-4 h-4 accent-primary"
+                            />
+                            <span className="text-sm font-medium text-on-surface">{b.name}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
                 <div>
                   <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Telefon</label>
                   <input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className={inputClass} />

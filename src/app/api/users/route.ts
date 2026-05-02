@@ -12,6 +12,7 @@ const userCreateSchema = z.object({
   password: z.string().min(6, "Şifre en az 6 karakter olmalı"),
   role: z.enum(["ADMIN", "MANAGER", "AGENT"]).default("AGENT"),
   branchId: z.string().optional(),
+  authorizedBranchIds: z.array(z.string()).optional(),
   phone: z.string().optional(),
   photoUrl: z.string().nullable().optional(),
 });
@@ -43,7 +44,9 @@ export async function GET() {
       photoUrl: true,
       canExport: true,
       canImport: true,
-      branch: { select: { name: true } },
+      branchId: true,
+      branch: { select: { id: true, name: true } },
+      authorizedBranches: { select: { id: true, name: true } },
       createdAt: true,
       _count: {
         select: {
@@ -109,12 +112,35 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Bu e-posta adresi zaten kullanılıyor" }, { status: 409 });
     }
 
-    const { password, ...rest } = parsed.data;
+    const { password, authorizedBranchIds, ...rest } = parsed.data;
     const passwordHash = await hash(password, 10);
 
+    // MANAGER yalnızca kendi şubesini ek yetki olarak verebilir
+    let authorizedIds = authorizedBranchIds ?? [];
+    if (sessionRole === "MANAGER") {
+      const managerBranchId = sessionUser.branchId as string | undefined;
+      if (managerBranchId) {
+        authorizedIds = authorizedIds.filter((id) => id === managerBranchId);
+      } else {
+        authorizedIds = [];
+      }
+    }
+
     const newUser = await prisma.user.create({
-      data: { ...rest, passwordHash },
-      select: { id: true, name: true, email: true, role: true, isActive: true, photoUrl: true, branch: { select: { name: true } }, createdAt: true },
+      data: {
+        ...rest,
+        passwordHash,
+        authorizedBranches: authorizedIds.length > 0
+          ? { connect: authorizedIds.map((id) => ({ id })) }
+          : undefined,
+      },
+      select: {
+        id: true, name: true, email: true, role: true, isActive: true, photoUrl: true,
+        branchId: true,
+        branch: { select: { id: true, name: true } },
+        authorizedBranches: { select: { id: true, name: true } },
+        createdAt: true,
+      },
     });
 
     return NextResponse.json(newUser, { status: 201 });

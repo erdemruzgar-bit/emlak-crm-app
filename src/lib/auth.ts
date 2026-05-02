@@ -18,7 +18,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         const user = await prisma.user.findUnique({
           where: { email: credentials.email as string },
-          include: { branch: true },
+          include: {
+            branch: true,
+            authorizedBranches: { select: { id: true } },
+          },
         });
 
         if (!user || !user.isActive) return null;
@@ -37,6 +40,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           role: user.role,
           branchId: user.branchId,
           branchName: user.branch?.name,
+          authorizedBranchIds: user.authorizedBranches.map((b) => b.id),
           photoUrl: user.photoUrl,
           canExport: user.canExport,
           canImport: user.canImport,

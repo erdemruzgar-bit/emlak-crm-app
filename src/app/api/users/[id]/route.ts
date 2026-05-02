@@ -12,6 +12,7 @@ const userUpdateSchema = z.object({
   password: z.string().min(6).optional(),
   role: z.enum(["ADMIN", "MANAGER", "AGENT"]).optional(),
   branchId: z.string().optional(),
+  authorizedBranchIds: z.array(z.string()).optional(),
   phone: z.string().optional(),
   isActive: z.boolean().optional(),
   photoUrl: z.string().nullable().optional(),
@@ -94,7 +95,7 @@ export async function PUT(
       }
     }
 
-    const { password, canExport, canImport, ...rest } = parsed.data;
+    const { password, canExport, canImport, authorizedBranchIds, ...rest } = parsed.data;
     const updateData: Record<string, unknown> = { ...rest };
     if (password) updateData.passwordHash = await hash(password, 10);
 
@@ -104,10 +105,29 @@ export async function PUT(
       if (canImport !== undefined) updateData.canImport = canImport;
     }
 
+    // Yetkili olduğu ek şubeler (M:M)
+    if (authorizedBranchIds !== undefined) {
+      let allowedIds = authorizedBranchIds;
+      // MANAGER yalnızca kendi şubesini ek yetki olarak verebilir
+      if (sessionRole === "MANAGER") {
+        const managerBranchId = sessionUser.branchId as string | undefined;
+        allowedIds = managerBranchId ? allowedIds.filter((id) => id === managerBranchId) : [];
+      }
+      updateData.authorizedBranches = {
+        set: allowedIds.map((bId) => ({ id: bId })),
+      };
+    }
+
     const user = await prisma.user.update({
       where: { id },
       data: updateData,
-      select: { id: true, name: true, email: true, role: true, isActive: true, photoUrl: true, canExport: true, canImport: true, branch: { select: { name: true } }, createdAt: true },
+      select: {
+        id: true, name: true, email: true, role: true, isActive: true, photoUrl: true, canExport: true, canImport: true,
+        branchId: true,
+        branch: { select: { id: true, name: true } },
+        authorizedBranches: { select: { id: true, name: true } },
+        createdAt: true,
+      },
     });
 
     return NextResponse.json(user);

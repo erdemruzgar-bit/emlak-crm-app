@@ -93,7 +93,7 @@ function PropertiesPageInner() {
   const [sortOrder, setSortOrder] = useState("desc");
   const [showFilters, setShowFilters] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const [viewMode, setViewMode] = useState<ViewMode>("compact");
 
   const activeFilterCount = [
     propertyType, status, minPrice, maxPrice, rooms, minArea, maxArea, city,

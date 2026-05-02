@@ -45,6 +45,12 @@ export async function GET() {
       canImport: true,
       branch: { select: { name: true } },
       createdAt: true,
+      _count: {
+        select: {
+          assignedCustomers: { where: { isAnonymized: false } },
+          assignedProperties: true,
+        },
+      },
     },
     orderBy: { createdAt: "desc" },
   });

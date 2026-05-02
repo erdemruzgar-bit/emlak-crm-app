@@ -17,6 +17,10 @@ interface User {
   canImport: boolean;
   branch: { name: string } | null;
   createdAt: string;
+  _count?: {
+    assignedCustomers: number;
+    assignedProperties: number;
+  };
 }
 
 interface Branch {
@@ -139,7 +143,17 @@ export default function UsersSettingsPage() {
   }
 
   async function deactivate(id: string) {
-    if (!confirm("Bu kullanıcıyı pasife almak istiyor musunuz?")) return;
+    const u = users.find((x) => x.id === id);
+    const c = u?._count?.assignedCustomers ?? 0;
+    const p = u?._count?.assignedProperties ?? 0;
+    let msg = "Bu kullanıcıyı pasife almak istiyor musunuz?";
+    if (c > 0 || p > 0) {
+      const parts: string[] = [];
+      if (c > 0) parts.push(`${c} müşteri`);
+      if (p > 0) parts.push(`${p} ilan`);
+      msg = `Bu kullanıcının üzerinde ${parts.join(" ve ")} atanmış durumda.\n\nKullanıcıyı pasife alırsanız bu kayıtlar başka bir danışmana devredilmediği sürece "yetkisiz danışmanda" görünür ve düzenlenemez.\n\nÖnce müşteri/ilanları başka danışmana atayın veya yine de devam edin.\n\nDevam edilsin mi?`;
+    }
+    if (!confirm(msg)) return;
     const res = await fetch(`/api/users/${id}`, { method: "DELETE" });
     const data = await res.json();
     if (res.ok) {
@@ -235,10 +249,21 @@ export default function UsersSettingsPage() {
                   </td>
                   <td className="px-6 py-4 text-sm text-on-surface-variant">{u.branch?.name || "-"}</td>
                   <td className="px-6 py-4">
-                    <span className={cn("text-[10px] px-2.5 py-1 rounded-lg font-bold uppercase",
-                      u.isActive ? "bg-green-100 text-green-700" : "bg-surface-container text-on-surface-variant")}>
-                      {u.isActive ? "Aktif" : "Pasif"}
-                    </span>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className={cn("text-[10px] px-2.5 py-1 rounded-lg font-bold uppercase",
+                        u.isActive ? "bg-green-100 text-green-700" : "bg-surface-container text-on-surface-variant")}>
+                        {u.isActive ? "Aktif" : "Pasif"}
+                      </span>
+                      {!u.isActive && ((u._count?.assignedCustomers ?? 0) > 0 || (u._count?.assignedProperties ?? 0) > 0) && (
+                        <span
+                          title={`${u._count?.assignedCustomers ?? 0} müşteri / ${u._count?.assignedProperties ?? 0} ilan üzerinde atanmış kalıyor — düzenlenemez. Lütfen başka bir danışmana devredin.`}
+                          className="text-[10px] px-2 py-1 rounded-lg font-bold uppercase bg-error-container text-on-error-container flex items-center gap-1"
+                        >
+                          <AlertCircle className="w-3 h-3" />
+                          {(u._count?.assignedCustomers ?? 0) + (u._count?.assignedProperties ?? 0)} yetkisiz
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">

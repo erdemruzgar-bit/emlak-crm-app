@@ -14,6 +14,8 @@ import {
   FileText,
   Download,
   Plus,
+  AlertTriangle,
+  CheckCircle,
 } from "lucide-react";
 import { motion } from "motion/react";
 import { DocumentUploader, DocumentItem } from "@/components/ui/document-uploader";
@@ -282,6 +284,31 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
           <Trash2 className="w-4 h-4" /> Sil
         </button>
       </div>
+
+      {/* DRAFT uyarı bandı: kullanıcıya net yönlendirme + ACTIVE'in etkilerini açıkla */}
+      {contract.status === "DRAFT" && (
+        <div className="bg-tertiary-fixed border border-tertiary/20 rounded-3xl p-5 flex items-start gap-4 flex-wrap">
+          <div className="w-10 h-10 rounded-2xl bg-tertiary/20 flex items-center justify-center text-tertiary shrink-0">
+            <AlertTriangle className="w-5 h-5" />
+          </div>
+          <div className="flex-1 min-w-[240px]">
+            <p className="text-sm font-black text-tertiary mb-1">Bu sözleşme henüz Taslak durumunda</p>
+            <p className="text-xs text-on-surface leading-relaxed">
+              <strong>Aktif Yap</strong> dediğinizde otomatik olarak:
+              {contract.contractType === "KIRA" && " ilan durumu Kiralandı, müşteri tipi Kiracı olur."}
+              {contract.contractType === "SATIS" && " ilan durumu Satıldı, müşteri tipi Ev Sahibi olur."}
+              {contract.contractType === "KOMISYON" && " sadece sözleşme aktive olur (ilan/müşteri durumu değişmez)."}
+            </p>
+          </div>
+          <button
+            onClick={() => changeStatus("ACTIVE")}
+            className="px-5 py-2.5 rounded-xl text-sm font-bold bg-tertiary text-on-tertiary hover:opacity-90 transition-all flex items-center gap-2 shadow-md"
+          >
+            <CheckCircle className="w-4 h-4" />
+            Aktif Yap
+          </button>
+        </div>
+      )}
 
       {/* Status */}
       <div className="bg-surface-container-lowest rounded-3xl p-5 shadow-[0_8px_24px_rgba(25,28,30,0.04)]">

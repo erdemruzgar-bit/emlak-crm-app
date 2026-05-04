@@ -22,6 +22,7 @@ import {
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
 import { formatPrice } from "./property-card";
+import { LinkifiedText } from "./linkified-text";
 
 interface PropertyDetailData {
   id: string;
@@ -266,9 +267,16 @@ export function PropertyDetail({ property, onClose }: PropertyDetailProps) {
                 exit={{ opacity: 0, y: -10 }}
                 className="space-y-6"
               >
-                <p className="text-sm text-on-surface-variant leading-relaxed font-medium">
-                  {property.description || "Açıklama bulunmuyor."}
-                </p>
+                {property.description ? (
+                  <LinkifiedText
+                    text={property.description}
+                    className="text-sm text-on-surface-variant leading-relaxed font-medium block"
+                  />
+                ) : (
+                  <p className="text-sm text-on-surface-variant leading-relaxed font-medium">
+                    Açıklama bulunmuyor.
+                  </p>
+                )}
 
                 <div className="grid grid-cols-2 gap-4">
                   {property.rooms && (

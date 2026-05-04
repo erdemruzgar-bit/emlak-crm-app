@@ -34,6 +34,7 @@ import {
 import { motion, AnimatePresence } from "motion/react";
 import { toast } from "sonner";
 import { useConfirm } from "@/components/ui/confirm-dialog";
+import { LinkifiedText } from "@/components/ui/linkified-text";
 import { cn } from "@/lib/utils";
 
 interface MatchEntry {
@@ -560,9 +561,10 @@ export default function PropertyDetailPage() {
               <h2 className="text-xl font-bold tracking-tight mb-4 text-on-surface border-l-4 border-primary pl-4">
                 Açıklama
               </h2>
-              <p className="text-on-surface-variant leading-relaxed whitespace-pre-line">
-                {property.description}
-              </p>
+              <LinkifiedText
+                text={property.description}
+                className="text-on-surface-variant leading-relaxed block"
+              />
             </section>
           )}
 

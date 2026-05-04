@@ -13,6 +13,7 @@ import {
 import { motion, AnimatePresence } from "motion/react";
 import { toast } from "sonner";
 import { useConfirm } from "@/components/ui/confirm-dialog";
+import { LinkifiedText } from "@/components/ui/linkified-text";
 import { cn } from "@/lib/utils";
 import { EditableText, EditableSelect, EditableTextarea } from "@/components/ui/editable-field";
 import { DEFAULT_CUSTOMER_TYPE_LABELS } from "@/lib/customer-type-styles";
@@ -915,7 +916,7 @@ export default function CustomerDetailPage() {
             ) : (
               customer.notes.map((note) => (
                 <div key={note.id} className="p-5 bg-surface-container-low rounded-2xl hover:bg-surface-container transition-all">
-                  <p className="text-sm text-on-surface">{note.content}</p>
+                  <LinkifiedText text={note.content} className="text-sm text-on-surface block" />
                   <p className="text-xs text-on-surface-variant mt-3">{note.user.name} - {new Date(note.createdAt).toLocaleString("tr-TR")}</p>
                 </div>
               ))

@@ -247,12 +247,21 @@ export default function NewPropertyPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">İlan Tipi <span className="text-error">*</span></label>
-              <select name="listingType" required className={inputClass} defaultValue="">
-                <option value="" disabled>Seçiniz</option>
+              <select name="listingType" required className={inputClass} defaultValue="" disabled={listingTypes.length === 0}>
+                <option value="" disabled>{listingTypes.length === 0 ? "Önce ilan tipi tanımlayın" : "Seçiniz"}</option>
                 {listingTypes.map((t) => (
                   <option key={t.code} value={t.code}>{t.label}</option>
                 ))}
               </select>
+              {listingTypes.length === 0 && (
+                <p className="text-[11px] text-error mt-1">
+                  Hiç ilan tipi tanımlı değil.{" "}
+                  <Link href="/settings/listing-types" className="font-bold underline hover:no-underline">
+                    Ayarlar → İlan Tipleri
+                  </Link>
+                  {" "}sayfasından ekleyin (örn. Satılık, Kiralık).
+                </p>
+              )}
             </div>
             <div>
               <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Fiyat (TL) <span className="text-error">*</span></label>

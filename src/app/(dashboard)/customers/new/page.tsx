@@ -164,12 +164,21 @@ export default function NewCustomerPage() {
             </div>
             <div>
               <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Müşteri Tipi <span className="text-error">*</span></label>
-              <select name="customerType" required className={inputClass} defaultValue="">
-                <option value="" disabled>Seçiniz</option>
+              <select name="customerType" required className={inputClass} defaultValue="" disabled={customerTypeOptions.length === 0}>
+                <option value="" disabled>{customerTypeOptions.length === 0 ? "Önce müşteri tipi tanımlayın" : "Seçiniz"}</option>
                 {customerTypeOptions.map((t) => (
                   <option key={t.code} value={t.code}>{t.label}</option>
                 ))}
               </select>
+              {customerTypeOptions.length === 0 && (
+                <p className="text-[11px] text-error mt-1">
+                  Hiç müşteri tipi tanımlı değil.{" "}
+                  <Link href="/settings/customer-types" className="font-bold underline hover:no-underline">
+                    Ayarlar → Müşteri Tipleri
+                  </Link>
+                  {" "}sayfasından ekleyin (örn. Alıcı, Satıcı).
+                </p>
+              )}
             </div>
           </div>
           <div>

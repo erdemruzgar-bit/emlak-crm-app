@@ -1,6 +1,6 @@
 "use client";
 
-import { MapPin, ArrowRight, Bookmark, Building2 } from "lucide-react";
+import { MapPin, ArrowRight, Bookmark, Building2, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
 
@@ -23,6 +23,8 @@ export interface PropertyCardData {
   block?: { id: string; name: string } | null;
   unitNumber?: string | null;
   occupancyStatus?: string | null;
+  isCitizenshipEligible?: boolean | null;
+  citizenshipPriceDiff?: number | null;
   _count?: { appointments: number };
 }
 
@@ -157,13 +159,24 @@ export function PropertyCard({
           </p>
         )}
 
-        <div className="flex justify-between items-center">
-          <span className="text-lg font-black text-primary">
-            {formatPrice(property.price, property.currency)}
-          </span>
+        <div className="flex justify-between items-end gap-3">
+          <div className="min-w-0 flex-1">
+            <span className="text-lg font-black text-primary block">
+              {formatPrice(property.price, property.currency)}
+            </span>
+            {property.isCitizenshipEligible && property.citizenshipPriceDiff != null && property.citizenshipPriceDiff > 0 && (
+              <span
+                className="mt-1 inline-flex items-center gap-1 text-[10px] font-bold text-tertiary bg-tertiary-fixed/60 px-2 py-1 rounded-md"
+                title="Vatandaşlığa uygun fiyatı (yabancıya satışta TR vatandaşlığı için)"
+              >
+                <Globe className="w-3 h-3" />
+                Vatandaşlık: {formatPrice(property.price + property.citizenshipPriceDiff, property.currency)}
+              </span>
+            )}
+          </div>
           <button
             className={cn(
-              "p-2 rounded-xl transition-all",
+              "p-2 rounded-xl transition-all shrink-0",
               isSelected
                 ? "bg-primary text-white"
                 : "bg-secondary-container text-on-secondary-container"

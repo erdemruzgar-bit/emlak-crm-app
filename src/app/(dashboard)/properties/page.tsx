@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   Search, SlidersHorizontal, Plus, LayoutGrid, List, Loader2, Home,
-  X, MapPin, DoorOpen, Maximize, ArrowUpDown, LayoutList, CalendarPlus, MessageSquare, Building2
+  X, MapPin, DoorOpen, Maximize, ArrowUpDown, LayoutList, CalendarPlus, MessageSquare, Building2, Globe
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { PropertyCard, type PropertyCardData, formatPrice } from "@/components/ui/property-card";
@@ -488,7 +488,15 @@ function PropertiesPageInner() {
                       <td className="px-4 py-4 text-sm text-on-surface-variant">
                         {listingLabels[p.listingType]} · {propertyTypeLabels[p.propertyType]}
                       </td>
-                      <td className="px-4 py-4 text-sm font-bold text-on-surface">{formatPrice(p.price, p.currency)}</td>
+                      <td className="px-4 py-4 text-sm font-bold text-on-surface">
+                        <div>{formatPrice(p.price, p.currency)}</div>
+                        {p.isCitizenshipEligible && p.citizenshipPriceDiff != null && p.citizenshipPriceDiff > 0 && (
+                          <div className="text-[10px] font-bold text-tertiary mt-0.5 flex items-center gap-1" title="Vatandaşlığa uygun fiyatı">
+                            <Globe className="w-3 h-3" />
+                            {formatPrice(p.price + p.citizenshipPriceDiff, p.currency)}
+                          </div>
+                        )}
+                      </td>
                       <td className="px-4 py-4 text-sm text-on-surface-variant">
                         <span className="flex items-center gap-1">
                           <MapPin className="w-3 h-3 text-primary" />
@@ -579,6 +587,12 @@ function CompactCard({ property: p, isSelected, onClick, onDoubleClick }: {
       <div className="p-3">
         <p className="text-xs font-bold text-on-surface truncate group-hover:text-primary transition-colors">{p.title}</p>
         <p className="text-[10px] font-black text-primary mt-1">{formatPrice(p.price, p.currency)}</p>
+        {p.isCitizenshipEligible && p.citizenshipPriceDiff != null && p.citizenshipPriceDiff > 0 && (
+          <p className="text-[9px] font-bold text-tertiary mt-0.5 flex items-center gap-0.5" title="Vatandaşlığa uygun fiyatı">
+            <Globe className="w-2.5 h-2.5" />
+            {formatPrice(p.price + p.citizenshipPriceDiff, p.currency)}
+          </p>
+        )}
         <div className="flex items-center gap-2 mt-1.5 text-[9px] text-on-surface-variant">
           {p.rooms && (
             <span className="flex items-center gap-0.5">

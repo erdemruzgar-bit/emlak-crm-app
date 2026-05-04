@@ -73,7 +73,15 @@ export async function GET(req: NextRequest) {
   if (isCitizenshipEligible === "true") where.isCitizenshipEligible = true;
   else if (isCitizenshipEligible === "false") where.isCitizenshipEligible = false;
   if (assignedAgentId) where.assignedAgentId = assignedAgentId;
-  if (branchId) where.branchId = branchId;
+  // GÜVENLIK: branchId query param ile AGENT'ın şube izolasyonu bypass edilemez.
+  // ADMIN ve MANAGER tüm şubeleri filtreleyebilir; AGENT sadece yetkili olduğu şubeler.
+  if (branchId) {
+    if (actor && (actor.role === "ADMIN" || actor.role === "MANAGER" || actor.branchIds.includes(branchId))) {
+      where.branchId = branchId;
+    }
+    // Aksi halde branchId filtresi sessizce yoksayılır — propertyListFilter()
+    // ile gelen { branchId: { in: actor.branchIds } } izolasyonu korunur.
+  }
 
   const sortBy = searchParams.get("sortBy") || "createdAt";
   const sortOrder = (searchParams.get("sortOrder") || "desc") as "asc" | "desc";

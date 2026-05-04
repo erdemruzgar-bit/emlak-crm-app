@@ -13,12 +13,22 @@
 // (isDone=false) bir reminder varsa yeniden oluşturulmaz.
 
 import { NextRequest, NextResponse } from "next/server";
+import { timingSafeEqual } from "node:crypto";
 import { prisma } from "@/lib/prisma";
+
+function safeEqual(a: string, b: string): boolean {
+  const ab = Buffer.from(a);
+  const bb = Buffer.from(b);
+  // Eşit uzunluk değilse timingSafeEqual hata atar; önce uzunluk kontrol
+  if (ab.length !== bb.length) return false;
+  return timingSafeEqual(ab, bb);
+}
 
 export async function POST(req: NextRequest) {
   const secret = process.env.CRON_SECRET;
-  const authHeader = req.headers.get("authorization");
-  if (!secret || authHeader !== `Bearer ${secret}`) {
+  const authHeader = req.headers.get("authorization") || "";
+  const expected = `Bearer ${secret ?? ""}`;
+  if (!secret || !safeEqual(authHeader, expected)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

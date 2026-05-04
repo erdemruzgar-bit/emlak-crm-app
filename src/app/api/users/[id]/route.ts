@@ -9,7 +9,7 @@ const ROLE_RANK: Record<string, number> = { ADMIN: 3, MANAGER: 2, AGENT: 1 };
 const userUpdateSchema = z.object({
   name: z.string().min(2).optional(),
   email: z.email().optional(),
-  password: z.string().min(6).optional(),
+  password: z.string().min(8, "Şifre en az 8 karakter olmalı").optional(),
   role: z.enum(["ADMIN", "MANAGER", "AGENT"]).optional(),
   branchId: z.string().optional(),
   authorizedBranchIds: z.array(z.string()).optional(),

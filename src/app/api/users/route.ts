@@ -9,7 +9,7 @@ const ROLE_RANK: Record<string, number> = { ADMIN: 3, MANAGER: 2, AGENT: 1 };
 const userCreateSchema = z.object({
   name: z.string().min(2),
   email: z.email(),
-  password: z.string().min(6, "Şifre en az 6 karakter olmalı"),
+  password: z.string().min(8, "Şifre en az 8 karakter olmalı"),
   role: z.enum(["ADMIN", "MANAGER", "AGENT"]).default("AGENT"),
   branchId: z.string().optional(),
   authorizedBranchIds: z.array(z.string()).optional(),

@@ -30,8 +30,11 @@ export async function GET() {
     agentFilter.assignedAgentId = user.id;
     branchFilter.assignedAgentId = user.id;
   } else if (user.role === "MANAGER") {
-    agentFilter.branchId = user.branchId;
-    branchFilter.branchId = user.branchId;
+    const authorizedBranchIds = Array.isArray(user.authorizedBranchIds) ? (user.authorizedBranchIds as string[]) : [];
+    const managerBranchIds = [user.branchId as string | null, ...authorizedBranchIds].filter((b): b is string => typeof b === "string" && b.length > 0);
+    const branchClause = managerBranchIds.length > 0 ? { in: managerBranchIds } : "__no_branch__";
+    agentFilter.branchId = branchClause;
+    branchFilter.branchId = branchClause;
   }
 
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);

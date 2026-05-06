@@ -39,9 +39,9 @@ export async function GET(req: NextRequest) {
     where.startedAt = range;
   }
 
-  // MANAGER yalnızca kendi şubesindeki kullanıcıların kayıtlarını görür
+  // MANAGER yalnızca yetkili olduğu şubelerdeki kullanıcıların kayıtlarını görür
   if (actor.role === "MANAGER") {
-    where.user = { branchId: actor.branchId ?? "__no_branch__" };
+    where.user = { branchId: actor.branchIds.length > 0 ? { in: actor.branchIds } : "__no_branch__" };
   }
 
   const [items, total, summary] = await Promise.all([

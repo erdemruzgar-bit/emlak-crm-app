@@ -30,7 +30,9 @@ export async function GET() {
 
   const where: Record<string, unknown> = {};
   if (sessionUser.role === "MANAGER") {
-    where.branchId = sessionUser.branchId;
+    const authorizedBranchIds = Array.isArray(sessionUser.authorizedBranchIds) ? (sessionUser.authorizedBranchIds as string[]) : [];
+    const managerBranchIds = [sessionUser.branchId as string | null, ...authorizedBranchIds].filter((b): b is string => typeof b === "string" && b.length > 0);
+    where.branchId = managerBranchIds.length > 0 ? { in: managerBranchIds } : "__no_branch__";
   }
 
   const users = await prisma.user.findMany({

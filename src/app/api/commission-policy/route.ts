@@ -79,8 +79,8 @@ export async function PUT(req: NextRequest) {
   if (!branchId && actor.role !== "ADMIN") {
     return NextResponse.json({ error: "Yalnızca ADMIN şirket genelini değiştirebilir" }, { status: 403 });
   }
-  if (branchId && actor.role === "MANAGER" && actor.branchId !== branchId) {
-    return NextResponse.json({ error: "Yalnızca kendi şubenizin politikasını güncelleyebilirsiniz" }, { status: 403 });
+  if (branchId && actor.role === "MANAGER" && !actor.branchIds.includes(branchId)) {
+    return NextResponse.json({ error: "Yalnızca yetkili olduğunuz şubelerin politikasını güncelleyebilirsiniz" }, { status: 403 });
   }
   if (branchId && actor.role === "AGENT") {
     return NextResponse.json({ error: "Yetki yok" }, { status: 403 });
@@ -126,7 +126,7 @@ export async function DELETE(req: NextRequest) {
   if (!branchId) {
     return NextResponse.json({ error: "Şirket geneli silinemez" }, { status: 400 });
   }
-  if (actor.role !== "ADMIN" && !(actor.role === "MANAGER" && actor.branchId === branchId)) {
+  if (actor.role !== "ADMIN" && !(actor.role === "MANAGER" && actor.branchIds.includes(branchId))) {
     return NextResponse.json({ error: "Yetki yok" }, { status: 403 });
   }
 

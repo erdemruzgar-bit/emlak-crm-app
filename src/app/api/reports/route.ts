@@ -13,15 +13,22 @@ export async function GET() {
   const user = session.user as unknown as Record<string, unknown>;
   const now = new Date();
 
+  const authorizedBranchIds = Array.isArray(user.authorizedBranchIds) ? (user.authorizedBranchIds as string[]) : [];
+  const managerBranchIds =
+    user.role === "MANAGER"
+      ? [user.branchId as string | null, ...authorizedBranchIds].filter((b): b is string => typeof b === "string" && b.length > 0)
+      : [];
+  const managerBranchClause = managerBranchIds.length > 0 ? { in: managerBranchIds } : "__no_branch__";
+
   // Property tabanlı sayım için (adet) — eski davranışla uyumlu
   const branchFilter: Record<string, unknown> = {};
-  if (user.role === "MANAGER") branchFilter.branchId = user.branchId;
+  if (user.role === "MANAGER") branchFilter.branchId = managerBranchClause;
   else if (user.role === "AGENT") branchFilter.assignedAgentId = user.id;
 
   // Contract tabanlı ciro hesabı için ayrı filtre
   // (Contract.assignedAgentId yok; AGENT için createdById ile filtrelenir)
   const contractBranchFilter: Record<string, unknown> = {};
-  if (user.role === "MANAGER") contractBranchFilter.branchId = user.branchId;
+  if (user.role === "MANAGER") contractBranchFilter.branchId = managerBranchClause;
   else if (user.role === "AGENT") contractBranchFilter.createdById = user.id;
 
   try {
@@ -65,7 +72,7 @@ export async function GET() {
 
     // Danışman performansı — adet + ciro
     const agents = await prisma.user.findMany({
-      where: { role: { in: ["AGENT", "MANAGER"] }, isActive: true, ...(user.role === "MANAGER" ? { branchId: user.branchId as string } : {}) },
+      where: { role: { in: ["AGENT", "MANAGER"] }, isActive: true, ...(user.role === "MANAGER" ? { branchId: managerBranchClause } : {}) },
       select: { id: true, name: true },
     });
 

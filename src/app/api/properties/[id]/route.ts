@@ -97,8 +97,8 @@ export async function PUT(
         if (!newAgent || !newAgent.isActive) {
           return NextResponse.json({ error: "Seçilen danışman geçersiz" }, { status: 400 });
         }
-        if (actor?.role === "MANAGER" && newAgent.branchId !== actor.branchId) {
-          return NextResponse.json({ error: "Yalnızca kendi şubenizdeki danışmana atayabilirsiniz" }, { status: 403 });
+        if (actor?.role === "MANAGER" && (!newAgent.branchId || !actor.branchIds.includes(newAgent.branchId))) {
+          return NextResponse.json({ error: "Yalnızca yetkili olduğunuz şubelerdeki danışmana atayabilirsiniz" }, { status: 403 });
         }
       }
     }

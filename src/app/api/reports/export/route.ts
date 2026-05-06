@@ -21,8 +21,11 @@ export async function GET(_req: NextRequest) {
   }
 
   const now = new Date();
+  const managerBranchClause = actor.role === "MANAGER"
+    ? (actor.branchIds.length > 0 ? { in: actor.branchIds } : "__no_branch__")
+    : null;
   const branchFilter: Record<string, unknown> = {};
-  if (actor.role === "MANAGER") branchFilter.branchId = actor.branchId;
+  if (actor.role === "MANAGER") branchFilter.branchId = managerBranchClause;
   else if (actor.role === "AGENT") branchFilter.assignedAgentId = actor.id;
 
   // Monthly
@@ -39,7 +42,7 @@ export async function GET(_req: NextRequest) {
 
   // Agents
   const agents = await prisma.user.findMany({
-    where: { role: { in: ["AGENT", "MANAGER"] }, isActive: true, ...(actor.role === "MANAGER" ? { branchId: actor.branchId ?? "__none__" } : {}) },
+    where: { role: { in: ["AGENT", "MANAGER"] }, isActive: true, ...(actor.role === "MANAGER" ? { branchId: managerBranchClause ?? "__none__" } : {}) },
     select: { id: true, name: true },
   });
   const agentPerformance: AgentRow[] = await Promise.all(agents.map(async (agent) => {

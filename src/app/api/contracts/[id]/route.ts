@@ -31,7 +31,7 @@ function canAccessContract(
   if (!actor) return false;
   if (actor.role === "ADMIN") return true;
   if (actor.role === "MANAGER") {
-    return !!actor.branchId && actor.branchId === contract.branchId;
+    return !!contract.branchId && actor.branchIds.includes(contract.branchId);
   }
   return contract.createdById === actor.id;
 }

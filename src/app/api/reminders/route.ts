@@ -38,8 +38,8 @@ export async function GET(req: NextRequest) {
     if (actor.role === "ADMIN") {
       // tümü
     } else if (actor.role === "MANAGER") {
-      // kendi şubesinin kullanıcıları
-      where.user = { branchId: actor.branchId ?? "__no_branch__" };
+      // yetkili olduğu şubelerin kullanıcıları (ana + ek)
+      where.user = { branchId: actor.branchIds.length > 0 ? { in: actor.branchIds } : "__no_branch__" };
     } else {
       where.userId = actor.id;
     }

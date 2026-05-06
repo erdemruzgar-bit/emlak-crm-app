@@ -269,11 +269,15 @@ export default function PropertyDetailPage() {
     reloadMatches();
   }
 
-  const sessionUser = session?.user as unknown as { id?: string; role?: string; branchId?: string | null } | undefined;
+  const sessionUser = session?.user as unknown as { id?: string; role?: string; branchId?: string | null; authorizedBranchIds?: string[] } | undefined;
   const canEdit = useMemo(() => {
     if (!sessionUser || !property) return false;
     if (sessionUser.role === "ADMIN") return true;
-    if (sessionUser.role === "MANAGER") return sessionUser.branchId === property.branchId;
+    if (sessionUser.role === "MANAGER") {
+      if (!property.branchId) return false;
+      const branchIds = [sessionUser.branchId, ...(sessionUser.authorizedBranchIds ?? [])].filter((b): b is string => Boolean(b));
+      return branchIds.includes(property.branchId);
+    }
     return property.assignedAgentId === sessionUser.id;
   }, [sessionUser, property]);
   const canDelete = sessionUser?.role === "ADMIN";

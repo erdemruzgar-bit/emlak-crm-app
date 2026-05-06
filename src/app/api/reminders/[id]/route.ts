@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
-import { extractActor } from "@/lib/rbac";
+import { extractActor, type SessionActor } from "@/lib/rbac";
 import { z } from "zod/v4";
 
 const reminderUpdateSchema = z.object({
@@ -12,13 +12,13 @@ const reminderUpdateSchema = z.object({
   isDone: z.boolean().optional(),
 });
 
-async function canAccess(actor: { id: string; role: string; branchId: string | null } | null, reminderUserId: string) {
+async function canAccess(actor: SessionActor | null, reminderUserId: string) {
   if (!actor) return false;
   if (actor.role === "ADMIN") return true;
   if (reminderUserId === actor.id) return true;
   if (actor.role === "MANAGER") {
     const user = await prisma.user.findUnique({ where: { id: reminderUserId }, select: { branchId: true } });
-    return !!actor.branchId && user?.branchId === actor.branchId;
+    return !!user?.branchId && actor.branchIds.includes(user.branchId);
   }
   return false;
 }

@@ -30,10 +30,10 @@ export async function GET(
       return NextResponse.json({ error: "Eklenti bulunamadı" }, { status: 404 });
     }
 
-    // Erişim: ADMIN, aynı şube MANAGER, oluşturan, yükleyen
+    // Erişim: ADMIN, yetkili şubelerden MANAGER, oluşturan, yükleyen
     const canAccess =
       actor.role === "ADMIN" ||
-      (actor.role === "MANAGER" && actor.branchId === attachment.contract.branchId) ||
+      (actor.role === "MANAGER" && !!attachment.contract.branchId && actor.branchIds.includes(attachment.contract.branchId)) ||
       attachment.contract.createdById === actor.id ||
       attachment.uploadedById === actor.id;
 

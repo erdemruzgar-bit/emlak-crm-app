@@ -50,7 +50,7 @@ export async function POST(
     // Erişim kontrolü: ADMIN/MANAGER şube veya oluşturan
     const canAccess =
       actor.role === "ADMIN" ||
-      (actor.role === "MANAGER" && actor.branchId === contract.branchId) ||
+      (actor.role === "MANAGER" && !!contract.branchId && actor.branchIds.includes(contract.branchId)) ||
       contract.createdById === actor.id;
 
     if (!canAccess) {

@@ -31,7 +31,7 @@ export async function DELETE(
 
     const canAccess =
       actor.role === "ADMIN" ||
-      (actor.role === "MANAGER" && actor.branchId === attachment.contract.branchId) ||
+      (actor.role === "MANAGER" && !!attachment.contract.branchId && actor.branchIds.includes(attachment.contract.branchId)) ||
       attachment.contract.createdById === actor.id ||
       attachment.uploadedById === actor.id;
 

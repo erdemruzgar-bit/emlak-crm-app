@@ -42,7 +42,7 @@ export const propertyCreateSchema = z.object({
 
   // Sakin / vatandaşlık / kullanım
   occupancyStatus: z
-    .enum(["SAHIBI_OTURUYOR", "KIRACILI", "BOS", "ARSIV"])
+    .enum(["SAHIBI_OTURUYOR", "KIRACILI", "BOS", "KAPORA_ALINDI", "SOZLESME_ALINDI", "ARSIV"])
     .nullable()
     .optional(),
   // VATANDASLIGA_UYGUN deprecated; mevcut payload'larda hâlâ gelirse geriye dönük kabul edilir,

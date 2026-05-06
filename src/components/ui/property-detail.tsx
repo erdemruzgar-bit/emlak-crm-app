@@ -93,6 +93,8 @@ const occupancyLabels: Record<string, string> = {
   SAHIBI_OTURUYOR: "Sahibi Oturuyor",
   KIRACILI: "Kiracılı",
   BOS: "Boş",
+  KAPORA_ALINDI: "Kapora Alındı",
+  SOZLESME_ALINDI: "Sözleşme Alındı",
   ARSIV: "Arşiv",
 };
 

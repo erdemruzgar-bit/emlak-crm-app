@@ -463,6 +463,8 @@ export default function NewPropertyPage() {
                 <option value="SAHIBI_OTURUYOR">Sahibi Oturuyor</option>
                 <option value="KIRACILI">Kiracılı</option>
                 <option value="BOS">Boş</option>
+                <option value="KAPORA_ALINDI">Kapora Alındı</option>
+                <option value="SOZLESME_ALINDI">Sözleşme Alındı</option>
                 <option value="ARSIV">Arşiv</option>
               </select>
             </div>

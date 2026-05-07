@@ -5,6 +5,7 @@ import { createAuditLog } from "@/lib/audit";
 import { propertyUpdateSchema } from "@/lib/validations/property";
 import { runPropertyMatching } from "@/lib/matching";
 import { canEditProperty, canViewProperty, extractActor } from "@/lib/rbac";
+import { applyAccessMask } from "@/lib/access-control";
 
 export async function GET(
   _req: NextRequest,
@@ -23,7 +24,18 @@ export async function GET(
       include: {
         images: { orderBy: { order: "asc" } },
         assignedAgent: { select: { name: true } },
-        owner: { select: { id: true, firstName: true, lastName: true, phone: true, email: true } },
+        owner: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            phone: true,
+            altPhone: true,
+            email: true,
+            tcKimlikNo: true,
+            createdById: true,
+          },
+        },
         branch: { select: { name: true } },
         project: { select: { id: true, name: true } },
         block: { select: { id: true, name: true } },
@@ -42,7 +54,22 @@ export async function GET(
       return NextResponse.json({ error: "Bu ilanı görüntüleme yetkiniz yok" }, { status: 403 });
     }
 
-    return NextResponse.json(property);
+    // KVKK: AGENT için kendi eklemediği müşterinin telefon/email'i maskelenir.
+    let maskedOwner = property.owner;
+    let ownerSensitiveGated = false;
+    if (property.owner) {
+      const m = applyAccessMask(property.owner, actor);
+      ownerSensitiveGated = m.sensitiveGated;
+      maskedOwner = {
+        ...property.owner,
+        phone: m.phone,
+        email: m.email,
+        altPhone: m.sensitiveGated ? null : property.owner.altPhone,
+        tcKimlikNo: m.tcKimlikNo,
+      };
+    }
+
+    return NextResponse.json({ ...property, owner: maskedOwner, ownerSensitiveGated });
   } catch {
     return NextResponse.json({ error: "Sunucu hatası" }, { status: 500 });
   }

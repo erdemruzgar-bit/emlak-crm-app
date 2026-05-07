@@ -155,7 +155,12 @@ export default function ProjectsSettingsPage() {
           </div>
           <div>
             <h1 className="text-2xl font-black tracking-tight text-on-surface">Projeler ve Bloklar</h1>
-            <p className="text-sm text-on-surface-variant">Toplu konut projelerini ve bloklarını yönet</p>
+            <p className="text-sm text-on-surface-variant">
+              Toplu konut projelerini ve bloklarını yönet · Günlük operasyon için{" "}
+              <a href="/projects" className="text-primary font-bold hover:underline">
+                Projeler modülü
+              </a>
+            </p>
           </div>
         </div>
         <button

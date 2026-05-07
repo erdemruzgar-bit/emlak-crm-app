@@ -94,14 +94,20 @@ Müşteri detay sayfasında **Bilgiler** sekmesine girin → **Düzenle** → en
 ![Yeni ilan](docs/screenshots/07-property-new.png)
 
 ### 2.2 İlan Durumu Güncelleme
-İlan detay sayfasından durumu değiştirebilirsiniz:
-- **Aktif** → Satışa/kiraya hazır
-- **Satıldı** → Satış tamamlandı
-- **Kiralandı** → Kira sözleşmesi yapıldı
-- **Pasif** → Görünürlükten kaldırıldı
-- **Arşiv** → Geçmiş kayıt
+İlan detay sayfasından **iki ayrı durumu** yönetirsiniz:
 
-> İlan tipleri katalogu **Ayarlar → İlan Tipleri** üzerinden yönetilebilir; yeni tip ekleyebilirsiniz.
+**İlan Durumu (sistem)** — sözleşme veya manuel güncellemeyle değişir:
+- **Aktif** → Satışa/kiraya hazır
+- **Satıldı** → Satış sözleşmesi imzalandı
+- **Kiralandı** → Kira sözleşmesi imzalandı
+- **Pasif** → Görünürlükten kaldırıldı
+
+**Sakin Durumu (operasyonel)** — günlük süreci yansıtır, **Ayarlar → Sakin Durumları** üzerinden katalog büyütülür:
+- **Sahibi Oturuyor / Kiracılı / Boş** → mülkün fiili kullanım durumu
+- **Kapora Alındı / Sözleşme Alındı** → satış sürecindeki ara aşamalar
+- **Arşiv** → süreç dışı bırakılan kayıt
+
+> İlan ve sakin durumu kataloglarının ikisi de **Ayarlar** altından genişletilebilir; yeni durum ekleyince formdaki dropdown otomatik güncellenir.
 
 ### 2.3 Proje / Blok Yönetimi (Toplu Konut)
 **Ayarlar → Projeler** sayfasında:
@@ -232,7 +238,7 @@ Sol menüden **Ayarlar → Kullanıcılar**:
 ### 10.1 Yeni Çalışan Ekleme
 1. **Yeni Kullanıcı** butonuna basın.
 2. **Fotoğraf yükle** — Çalışanın kim olduğunun kolayca görünmesi için önerilir.
-3. Ad, e-posta, şifre (en az 6 karakter), rol, şube girin.
+3. Ad, e-posta, şifre (en az 8 karakter), rol, ana şube ve ek yetkili şubeler girin.
 4. **Rol seçimi:**
    - **Yönetici (ADMIN):** Tüm sisteme erişim
    - **Şube Müdürü (MANAGER):** Yalnızca kendi şubesi
@@ -311,7 +317,8 @@ Sistem genelinde dropdown'larda kullanılan katalog değerleri:
 | Katalog | Konum | Örnek |
 |---------|-------|-------|
 | **Müşteri Tipleri** | Ayarlar → Müşteri Tipleri | Alıcı, Satıcı, Kiracı, Ev Sahibi |
-| **İlan Tipleri** | Ayarlar → İlan Tipleri | Satılık, Kiralık, Devren, Arşiv |
+| **İlan Tipleri** | Ayarlar → İlan Tipleri | Satılık, Kiralık, Devren Kiralık, Devren Satılık, Arşiv |
+| **Sakin Durumları** | Ayarlar → Sakin Durumları | Sahibi Oturuyor, Kiracılı, Boş, Kapora Alındı, Sözleşme Alındı, Arşiv |
 | **Oda Tipleri** | Ayarlar → Oda Tipleri | 1+0, 1+1, 2+1, 3+1, 4+1 |
 | **Komisyon Politikası** | Ayarlar → Komisyon | Şirket %, danışman %, ko-broker % |
 
@@ -328,12 +335,14 @@ Sistem 3 rol, iki farklı veri kapsamı ile çalışır:
 | **Müşteri** (liste + detay) | Tümü görünür (hassas alanlar maskeli) | Tümü açık | Tümü açık |
 | **Müşteri düzenleme** | Sadece kendisine atanmış | Herhangi müşteri | Tümü |
 | **Müşteri hassas veri** | Sadece kendi eklediği müşteri açık; diğerlerinde gerekçe modalı | Tümü açık | Tümü açık |
-| **İlan** (liste + detay) | Sadece kendi şubesinin ilanları | Tüm şubeler görünür | Tümü |
-| **İlan düzenleme** | Kendine atanmış ilan | Şubesindeki tüm ilanlar | Tümü |
-| **Randevu / Görev** | Kendi kayıtları | Şubesindeki tüm kayıtlar | Tümü |
-| **Sözleşme oluşturma** | Kendi müşteri/ilanları | Şubesi | Tümü |
-| **Erişim Logları** | ❌ | Şube içi | Tümü |
+| **İlan** (liste + detay) | Yetkili olduğu şubelerin ilanları (ana + ek) | Tüm şubeler görünür | Tümü |
+| **İlan düzenleme** | Kendine atanmış ilan | Yetkili olduğu şubelerin tüm ilanları (ana + ek) | Tümü |
+| **Randevu / Görev** | Kendi kayıtları | Yetkili şubelerindeki tüm kayıtlar | Tümü |
+| **Sözleşme oluşturma** | Kendi müşteri/ilanları | Yetkili olduğu şubeler | Tümü |
+| **Erişim Logları** | ❌ | Yetkili şubeleri içi | Tümü |
 | **Excel İzinleri** | İzni varsa | İzni varsa | Tümü |
+
+> **Ek Yetkili Şubeler:** Bir kullanıcının ana şubesinin yanında **ek yetkili şubeler** atanabilir (Ayarlar → Kullanıcılar → Düzenle → "Ek Yetkili Olduğu Şubeler"). Bu liste hem MANAGER hem AGENT için geçerlidir; düzenleme/erişim yetkisi ana şube + ek şubeleri kapsar.
 
 İzinsiz düzenleme denemeleri otomatik olarak **Denetim Kayıtları**'na (`DENIED_EDIT` olarak) düşer.
 

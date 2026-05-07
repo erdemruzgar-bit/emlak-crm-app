@@ -16,8 +16,10 @@ title: "ART CRM — Hızlı Başlangıç"
 | Rol | Görür | Düzenler |
 |-----|-------|----------|
 | **Yönetici (ADMIN)** | Her şey | Her şey |
-| **Şube Müdürü (MANAGER)** | Tüm şubeler | Kendi şubesi |
-| **Danışman (AGENT)** | Tüm müşteriler (telefon/email maskeli) + kendi şubesinin ilanları | Kendine atanmış kayıtlar |
+| **Şube Müdürü (MANAGER)** | Tüm şubeler | Yetkili olduğu şubeler (ana + ek) |
+| **Danışman (AGENT)** | Tüm müşteriler (telefon/email maskeli) + yetkili olduğu şubelerin ilanları | Kendine atanmış kayıtlar |
+
+> **Ek Yetkili Şubeler:** Bir kullanıcı ana şubesi dışında başka şubelerde de yetkilendirilebilir (Ayarlar → Kullanıcılar → Düzenle → "Ek Yetkili Olduğu Şubeler"). Düzenleme/erişim yetkisi otomatik genişler.
 
 > **AGENT için KVKK kuralı:** Başka birinin eklediği müşterinin telefonuna bakmak için **gerekçe** vermek zorunda; sayfadan çıkarken **sonuç notu** yazmadan ayrılamaz.
 
@@ -88,7 +90,7 @@ Kendinin eklemediği müşterinin **telefon/e-posta/TC** alanları maskelidir (`
 | "Düzenle" yok | Müşteri/ilan size atanmamış. Müdür/yönetici düzenler |
 | Excel butonu yok | ADMIN'den `canExport`/`canImport` izni isteyin |
 | Sözleşme kaydedildi ama ilan değişmedi | Sözleşme **Taslak** kalmış olabilir; detayında **Aktif** yapın |
-| İlan diğer şubelerden görünmüyor | AGENT sadece kendi şubesinin ilanlarını görür (kasıtlı) |
+| İlan diğer şubelerden görünmüyor | AGENT yalnızca yetkili olduğu şubelerin ilanlarını görür; başka şubeye erişim için ADMIN/MANAGER "Ek Yetkili Olduğu Şubeler"e ekler |
 | Şifre sıfırlama | ADMIN/MANAGER → Ayarlar → Kullanıcılar → kalem → şifre alanını yeniden gir |
 
 ---

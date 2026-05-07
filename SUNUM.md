@@ -43,7 +43,7 @@ ART CRM, bu sorunların hepsini çözer.
 | **Raporlama** | Dashboard, aylık trendler, danışman performansı, kaynak analizi, ciro raporları |
 | **Hassas Veri Erişim Denetimi (KVKK)** | Telefon/email/TC maskeleme + gerekçeli açma + sonuç notu zorunluluğu |
 | **Kullanıcı Yönetimi** | 3 seviyeli rol, fotoğraflı profil, Excel izinleri, aktif/pasif toggle |
-| **Katalog Yönetimi** | Müşteri tipi, ilan tipi, oda tipi, komisyon politikası — UI'dan düzenlenir |
+| **Katalog Yönetimi** | Müşteri tipi, ilan tipi, sakin durumu, oda tipi, komisyon politikası — UI'dan düzenlenir |
 
 ## Faz 2 — Yakında
 
@@ -241,10 +241,12 @@ Standart denetim kayıtlarının ötesinde, **AGENT** (danışman) rolü için a
 | Rol | Kapsam |
 |-----|--------|
 | **Yönetici (ADMIN)** | Tüm sistem, kullanıcı yönetimi, denetim ve erişim logları |
-| **Şube Müdürü (MANAGER)** | Kendi şubesindeki tüm müşteri/ilanlar, danışman atama, şube içi erişim logları |
-| **Danışman (AGENT)** | Tüm müşterileri görür (hassas veri maskeli), kendi şubesinin ilanları, atanmış kayıtlarını düzenler |
+| **Şube Müdürü (MANAGER)** | Yetkili olduğu şubelerdeki (ana + ek) tüm müşteri/ilanlar, danışman atama, şube içi erişim logları |
+| **Danışman (AGENT)** | Tüm müşterileri görür (hassas veri maskeli), yetkili olduğu şubelerin ilanları, atanmış kayıtlarını düzenler |
 
-Bu sayede danışmanlar başka danışmanın müşterisine dokunamaz, şube müdürleri başka şubenin verilerini düzenleyemez, hassas veri sorumluluğu kayıtlı kalır.
+**Ek Yetkili Şubeler:** Tek bir kullanıcıya ana şube dışında birden fazla şube yetkisi tanınabilir. Bu, çok şubeli ofislerde "Kadıköy + Beşiktaş'a bakan müdür" senaryosunu doğal kurgular — sistem şube izolasyonunu otomatik korur, başka şubelere yanlışlıkla bile dokunulamaz.
+
+Bu sayede danışmanlar başka danışmanın müşterisine dokunamaz, şube müdürleri yetkisiz şubenin verilerini düzenleyemez, hassas veri sorumluluğu kayıtlı kalır.
 
 ---
 

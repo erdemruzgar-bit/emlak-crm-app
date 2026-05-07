@@ -49,6 +49,9 @@ export default function NewPropertyPage() {
   // İlan tipleri (admin yönetimli)
   const [listingTypes, setListingTypes] = useState<{ code: string; label: string }[]>([]);
 
+  // Sakin durumları (admin yönetimli)
+  const [occupancyTypes, setOccupancyTypes] = useState<{ code: string; label: string }[]>([]);
+
   // Şehir / İlçe cascading
   const [city, setCity] = useState("");
   const [district, setDistrict] = useState("");
@@ -81,6 +84,12 @@ export default function NewPropertyPage() {
         if (Array.isArray(data)) setListingTypes(data);
       })
       .catch(() => setListingTypes([]));
+    fetch("/api/occupancy-types")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => {
+        if (Array.isArray(data)) setOccupancyTypes(data);
+      })
+      .catch(() => setOccupancyTypes([]));
   }, []);
 
   const selectedProjectBlocks =
@@ -460,12 +469,9 @@ export default function NewPropertyPage() {
               <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Sakin Durumu</label>
               <select name="occupancyStatus" className={inputClass} defaultValue="">
                 <option value="">Seçiniz</option>
-                <option value="SAHIBI_OTURUYOR">Sahibi Oturuyor</option>
-                <option value="KIRACILI">Kiracılı</option>
-                <option value="BOS">Boş</option>
-                <option value="KAPORA_ALINDI">Kapora Alındı</option>
-                <option value="SOZLESME_ALINDI">Sözleşme Alındı</option>
-                <option value="ARSIV">Arşiv</option>
+                {occupancyTypes.map((o) => (
+                  <option key={o.code} value={o.code}>{o.label}</option>
+                ))}
               </select>
             </div>
             <div>

@@ -124,6 +124,8 @@ export default function EditPropertyPage() {
 
   // İlan tipi catalog
   const [listingTypes, setListingTypes] = useState<{ code: string; label: string }[]>([]);
+  // Sakin durumu catalog
+  const [occupancyTypes, setOccupancyTypes] = useState<{ code: string; label: string }[]>([]);
 
   useEffect(() => {
     fetch("/api/projects")
@@ -138,6 +140,12 @@ export default function EditPropertyPage() {
         if (Array.isArray(data)) setListingTypes(data);
       })
       .catch(() => setListingTypes([]));
+    fetch("/api/occupancy-types")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => {
+        if (Array.isArray(data)) setOccupancyTypes(data);
+      })
+      .catch(() => setOccupancyTypes([]));
   }, []);
 
   useEffect(() => {
@@ -517,12 +525,12 @@ export default function EditPropertyPage() {
               <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Sakin Durumu</label>
               <select value={form.occupancyStatus} onChange={(e) => set("occupancyStatus", e.target.value)} className={inputClass}>
                 <option value="">Seçiniz</option>
-                <option value="SAHIBI_OTURUYOR">Sahibi Oturuyor</option>
-                <option value="KIRACILI">Kiracılı</option>
-                <option value="BOS">Boş</option>
-                <option value="KAPORA_ALINDI">Kapora Alındı</option>
-                <option value="SOZLESME_ALINDI">Sözleşme Alındı</option>
-                <option value="ARSIV">Arşiv</option>
+                {occupancyTypes.map((o) => (
+                  <option key={o.code} value={o.code}>{o.label}</option>
+                ))}
+                {form.occupancyStatus && !occupancyTypes.some((o) => o.code === form.occupancyStatus) && (
+                  <option value={form.occupancyStatus}>{form.occupancyStatus} (pasif)</option>
+                )}
               </select>
             </div>
             <div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   DoorOpen,
@@ -137,6 +137,18 @@ export function PropertyDetail({ property, onClose }: PropertyDetailProps) {
     "overview" | "details" | "location"
   >("overview");
   const [contacted, setContacted] = useState(false);
+  const [occupancyMap, setOccupancyMap] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    fetch("/api/occupancy-types")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data: { code: string; label: string }[]) => {
+        if (Array.isArray(data)) {
+          setOccupancyMap(Object.fromEntries(data.map((o) => [o.code, o.label])));
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const handleContact = () => {
     setContacted(true);
@@ -353,7 +365,7 @@ export function PropertyDetail({ property, onClose }: PropertyDetailProps) {
                   />
                 )}
                 {property.occupancyStatus && (
-                  <InfoRow label="Sakin" value={occupancyLabels[property.occupancyStatus] || property.occupancyStatus} />
+                  <InfoRow label="Sakin" value={occupancyMap[property.occupancyStatus] || occupancyLabels[property.occupancyStatus] || property.occupancyStatus} />
                 )}
                 {property.usageType && (
                   <InfoRow label="Kullanım" value={usageLabels[property.usageType] || property.usageType} />

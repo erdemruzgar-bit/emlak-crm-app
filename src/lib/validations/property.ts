@@ -41,10 +41,8 @@ export const propertyCreateSchema = z.object({
     .optional(),
 
   // Sakin / vatandaşlık / kullanım
-  occupancyStatus: z
-    .enum(["SAHIBI_OTURUYOR", "KIRACILI", "BOS", "KAPORA_ALINDI", "SOZLESME_ALINDI", "ARSIV"])
-    .nullable()
-    .optional(),
+  // OccupancyStatusCatalog.code referansı (dinamik katalog)
+  occupancyStatus: z.string().nullable().optional(),
   // VATANDASLIGA_UYGUN deprecated; mevcut payload'larda hâlâ gelirse geriye dönük kabul edilir,
   // POST/PUT route'ları bunu yeni alana (isCitizenshipEligible) çevirir.
   ownerCitizenship: z.enum(["TC", "YABANCI", "SIRKET", "VATANDASLIGA_UYGUN"]).nullable().optional(),

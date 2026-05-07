@@ -96,15 +96,6 @@ enum ContractAttachmentCategory {
   EK_DOKUMAN
 }
 
-enum OccupancyStatus {
-  SAHIBI_OTURUYOR
-  KIRACILI
-  BOS
-  KAPORA_ALINDI
-  SOZLESME_ALINDI
-  ARSIV
-}
-
 enum OwnerCitizenship {
   TC
   YABANCI
@@ -425,7 +416,7 @@ model Property {
   katMulkiyetiTipi  KatMulkiyetiTipi?
 
   // ─── Sakin, vatandaşlık, kullanım ───
-  occupancyStatus       OccupancyStatus?
+  occupancyStatus       String?            // OccupancyStatusCatalog.code referansı
   ownerCitizenship      OwnerCitizenship?
   // Yabancıya satışta TR vatandaşlık programı için uygun mülk (sahibinin uyruğundan bağımsız mülk özelliği).
   isCitizenshipEligible Boolean?
@@ -535,6 +526,21 @@ model CustomerTypeCatalog {
 model ListingTypeCatalog {
   id        String   @id @default(cuid())
   code      String   @unique  // "SATILIK", "KIRALIK", "ARSIV", custom
+  label     String             // Türkçe görünen ad
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sortOrder])
+}
+
+// ─── Sakin Durumu Kataloğu ───
+// Property.occupancyStatus alanı String olarak kalır (eski veri korunur). Bu tablo
+// dropdown için seçim listesi — ADMIN/MANAGER yeni durum ekleyip silebilir.
+model OccupancyStatusCatalog {
+  id        String   @id @default(cuid())
+  code      String   @unique  // "SAHIBI_OTURUYOR", "KAPORA_ALINDI", custom
   label     String             // Türkçe görünen ad
   sortOrder Int      @default(0)
   isActive  Boolean  @default(true)

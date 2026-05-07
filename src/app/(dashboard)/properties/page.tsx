@@ -80,6 +80,7 @@ function PropertiesPageInner() {
   const [branches, setBranches] = useState<{ id: string; name: string }[]>([]);
   const [roomTypes, setRoomTypes] = useState<{ id: string; name: string }[]>([]);
   const [listingTypes, setListingTypes] = useState<{ code: string; label: string }[]>([]);
+  const [occupancyTypes, setOccupancyTypes] = useState<{ code: string; label: string }[]>([]);
 
   const listingLabels: Record<string, string> = {
     ...DEFAULT_LISTING_LABELS,
@@ -115,6 +116,9 @@ function PropertiesPageInner() {
     }).catch(() => {});
     fetch("/api/listing-types").then((r) => r.ok ? r.json() : []).then((data) => {
       if (Array.isArray(data)) setListingTypes(data);
+    }).catch(() => {});
+    fetch("/api/occupancy-types").then((r) => r.ok ? r.json() : []).then((data) => {
+      if (Array.isArray(data)) setOccupancyTypes(data);
     }).catch(() => {});
     fetch("/api/branches").then((r) => r.ok ? r.json() : []).then((data) => {
       if (Array.isArray(data)) setBranches(data.map((b: { id: string; name: string }) => ({ id: b.id, name: b.name })));
@@ -369,12 +373,9 @@ function PropertiesPageInner() {
                     <select value={occupancyStatus} onChange={(e) => setOccupancyStatus(e.target.value)}
                       className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm">
                       <option value="">Sakin Durumu</option>
-                      <option value="SAHIBI_OTURUYOR">Sahibi Oturuyor</option>
-                      <option value="KIRACILI">Kiracılı</option>
-                      <option value="BOS">Boş</option>
-                      <option value="KAPORA_ALINDI">Kapora Alındı</option>
-                      <option value="SOZLESME_ALINDI">Sözleşme Alındı</option>
-                      <option value="ARSIV">Arşiv</option>
+                      {occupancyTypes.map((o) => (
+                        <option key={o.code} value={o.code}>{o.label}</option>
+                      ))}
                     </select>
                     <select value={ownerCitizenship} onChange={(e) => setOwnerCitizenship(e.target.value)}
                       className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm">

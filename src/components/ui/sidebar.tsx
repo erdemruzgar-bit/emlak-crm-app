@@ -22,6 +22,7 @@ import {
   Bell,
   Calculator,
   Globe,
+  Building2,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -46,6 +47,7 @@ const navigationGroups: NavGroup[] = [
       { name: "Panel", href: "/dashboard", icon: LayoutDashboard },
       { name: "Müşteriler", href: "/customers", icon: Users },
       { name: "Portföy", href: "/properties", icon: Home },
+      { name: "Projeler", href: "/projects", icon: Building2 },
     ],
   },
   {

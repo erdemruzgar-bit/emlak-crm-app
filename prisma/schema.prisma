@@ -208,6 +208,7 @@ model User {
   contractsCreated    Contract[]
   contractAttachmentsUploaded ContractAttachment[]
   reminders           Reminder[]
+  propertyNotes       PropertyNote[]
 }
 
 // ─── KVKK Audit Log ───
@@ -238,6 +239,7 @@ model Customer {
   lastName       String
   email          String?
   phone          String?
+  altPhone       String?      // İkincil telefon (örn. Excel'de "Diğer: ...")
   tcKimlikNo     String?      // AES-256 encrypted
   address        String?
   customerType   String       @default("BUYER") // CustomerTypeCatalog.code referansı
@@ -440,6 +442,10 @@ model Property {
   // Mutfak tipi
   kitchenType        KitchenType?         // Açık / Kapalı
 
+  // ─── Manzara / operasyonel ───
+  viewType          String?               // Proje-spesifik manzara kodu (örn. "PEYZAJ", "ARMONI", "3 CPH")
+  operationalNote   String?  @db.Text     // Liste'de kısa not (Excel "DURUM" kolonundan map dışı kalan kısım)
+
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
 
@@ -452,6 +458,7 @@ model Property {
   matches       PropertyMatch[]
   appointments  Appointment[]
   contracts     Contract[]
+  notes         PropertyNote[]
 
   @@index([status])
   @@index([listingType])
@@ -472,6 +479,8 @@ model Project {
   address     String?
   developer   String?  // Müteahhit
   description String?  @db.Text
+  // Bu projeye özel manzara/yön kodları (autocomplete listesi). Boş array = serbest giriş.
+  viewTypes   String[] @default([])
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -494,6 +503,38 @@ model Block {
 
   @@unique([projectId, name])
   @@index([projectId])
+}
+
+// ─── Mülke bağlı görüşme/durum notu ───
+// Property'nin günlük operasyon defteri: telefon görüşmeleri, toplantı notları,
+// "DURUM" kolonundan map dışı kalan kısa metinler ve Excel ile içeri aktarılan
+// görüşme geçmişi burada tutulur. Customer'a değil, Property'ye bağlanır —
+// proje-merkezli kullanıcı bir daire bazında geçmişi görmek ister.
+enum PropertyNoteKind {
+  GENERAL
+  CALL_LOG
+  MEETING
+  OPERATIONAL_STATUS
+  IMPORTED
+}
+
+model PropertyNote {
+  id            String           @id @default(cuid())
+  propertyId    String
+  userId        String           // Notu yazan / import yapan kullanıcı
+  kind          PropertyNoteKind @default(GENERAL)
+  content       String           @db.Text
+  source        String?          // null | "form" | "excel-import" | "auto"
+  importBatchId String?          // Aynı import işleminin grup id'si
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id])
+
+  @@index([propertyId, createdAt])
+  @@index([kind])
+  @@index([importBatchId])
 }
 
 // ─── Oda Tipi Kataloğu ───

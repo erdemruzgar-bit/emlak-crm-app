@@ -25,10 +25,16 @@ export async function GET(req: NextRequest) {
   const minBudget = searchParams.get("minBudget") || "";
   const maxBudget = searchParams.get("maxBudget") || "";
   const preferredCity = searchParams.get("preferredCity") || "";
+  const preferredDistrict = searchParams.get("preferredDistrict") || "";
   const preferredType = searchParams.get("preferredType") || "";
+  const minArea = searchParams.get("minArea") || "";
+  const maxArea = searchParams.get("maxArea") || "";
+  const rooms = searchParams.get("rooms") || ""; // hedef oda sayısı (ör. "2+1")
   const tags = searchParams.get("tags") || "";
   const hasOverdueFollowUp = searchParams.get("hasOverdueFollowUp") || "";
   const lastContactDays = searchParams.get("lastContactDays") || "";
+  const assignedAgentId = searchParams.get("assignedAgentId") || "";
+  const branchId = searchParams.get("branchId") || "";
 
   const user = session.user as unknown as Record<string, unknown>;
   const where: Record<string, unknown> = {};
@@ -59,7 +65,16 @@ export async function GET(req: NextRequest) {
     };
   }
   if (preferredCity) where.preferredCities = { has: preferredCity };
+  if (preferredDistrict) where.preferredDistricts = { has: preferredDistrict };
   if (preferredType) where.preferredTypes = { has: preferredType };
+  // Müşterinin tercih aralığı verilen min/max ile kesişiyor mu?
+  // Müşteri minArea-maxArea istiyor; biz "müşteri en az X m² istiyor" diye sorgularsak minArea filtresi
+  if (minArea) where.minArea = { gte: parseFloat(minArea) };
+  if (maxArea) where.maxArea = { lte: parseFloat(maxArea) };
+  // Tercih edilen oda — minRooms eşitliği ile basit eşleşme
+  if (rooms) where.minRooms = rooms;
+  if (assignedAgentId) where.assignedAgentId = assignedAgentId;
+  if (branchId) where.branchId = branchId;
   if (tags) {
     const tagList = tags.split(",").map((t) => t.trim()).filter(Boolean);
     if (tagList.length > 0) where.tags = { hasSome: tagList };

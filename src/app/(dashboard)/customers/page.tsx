@@ -10,6 +10,7 @@ import { ExcelToolbar } from "@/components/ui/excel-toolbar";
 import { HelpButton } from "@/components/ui/help-button";
 import { TableSkeleton, CardGridSkeleton } from "@/components/ui/skeleton";
 import { DEFAULT_CUSTOMER_TYPE_LABELS as DEFAULT_TYPE_LABELS, customerTypeBadgeClass } from "@/lib/customer-type-styles";
+import { TURKEY_CITIES, getDistrictsOf } from "@/lib/turkey-locations";
 
 interface Customer {
   id: string;
@@ -93,6 +94,17 @@ function CustomersPageInner() {
   const [stageFilter, setStageFilter] = useState("");
   const [urgencyFilter, setUrgencyFilter] = useState("");
   const [sourceFilter, setSourceFilter] = useState("");
+  const [preferredTypeFilter, setPreferredTypeFilter] = useState("");
+  const [preferredCityFilter, setPreferredCityFilter] = useState("");
+  const [preferredDistrictFilter, setPreferredDistrictFilter] = useState("");
+  const [roomsFilter, setRoomsFilter] = useState("");
+  const [minBudgetFilter, setMinBudgetFilter] = useState("");
+  const [maxBudgetFilter, setMaxBudgetFilter] = useState("");
+  const [minAreaFilter, setMinAreaFilter] = useState("");
+  const [maxAreaFilter, setMaxAreaFilter] = useState("");
+  const [tagsFilter, setTagsFilter] = useState("");
+  const [overdueFollowUpFilter, setOverdueFollowUpFilter] = useState(false);
+  const [roomTypes, setRoomTypes] = useState<{ id: string; name: string }[]>([]);
   const [sortBy, setSortBy] = useState<SortField>("createdAt");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [showFilters, setShowFilters] = useState(false);
@@ -114,6 +126,12 @@ function CustomersPageInner() {
         if (Array.isArray(data)) setCustomerTypes(data);
       })
       .catch(() => {});
+    fetch("/api/room-types")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => {
+        if (Array.isArray(data)) setRoomTypes(data);
+      })
+      .catch(() => {});
   }, []);
 
   async function logInteraction(customerId: string, type: string) {
@@ -128,9 +146,18 @@ function CustomersPageInner() {
     }, 2000);
   }
 
-  const activeFilterCount = [typeFilter, stageFilter, urgencyFilter, sourceFilter].filter(Boolean).length;
+  const activeFilterCount = [
+    typeFilter, stageFilter, urgencyFilter, sourceFilter,
+    preferredTypeFilter, preferredCityFilter, preferredDistrictFilter, roomsFilter,
+    minBudgetFilter, maxBudgetFilter, minAreaFilter, maxAreaFilter, tagsFilter,
+    overdueFollowUpFilter ? "1" : "",
+  ].filter(Boolean).length;
 
-  useEffect(() => { fetchCustomers(); }, [page, search, typeFilter, stageFilter, urgencyFilter, sourceFilter, sortBy, sortOrder]);
+  useEffect(() => { fetchCustomers(); }, [
+    page, search, typeFilter, stageFilter, urgencyFilter, sourceFilter, sortBy, sortOrder,
+    preferredTypeFilter, preferredCityFilter, preferredDistrictFilter, roomsFilter,
+    minBudgetFilter, maxBudgetFilter, minAreaFilter, maxAreaFilter, tagsFilter, overdueFollowUpFilter,
+  ]);
   // Kanban kartları her view'da hazır olsun: list mode iken md altında (mobilde) kart olarak gösteririz.
   useEffect(() => { fetchKanbanCustomers(); }, [search, typeFilter, urgencyFilter, sourceFilter]);
 
@@ -143,6 +170,16 @@ function CustomersPageInner() {
       ...(stageFilter && { stage: stageFilter }),
       ...(urgencyFilter && { urgency: urgencyFilter }),
       ...(sourceFilter && { source: sourceFilter }),
+      ...(preferredTypeFilter && { preferredType: preferredTypeFilter }),
+      ...(preferredCityFilter && { preferredCity: preferredCityFilter }),
+      ...(preferredDistrictFilter && { preferredDistrict: preferredDistrictFilter }),
+      ...(roomsFilter && { rooms: roomsFilter }),
+      ...(minBudgetFilter && { minBudget: minBudgetFilter }),
+      ...(maxBudgetFilter && { maxBudget: maxBudgetFilter }),
+      ...(minAreaFilter && { minArea: minAreaFilter }),
+      ...(maxAreaFilter && { maxArea: maxAreaFilter }),
+      ...(tagsFilter && { tags: tagsFilter }),
+      ...(overdueFollowUpFilter && { hasOverdueFollowUp: "true" }),
     });
     const res = await fetch(`/api/customers?${params}`);
     const data = await res.json();
@@ -175,7 +212,13 @@ function CustomersPageInner() {
     return sortOrder === "asc" ? <ArrowUp className="w-3 h-3 text-primary" /> : <ArrowDown className="w-3 h-3 text-primary" />;
   }
 
-  function clearFilters() { setTypeFilter(""); setStageFilter(""); setUrgencyFilter(""); setSourceFilter(""); setPage(1); }
+  function clearFilters() {
+    setTypeFilter(""); setStageFilter(""); setUrgencyFilter(""); setSourceFilter("");
+    setPreferredTypeFilter(""); setPreferredCityFilter(""); setPreferredDistrictFilter("");
+    setRoomsFilter(""); setMinBudgetFilter(""); setMaxBudgetFilter("");
+    setMinAreaFilter(""); setMaxAreaFilter(""); setTagsFilter(""); setOverdueFollowUpFilter(false);
+    setPage(1);
+  }
 
   const totalCount = pagination?.total || 0;
   const activeLeads = customers.filter((c) => ["LEAD", "QUALIFIED", "ACTIVE"].includes(c.stage || "")).length;
@@ -299,6 +342,68 @@ function CustomersPageInner() {
                     <option value="sahibinden">Sahibinden</option><option value="hepsiemlak">Hepsiemlak</option>
                     <option value="walkin">Ofis Ziyareti</option><option value="diger">Diğer</option>
                   </select>
+                  <select value={preferredTypeFilter} onChange={(e) => { setPreferredTypeFilter(e.target.value); setPage(1); }}
+                    className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm">
+                    <option value="">Tercih Edilen Mülk</option>
+                    <option value="DAIRE">Daire</option>
+                    <option value="VILLA">Villa</option>
+                    <option value="ARSA">Arsa</option>
+                    <option value="ISYERI">İşyeri</option>
+                    <option value="MUSTAKILEV">Müstakil Ev</option>
+                  </select>
+                  <select value={roomsFilter} onChange={(e) => { setRoomsFilter(e.target.value); setPage(1); }}
+                    className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm">
+                    <option value="">Oda Sayısı</option>
+                    {roomTypes.length > 0 ? (
+                      roomTypes.map((r) => (
+                        <option key={r.id} value={r.name}>{r.name}</option>
+                      ))
+                    ) : (
+                      <>
+                        <option value="1+0">1+0</option>
+                        <option value="1+1">1+1</option>
+                        <option value="2+1">2+1</option>
+                        <option value="3+1">3+1</option>
+                        <option value="4+1">4+1</option>
+                      </>
+                    )}
+                  </select>
+                  <select value={preferredCityFilter} onChange={(e) => { setPreferredCityFilter(e.target.value); setPreferredDistrictFilter(""); setPage(1); }}
+                    className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm">
+                    <option value="">Şehir</option>
+                    {TURKEY_CITIES.map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                  <select value={preferredDistrictFilter} onChange={(e) => { setPreferredDistrictFilter(e.target.value); setPage(1); }}
+                    disabled={!preferredCityFilter}
+                    className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm disabled:opacity-50">
+                    <option value="">İlçe</option>
+                    {preferredCityFilter && getDistrictsOf(preferredCityFilter).map((d) => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                  </select>
+                  <input type="number" placeholder="Min Bütçe (₺)" value={minBudgetFilter}
+                    onChange={(e) => { setMinBudgetFilter(e.target.value); setPage(1); }}
+                    className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm" />
+                  <input type="number" placeholder="Max Bütçe (₺)" value={maxBudgetFilter}
+                    onChange={(e) => { setMaxBudgetFilter(e.target.value); setPage(1); }}
+                    className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm" />
+                  <input type="number" placeholder="Min m²" value={minAreaFilter}
+                    onChange={(e) => { setMinAreaFilter(e.target.value); setPage(1); }}
+                    className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm" />
+                  <input type="number" placeholder="Max m²" value={maxAreaFilter}
+                    onChange={(e) => { setMaxAreaFilter(e.target.value); setPage(1); }}
+                    className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm" />
+                  <input type="text" placeholder="Etiketler (virgülle)" value={tagsFilter}
+                    onChange={(e) => { setTagsFilter(e.target.value); setPage(1); }}
+                    className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm" />
+                  <label className="px-3 py-2.5 bg-surface-container-low rounded-xl flex items-center gap-2 cursor-pointer text-sm">
+                    <input type="checkbox" checked={overdueFollowUpFilter}
+                      onChange={(e) => { setOverdueFollowUpFilter(e.target.checked); setPage(1); }}
+                      className="accent-primary" />
+                    Takibi Geciken
+                  </label>
                   {viewMode === "list" && (
                     <select value={`${sortBy}-${sortOrder}`} onChange={(e) => {
                       const [f, o] = e.target.value.split("-"); setSortBy(f as SortField); setSortOrder(o as "asc" | "desc"); setPage(1);

@@ -12,6 +12,7 @@ import { PropertyCard, type PropertyCardData, formatPrice } from "@/components/u
 import { PropertyDetail } from "@/components/ui/property-detail";
 import { ExcelToolbar } from "@/components/ui/excel-toolbar";
 import { CardGridSkeleton } from "@/components/ui/skeleton";
+import { HelpButton } from "@/components/ui/help-button";
 import { cn } from "@/lib/utils";
 import { TURKEY_CITIES } from "@/lib/turkey-locations";
 
@@ -202,7 +203,10 @@ function PropertiesPageInner() {
         {/* Header */}
         <div className="flex justify-between items-end mb-8">
           <div>
-            <h1 className="text-3xl font-black tracking-tighter text-on-surface">Portföy</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-3xl font-black tracking-tighter text-on-surface">Portföy</h1>
+              <HelpButton page="properties-list" title="Portföy" />
+            </div>
             <p className="text-on-surface-variant text-sm mt-1 font-medium">{properties.length} ilan</p>
           </div>
           <div className="flex items-center gap-3">

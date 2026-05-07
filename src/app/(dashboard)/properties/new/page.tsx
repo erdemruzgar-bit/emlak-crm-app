@@ -9,6 +9,7 @@ import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { MediaUploader, type MediaItem } from "@/components/ui/media-uploader";
 import { CollapsibleSection } from "@/components/ui/collapsible-section";
+import { HelpButton } from "@/components/ui/help-button";
 import { TURKEY_CITIES, getDistrictsOf } from "@/lib/turkey-locations";
 
 interface CustomerResult { id: string; label: string; }
@@ -232,6 +233,7 @@ export default function NewPropertyPage() {
           <ArrowLeft className="w-5 h-5" />
         </Link>
         <h1 className="text-3xl font-black tracking-tighter text-on-surface">Yeni İlan</h1>
+        <HelpButton page="properties-new" title="Yeni İlan" />
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">

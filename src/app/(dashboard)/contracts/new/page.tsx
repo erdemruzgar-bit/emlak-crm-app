@@ -7,6 +7,7 @@ import { FileSignature, ArrowLeft, Save, Calculator } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "motion/react";
 import { DocumentUploader, DocumentItem } from "@/components/ui/document-uploader";
+import { HelpButton } from "@/components/ui/help-button";
 
 interface PropertyOption {
   id: string;
@@ -231,7 +232,10 @@ export default function NewContractPage() {
             <FileSignature className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-black tracking-tight text-on-surface">Yeni Sözleşme</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-black tracking-tight text-on-surface">Yeni Sözleşme</h1>
+              <HelpButton page="contracts-new" title="Yeni Sözleşme" />
+            </div>
             <p className="text-sm text-on-surface-variant">Kira, satış veya komisyon sözleşmesi</p>
           </div>
         </div>

@@ -6,6 +6,7 @@ import { ShieldCheck, Filter, Clock, AlertTriangle, CheckCircle2, X } from "luci
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
+import { HelpButton } from "@/components/ui/help-button";
 
 const REASON_LABELS: Record<string, string> = {
   GORUSME: "Görüşme / Arama",
@@ -90,7 +91,10 @@ export default function AccessLogsPage() {
           <ShieldCheck className="w-6 h-6" />
         </div>
         <div>
-          <h1 className="text-3xl font-black tracking-tighter text-on-surface">Erişim Logları</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-3xl font-black tracking-tighter text-on-surface">Erişim Logları</h1>
+            <HelpButton page="access-logs" title="Erişim Logları" />
+          </div>
           <p className="text-sm text-on-surface-variant">Hassas veri erişim oturumları (KVKK)</p>
         </div>
       </div>

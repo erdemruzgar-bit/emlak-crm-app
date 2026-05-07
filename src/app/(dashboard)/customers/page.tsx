@@ -7,6 +7,7 @@ import { Search, UserPlus, ChevronLeft, ChevronRight, Loader2, UserX, SlidersHor
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
 import { ExcelToolbar } from "@/components/ui/excel-toolbar";
+import { HelpButton } from "@/components/ui/help-button";
 import { TableSkeleton, CardGridSkeleton } from "@/components/ui/skeleton";
 import { DEFAULT_CUSTOMER_TYPE_LABELS as DEFAULT_TYPE_LABELS, customerTypeBadgeClass } from "@/lib/customer-type-styles";
 
@@ -186,7 +187,10 @@ function CustomersPageInner() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-black tracking-tighter text-on-surface">Müşteriler</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-3xl font-black tracking-tighter text-on-surface">Müşteriler</h1>
+            <HelpButton page="customers-list" title="Müşteriler" />
+          </div>
           <p className="text-on-surface-variant text-sm mt-1 font-medium">{pagination ? `Toplam ${pagination.total} müşteri` : ""}</p>
         </div>
         <div className="flex items-center gap-3">

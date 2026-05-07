@@ -5,6 +5,7 @@ import Link from "next/link";
 import { FileSignature, Plus, Search, Filter, Calendar, Paperclip, Home, User as UserIcon, AlertCircle } from "lucide-react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
+import { HelpButton } from "@/components/ui/help-button";
 
 interface Contract {
   id: string;
@@ -106,7 +107,10 @@ export default function ContractsPage() {
             <FileSignature className="w-7 h-7" />
           </div>
           <div>
-            <h1 className="text-3xl font-black tracking-tighter text-on-surface">Sözleşmeler</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-3xl font-black tracking-tighter text-on-surface">Sözleşmeler</h1>
+              <HelpButton page="contracts-list" title="Sözleşmeler" />
+            </div>
             <p className="text-sm text-on-surface-variant font-medium mt-1">
               Kira, satış ve komisyon sözleşmeleri — PDF ekleri ile
             </p>

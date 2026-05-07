@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { Users, Home, CreditCard, Calendar, UserPlus, FileEdit, CalendarCheck, Banknote, Loader2, Phone, AlertTriangle, Clock, ChevronRight, Download, Presentation } from "lucide-react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
+import { HelpButton } from "@/components/ui/help-button";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell,
@@ -137,7 +138,10 @@ export default function DashboardPage() {
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-3xl font-black tracking-tighter text-on-surface">Panel Özeti</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-3xl font-black tracking-tighter text-on-surface">Panel Özeti</h1>
+            <HelpButton page="dashboard" title="Panel Özeti" />
+          </div>
           <p className="text-on-surface-variant text-sm mt-1 font-medium">Tekrar hoş geldin. İşte bugün olanlar.</p>
         </div>
         {isAdmin && (

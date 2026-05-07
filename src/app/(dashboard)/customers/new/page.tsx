@@ -7,6 +7,7 @@ import { ArrowLeft, ShieldCheck, Info, AlertCircle, Loader2, Target } from "luci
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
+import { HelpButton } from "@/components/ui/help-button";
 
 // "Oda" alanları yalnızca oda kavramı olan mülk tiplerinde gösterilir.
 // ARSA için saklı, diğerleri (DAIRE, VILLA, MUSTAKILEV, ISYERI) için açık.
@@ -122,6 +123,7 @@ export default function NewCustomerPage() {
         <h1 className="text-3xl font-black tracking-tighter text-on-surface">
           Yeni Müşteri
         </h1>
+        <HelpButton page="customers-new" title="Yeni Müşteri" />
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">

@@ -16,6 +16,7 @@ import { useConfirm } from "@/components/ui/confirm-dialog";
 import { LinkifiedText } from "@/components/ui/linkified-text";
 import { cn } from "@/lib/utils";
 import { EditableText, EditableSelect, EditableTextarea } from "@/components/ui/editable-field";
+import { HelpButton } from "@/components/ui/help-button";
 import { DEFAULT_CUSTOMER_TYPE_LABELS } from "@/lib/customer-type-styles";
 
 interface ActiveAccessSession {
@@ -84,6 +85,15 @@ interface Customer {
   notesSummary: string | null;
   lastContactDate: string | null;
   nextFollowUpDate: string | null;
+  interestedProjects?: InterestedProjectEntry[];
+}
+
+interface InterestedProjectEntry {
+  id?: string;
+  projectId?: string;
+  createdAt?: string;
+  note?: string | null;
+  project: { id: string; name: string; code?: string | null; city?: string | null; district?: string | null };
 }
 
 interface Consent {
@@ -225,6 +235,35 @@ export default function CustomerDetailPage() {
   const [noteSaving, setNoteSaving] = useState(false);
   const [customerTypeOptions, setCustomerTypeOptions] = useState<{ code: string; label: string }[]>([]);
   const [roomTypeOptions, setRoomTypeOptions] = useState<{ id: string; name: string }[]>([]);
+  const [projectOptions, setProjectOptions] = useState<{ id: string; name: string; code?: string | null; city?: string | null; district?: string | null }[]>([]);
+  const [projectSearch, setProjectSearch] = useState("");
+  const [showProjectDropdown, setShowProjectDropdown] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/projects")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => {
+        if (Array.isArray(data)) setProjectOptions(data);
+      })
+      .catch(() => setProjectOptions([]));
+  }, []);
+
+  const filteredProjectOptions = useMemo(() => {
+    if (!customer) return [];
+    const selectedIds = new Set((customer.interestedProjects || []).map((p) => p.project.id));
+    const term = projectSearch.trim().toLowerCase();
+    return projectOptions
+      .filter((p) => !selectedIds.has(p.id))
+      .filter((p) => {
+        if (!term) return true;
+        return (
+          p.name.toLowerCase().includes(term) ||
+          (p.code ?? "").toLowerCase().includes(term) ||
+          (p.city ?? "").toLowerCase().includes(term)
+        );
+      })
+      .slice(0, 12);
+  }, [projectOptions, customer, projectSearch]);
 
   const typeLabels: Record<string, string> = {
     ...DEFAULT_TYPE_LABELS,
@@ -373,7 +412,10 @@ export default function CustomerDetailPage() {
             </div>
           )}
           <div>
-            <h1 className="text-3xl font-black tracking-tighter text-on-surface">{customer.firstName} {customer.lastName}</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-3xl font-black tracking-tighter text-on-surface">{customer.firstName} {customer.lastName}</h1>
+              <HelpButton page="customers-detail" title="Müşteri Detayı" />
+            </div>
             <p className="text-sm text-on-surface-variant font-medium">{typeLabels[customer.customerType]}</p>
           </div>
         </div>
@@ -789,6 +831,81 @@ export default function CustomerDetailPage() {
               </div>
             </div>
 
+            {/* İlgilendiği Projeler / Siteler */}
+            <div className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-8 space-y-5 border border-outline-variant/10">
+              <h3 className="text-sm font-bold text-on-surface flex items-center gap-2">
+                <Building2 className="w-4 h-4" />
+                İlgilendiği Projeler / Siteler
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {(customer.interestedProjects || []).map((entry) => (
+                  <span key={entry.project.id} className="inline-flex items-center gap-1.5 pl-3 pr-1.5 py-1.5 rounded-lg bg-primary text-white text-xs font-bold">
+                    {entry.project.name}
+                    {entry.project.code ? <span className="opacity-70">({entry.project.code})</span> : null}
+                    {canEdit && (
+                      <button
+                        type="button"
+                        onClick={() => setCustomer({ ...customer, interestedProjects: (customer.interestedProjects || []).filter((x) => x.project.id !== entry.project.id) })}
+                        className="ml-1 h-5 w-5 inline-flex items-center justify-center rounded-md hover:bg-white/15"
+                        aria-label="Kaldır"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </span>
+                ))}
+                {(customer.interestedProjects || []).length === 0 && (
+                  <span className="text-xs text-on-surface-variant">Henüz proje eklenmedi.</span>
+                )}
+              </div>
+              {canEdit && (
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={projectSearch}
+                    onChange={(e) => { setProjectSearch(e.target.value); setShowProjectDropdown(true); }}
+                    onFocus={() => setShowProjectDropdown(true)}
+                    onBlur={() => setTimeout(() => setShowProjectDropdown(false), 150)}
+                    placeholder="Proje ara ve ekle (örn. Marina Park)"
+                    className="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/20 outline-none text-sm"
+                  />
+                  {showProjectDropdown && filteredProjectOptions.length > 0 && (
+                    <div className="absolute left-0 right-0 mt-2 z-20 max-h-64 overflow-auto rounded-xl bg-surface-container-lowest shadow-lg border border-outline-variant/20">
+                      {filteredProjectOptions.map((p) => (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            const next = [
+                              ...(customer.interestedProjects || []),
+                              { project: { id: p.id, name: p.name, code: p.code, city: p.city, district: p.district } },
+                            ];
+                            setCustomer({ ...customer, interestedProjects: next });
+                            setProjectSearch("");
+                          }}
+                          className="w-full px-4 py-2.5 text-left text-sm hover:bg-surface-container-low flex items-center justify-between"
+                        >
+                          <span className="font-medium text-on-surface">
+                            {p.name}
+                            {p.code ? <span className="text-on-surface-variant"> ({p.code})</span> : null}
+                          </span>
+                          {(p.city || p.district) && (
+                            <span className="text-xs text-on-surface-variant">
+                              {[p.city, p.district].filter(Boolean).join(" / ")}
+                            </span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+              <p className="text-xs text-on-surface-variant">
+                Bu projelerle eşleşen müşterileri proje sayfası üzerinden filtreleyebilirsiniz.
+              </p>
+            </div>
+
             {/* Etiketler */}
             <div className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-8 space-y-5 border border-outline-variant/10">
               <h3 className="text-sm font-bold text-on-surface">Etiketler</h3>
@@ -851,6 +968,7 @@ export default function CustomerDetailPage() {
                       tags: customer.tags,
                       notesSummary: customer.notesSummary,
                       nextFollowUpDate: customer.nextFollowUpDate,
+                      interestedProjectIds: (customer.interestedProjects || []).map((p) => p.project.id),
                     }),
                   });
                   setDemandSaving(false);

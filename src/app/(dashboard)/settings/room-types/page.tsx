@@ -5,6 +5,7 @@ import { motion } from "motion/react";
 import { toast } from "sonner";
 import { DoorOpen, Plus, Trash2, Loader2 } from "lucide-react";
 import { useConfirm } from "@/components/ui/confirm-dialog";
+import { HelpButton } from "@/components/ui/help-button";
 
 interface RoomType {
   id: string;
@@ -80,7 +81,10 @@ export default function RoomTypesSettingsPage() {
           <DoorOpen className="w-6 h-6" />
         </div>
         <div>
-          <h1 className="text-2xl font-black tracking-tight text-on-surface">Oda Tipleri</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-black tracking-tight text-on-surface">Oda Tipleri</h1>
+            <HelpButton page="settings-room-types" title="Oda Tipleri" />
+          </div>
           <p className="text-sm text-on-surface-variant">
             Mülk formunda ve filtrelerde görünen oda seçeneklerini yönet
           </p>

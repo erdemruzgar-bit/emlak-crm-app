@@ -7,6 +7,7 @@ import { z } from "zod/v4";
 
 const projectUpdateSchema = z.object({
   name: z.string().min(2).optional(),
+  code: z.string().trim().min(1).max(32).nullable().optional(),
   city: z.string().nullable().optional(),
   district: z.string().nullable().optional(),
   address: z.string().nullable().optional(),
@@ -56,11 +57,25 @@ export async function PUT(
     if (!parsed.success) {
       return NextResponse.json({ error: parsed.error.issues }, { status: 400 });
     }
-    const project = await prisma.project.update({
-      where: { id },
-      data: parsed.data,
-      include: { blocks: true },
-    });
+    const data = { ...parsed.data };
+    if (typeof data.code === "string") {
+      const normalized = data.code.trim();
+      data.code = normalized.length > 0 ? normalized : null;
+    }
+    let project;
+    try {
+      project = await prisma.project.update({
+        where: { id },
+        data,
+        include: { blocks: true },
+      });
+    } catch (err) {
+      const code = (err as { code?: string })?.code;
+      if (code === "P2002") {
+        return NextResponse.json({ error: "Bu kısa kod başka bir projede kullanılıyor" }, { status: 409 });
+      }
+      throw err;
+    }
     await createAuditLog({
       userId: actor.id,
       action: "UPDATE",

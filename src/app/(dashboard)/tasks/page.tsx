@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { ExcelToolbar } from "@/components/ui/excel-toolbar";
 import { useConfirm } from "@/components/ui/confirm-dialog";
+import { HelpButton } from "@/components/ui/help-button";
 
 interface Task {
   id: string;
@@ -120,7 +121,10 @@ export default function TasksPage() {
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-black tracking-tighter text-on-surface">Görevler</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-3xl font-black tracking-tighter text-on-surface">Görevler</h1>
+            <HelpButton page="tasks" title="Görevler" />
+          </div>
           <p className="text-sm text-on-surface-variant mt-1 font-medium">{tasks.filter(t => t.status !== "DONE").length} aktif görev</p>
         </div>
         <div className="flex items-center gap-3">

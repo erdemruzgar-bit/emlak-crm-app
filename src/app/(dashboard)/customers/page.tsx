@@ -104,6 +104,8 @@ function CustomersPageInner() {
   const [maxAreaFilter, setMaxAreaFilter] = useState("");
   const [tagsFilter, setTagsFilter] = useState("");
   const [overdueFollowUpFilter, setOverdueFollowUpFilter] = useState(false);
+  const [interestedProjectFilter, setInterestedProjectFilter] = useState(urlParams.get("interestedProjectId") || "");
+  const [projectOptions, setProjectOptions] = useState<{ id: string; name: string; code?: string | null }[]>([]);
   const [roomTypes, setRoomTypes] = useState<{ id: string; name: string }[]>([]);
   const [sortBy, setSortBy] = useState<SortField>("createdAt");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
@@ -132,6 +134,12 @@ function CustomersPageInner() {
         if (Array.isArray(data)) setRoomTypes(data);
       })
       .catch(() => {});
+    fetch("/api/projects")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => {
+        if (Array.isArray(data)) setProjectOptions(data);
+      })
+      .catch(() => {});
   }, []);
 
   async function logInteraction(customerId: string, type: string) {
@@ -150,6 +158,7 @@ function CustomersPageInner() {
     typeFilter, stageFilter, urgencyFilter, sourceFilter,
     preferredTypeFilter, preferredCityFilter, preferredDistrictFilter, roomsFilter,
     minBudgetFilter, maxBudgetFilter, minAreaFilter, maxAreaFilter, tagsFilter,
+    interestedProjectFilter,
     overdueFollowUpFilter ? "1" : "",
   ].filter(Boolean).length;
 
@@ -157,6 +166,7 @@ function CustomersPageInner() {
     page, search, typeFilter, stageFilter, urgencyFilter, sourceFilter, sortBy, sortOrder,
     preferredTypeFilter, preferredCityFilter, preferredDistrictFilter, roomsFilter,
     minBudgetFilter, maxBudgetFilter, minAreaFilter, maxAreaFilter, tagsFilter, overdueFollowUpFilter,
+    interestedProjectFilter,
   ]);
   // Kanban kartları her view'da hazır olsun: list mode iken md altında (mobilde) kart olarak gösteririz.
   useEffect(() => { fetchKanbanCustomers(); }, [search, typeFilter, urgencyFilter, sourceFilter]);
@@ -180,6 +190,7 @@ function CustomersPageInner() {
       ...(maxAreaFilter && { maxArea: maxAreaFilter }),
       ...(tagsFilter && { tags: tagsFilter }),
       ...(overdueFollowUpFilter && { hasOverdueFollowUp: "true" }),
+      ...(interestedProjectFilter && { interestedProjectId: interestedProjectFilter }),
     });
     const res = await fetch(`/api/customers?${params}`);
     const data = await res.json();
@@ -381,6 +392,15 @@ function CustomersPageInner() {
                     <option value="">İlçe</option>
                     {preferredCityFilter && getDistrictsOf(preferredCityFilter).map((d) => (
                       <option key={d} value={d}>{d}</option>
+                    ))}
+                  </select>
+                  <select value={interestedProjectFilter} onChange={(e) => { setInterestedProjectFilter(e.target.value); setPage(1); }}
+                    className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm">
+                    <option value="">İlgilendiği Proje</option>
+                    {projectOptions.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.name}{p.code ? ` (${p.code})` : ""}
+                      </option>
                     ))}
                   </select>
                   <input type="number" placeholder="Min Bütçe (₺)" value={minBudgetFilter}

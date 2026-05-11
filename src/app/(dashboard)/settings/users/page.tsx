@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { TableSkeleton } from "@/components/ui/skeleton";
 import { useConfirm } from "@/components/ui/confirm-dialog";
+import { HelpButton } from "@/components/ui/help-button";
 
 interface User {
   id: string;
@@ -208,7 +209,10 @@ export default function UsersSettingsPage() {
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-black tracking-tighter text-on-surface">Kullanıcı Yönetimi</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-3xl font-black tracking-tighter text-on-surface">Kullanıcı Yönetimi</h1>
+            <HelpButton page="settings-users" title="Kullanıcı Yönetimi" />
+          </div>
           <p className="text-sm text-on-surface-variant mt-1 font-medium">Sistem kullanıcılarını yönetin</p>
         </div>
         <button onClick={openCreate}

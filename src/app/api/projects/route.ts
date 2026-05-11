@@ -7,6 +7,7 @@ import { z } from "zod/v4";
 
 const projectCreateSchema = z.object({
   name: z.string().min(2, "Proje adı en az 2 karakter olmalı"),
+  code: z.string().trim().min(1).max(32).optional(),
   city: z.string().optional(),
   district: z.string().optional(),
   address: z.string().optional(),
@@ -72,14 +73,26 @@ export async function POST(req: NextRequest) {
     }
 
     const { blocks, ...projectData } = parsed.data;
+    if (typeof projectData.code === "string" && projectData.code.trim() === "") {
+      delete (projectData as { code?: string }).code;
+    }
 
-    const project = await prisma.project.create({
-      data: {
-        ...projectData,
-        blocks: blocks && blocks.length > 0 ? { create: blocks } : undefined,
-      },
-      include: { blocks: true },
-    });
+    let project;
+    try {
+      project = await prisma.project.create({
+        data: {
+          ...projectData,
+          blocks: blocks && blocks.length > 0 ? { create: blocks } : undefined,
+        },
+        include: { blocks: true },
+      });
+    } catch (err) {
+      const errCode = (err as { code?: string })?.code;
+      if (errCode === "P2002") {
+        return NextResponse.json({ error: "Bu kısa kod başka bir projede kullanılıyor" }, { status: 409 });
+      }
+      throw err;
+    }
 
     await createAuditLog({
       userId: actor.id,

@@ -5,7 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   Search, SlidersHorizontal, Plus, LayoutGrid, List, Loader2, Home,
-  X, MapPin, DoorOpen, Maximize, ArrowUpDown, LayoutList, CalendarPlus, MessageSquare, Building2, Globe
+  X, MapPin, DoorOpen, Maximize, ArrowUpDown, LayoutList, CalendarPlus, MessageSquare, Building2, Globe,
+  ClipboardPaste,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { PropertyCard, type PropertyCardData, formatPrice } from "@/components/ui/property-card";
@@ -229,6 +230,10 @@ function PropertiesPageInner() {
                 { columnName: "Şehir / İlçe / Mahalle / Adres", description: "Metin, opsiyonel" },
               ]}
             />
+            <Link href="/properties/bulk-paste"
+              className="bg-surface-container-low text-on-surface px-5 py-3 rounded-xl text-sm font-bold hover:bg-surface-container transition-all flex items-center gap-2">
+              <ClipboardPaste className="w-4 h-4" />Toplu Mülk Üret
+            </Link>
             <Link href="/properties/new"
               className="primary-gradient text-white px-6 py-3 rounded-xl text-sm font-bold shadow-xl shadow-primary/10 hover:opacity-90 transition-all flex items-center gap-2">
               <Plus className="w-4 h-4" />Yeni İlan

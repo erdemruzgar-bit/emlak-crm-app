@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ShieldCheck, Lock, Shield, History, EyeOff } from "lucide-react";
 import { motion } from "motion/react";
+import { HelpButton } from "@/components/ui/help-button";
 
 export default function KVKKSettingsPage() {
   const [aydinlatmaMetni, setAydinlatmaMetni] = useState(
@@ -38,7 +39,10 @@ KVKK'nın 11. maddesi uyarınca; kişisel verilerinizin işlenip işlenmediğini
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
       <div>
-        <h1 className="text-3xl font-black tracking-tighter text-on-surface">KVKK Ayarları</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-3xl font-black tracking-tighter text-on-surface">KVKK Ayarları</h1>
+          <HelpButton page="settings-kvkk" title="KVKK Ayarları" />
+        </div>
         <p className="text-sm text-on-surface-variant mt-1 font-medium">Kişisel veri koruma ayarlarını yönetin</p>
       </div>
 

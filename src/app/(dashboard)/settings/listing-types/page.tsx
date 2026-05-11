@@ -5,6 +5,7 @@ import { motion } from "motion/react";
 import { toast } from "sonner";
 import { Tags, Plus, Trash2, Loader2 } from "lucide-react";
 import { useConfirm } from "@/components/ui/confirm-dialog";
+import { HelpButton } from "@/components/ui/help-button";
 
 interface ListingTypeCatalog {
   id: string;
@@ -87,7 +88,10 @@ export default function ListingTypesSettingsPage() {
           <Tags className="w-6 h-6" />
         </div>
         <div>
-          <h1 className="text-2xl font-black tracking-tight text-on-surface">İlan Tipleri</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-black tracking-tight text-on-surface">İlan Tipleri</h1>
+            <HelpButton page="settings-listing-types" title="İlan Tipleri" />
+          </div>
           <p className="text-sm text-on-surface-variant">
             İlan formundaki ve filtrelerdeki tip seçeneklerini yönet (örn: Satılık, Kiralık, Arşiv).
           </p>

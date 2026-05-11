@@ -49,6 +49,7 @@ Müşteri oluşturulduktan sonra detay sayfasında **Talep Profili** sekmesine g
 - **Aşama:** Lead → Nitelikli → Aktif → Gösterim → Teklif → Sözleşme → Kapandı
 - **Aciliyet:** Düşük / Orta / Yüksek / Acil
 - **Mülk tercihleri:** Tip, şehir, ilçe, oda sayısı, m²
+- **İlgilendiği Projeler / Siteler:** Müşterinin spesifik olarak ilgilendiği projeleri çoklu seçimle ekleyin (örn. Marina Park, Sun City). Daha sonra **Müşteriler listesi → İlgilendiği Proje filtresi** veya proje sayfasındaki **İlgili Müşteriler** sekmesinden bu müşterileri bulabilirsiniz.
 - **Finansman:** Nakit / Kredi / Takas, ön onay durumu, peşinat %
 - **Etiketler:** VIP, Yatırımcı, Acil gibi özel etiketler
 - **Sonraki takip tarihi:** Otomatik hatırlatma için kritik
@@ -111,14 +112,58 @@ Müşteri detay sayfasında **Bilgiler** sekmesine girin → **Düzenle** → en
 
 ### 2.3 Proje / Blok Yönetimi (Toplu Konut)
 **Ayarlar → Projeler** sayfasında:
-1. **Yeni Proje** → ad, konum, açıklama, ana fotoğraf
-2. Proje detayında **Blok ekle** → her bloğa kat sayısı, daire/kat
-3. İlan oluştururken **Proje + Blok + Daire No** seçilir → otomatik konum/özellik miras alınır
+1. **Yeni Proje** → ad, **kısa kod** (örn. `2124` — toplu yapıştırmada kullanılır), müteahhit, şehir (dropdown), ilçe (dropdown), bloklar
+2. Mevcut bir projede kısa kodu yoksa **+ Kısa Kod** butonuyla atayın
+3. Proje detayında **Blok ekle** → her bloğa kat sayısı, daire/kat
+4. İlan oluştururken **Proje + Blok + Daire No** seçilir → otomatik konum/özellik miras alınır
+
+> **Kısa kod (Project.code)** zorunlu değildir; sadece toplu yapıştırma akışını kullanacağınız projelerde gerekir (§ 2.5).
+
+**Proje detay sayfası sekmeleri:**
+- **Daireler & Sahipleri** — projedeki tüm birimler ve ilan sahipleri. Sağ üstte **"Bu projeye toplu birim ekle"** butonu, sizi Aralık modunda toplu üretim sayfasına götürür.
+- **İlgili Müşteriler** — bu projeyle ilgilendiğini işaretlemiş tüm müşteriler (müşteri talep profilinden eklenir). Üstte **Müşteri listesinde aç** linki aynı filtreyi `/customers?interestedProjectId=...` üzerinden açar.
+- **Excel** — projeye özel Excel içe/dışa aktarma
 
 ![Proje yönetimi](docs/screenshots/08-projects.png)
 
 ### 2.4 İlan Excel İşlemleri
 Müşteride olduğu gibi **Dışa Aktar / İçe Aktar / Şablon İndir** butonları vardır. İçe aktarımda kılavuz modal'ı açılır — kolon adlarına dikkat.
+
+### 2.5 Toplu Mülk Üretme (Portföy → Toplu Mülk Üret)
+Tek seferde çok sayıda placeholder daire/dükkan/villa kaydı oluşturmak için. Portföy sayfasında üstteki **Toplu Mülk Üret** butonuyla erişilir. İki mod var, üstte sekme olarak seçilir.
+
+**Önce hazırlık:** Üst kısımdaki ortak alanlar her iki mod için geçerlidir:
+- **Mülk Tipi**: İşyeri/Dükkan, Daire, Villa, Müstakil Ev (zorunlu — buton ve mesaj etiketlerine yansır)
+- **İlan Tipi**: Satılık / Kiralık
+- **Varsayılan Fiyat**: 0 bırakılabilir, sonra tek tek düzenlenir
+
+#### Mod 1 — Aralık ile Üret (tek proje, ardışık numaralar)
+Bir projede bir bloğa ardışık numaralarla birim üretir.
+1. **Proje** ve **Blok** seç
+2. **Başlangıç No / Bitiş No** gir (max 500 birim/işlem)
+3. İsteğe bağlı **Önek** (örn. `A1-`) ve **Hane / padding** (`3` → `001, 002, …`)
+4. **N dükkan üret** butonuna bas — mevcut numaralar otomatik atlanır
+
+> İpucu: Proje detay → Daireler sayfasındaki **"Bu projeye toplu birim ekle"** linkiyle bu moda gelirseniz proje önceden seçilidir.
+
+#### Mod 2 — Liste ile Üret (çoklu proje, yapıştırılabilir)
+Excel/Sheets'ten doğrudan kopyala-yapıştır. Sparse numaralar ve birden çok proje desteklenir.
+
+Her satırda 3 sütun, TAB veya boşlukla ayrılmış:
+
+```
+2124    A1    21
+2124    A1    22
+2125    B1    33
+```
+
+1. Listeyi textarea'ya yapıştır
+2. İsteğe bağlı: **Eksik blokları otomatik oluştur** (default: kapalı)
+3. **Önizle** → kaç yeni / kaç çakışma / kaç eksik proje veya blok göreceksiniz
+4. Eksik proje varsa **Ayarlar → Projeler**'de kısa kodu atayın, sonra tekrar önizleyin
+5. **N mülk üret** ile onaylayın — tüm satırlar tek transaction'da yazılır; bir hata olursa hiçbir kayıt eklenmez
+
+Tek seferde **max 1000 satır** işlenir. Yetki: ADMIN ve MANAGER (MANAGER atanmış şubeye sahip olmalıdır).
 
 ---
 

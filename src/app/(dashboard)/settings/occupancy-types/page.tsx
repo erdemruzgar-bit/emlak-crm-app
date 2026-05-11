@@ -5,6 +5,7 @@ import { motion } from "motion/react";
 import { toast } from "sonner";
 import { Home, Plus, Trash2, Loader2 } from "lucide-react";
 import { useConfirm } from "@/components/ui/confirm-dialog";
+import { HelpButton } from "@/components/ui/help-button";
 
 interface OccupancyStatusCatalog {
   id: string;
@@ -87,7 +88,10 @@ export default function OccupancyTypesSettingsPage() {
           <Home className="w-6 h-6" />
         </div>
         <div>
-          <h1 className="text-2xl font-black tracking-tight text-on-surface">Sakin Durumları</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-black tracking-tight text-on-surface">Sakin Durumları</h1>
+            <HelpButton page="settings-occupancy-types" title="Sakin Durumları" />
+          </div>
           <p className="text-sm text-on-surface-variant">
             İlan formundaki ve filtrelerdeki sakin durumu seçeneklerini yönet (örn: Sahibi Oturuyor, Kapora Alındı, Sözleşme Alındı).
           </p>

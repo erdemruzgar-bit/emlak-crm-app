@@ -38,6 +38,10 @@ export async function GET(
       propertyMatches: {
         include: { property: { select: { id: true, title: true, price: true, listingType: true } } },
       },
+      interestedProjects: {
+        include: { project: { select: { id: true, name: true, code: true, city: true, district: true } } },
+        orderBy: { createdAt: "desc" },
+      },
     },
   });
 
@@ -158,6 +162,10 @@ export async function PUT(
   if (updateData.nextFollowUpDate) updateData.nextFollowUpDate = new Date(updateData.nextFollowUpDate as string);
   if (updateData.lastContactDate) updateData.lastContactDate = new Date(updateData.lastContactDate as string);
 
+  // interestedProjectIds set-semantik: ana update'ten çıkarıp transaction içinde diff uygula
+  const interestedProjectIds = (updateData.interestedProjectIds as string[] | undefined);
+  delete updateData.interestedProjectIds;
+
   // KVKK: AGENT (kendi eklemediği müşteri için) hassas alanı yalnızca aktif gerekçeli oturumla güncelleyebilir.
   // Kendi eklediği müşteri ise her zaman güncelleyebilir.
   if (requiresAccessGateFor(actor, { createdById: oldCustomer.createdById })) {
@@ -171,9 +179,41 @@ export async function PUT(
     if (!revealed.has("tc")) delete updateData.tcKimlikNo;
   }
 
-  const customer = await prisma.customer.update({
-    where: { id },
-    data: updateData,
+  const customer = await prisma.$transaction(async (tx) => {
+    const updated = await tx.customer.update({
+      where: { id },
+      data: updateData,
+    });
+
+    // İlgilendiği projeler set-semantik: kaynak liste verildiyse mevcut seti tamamen yenile
+    if (interestedProjectIds !== undefined) {
+      const desired = Array.from(new Set(interestedProjectIds));
+      const existing = await tx.customerInterestedProject.findMany({
+        where: { customerId: id },
+        select: { projectId: true },
+      });
+      const existingIds = new Set(existing.map((r) => r.projectId));
+      const toRemove = [...existingIds].filter((pid) => !desired.includes(pid));
+      const toAdd = desired.filter((pid) => !existingIds.has(pid));
+
+      if (toRemove.length > 0) {
+        await tx.customerInterestedProject.deleteMany({
+          where: { customerId: id, projectId: { in: toRemove } },
+        });
+      }
+      if (toAdd.length > 0) {
+        await tx.customerInterestedProject.createMany({
+          data: toAdd.map((projectId) => ({
+            customerId: id,
+            projectId,
+            addedById: (session.user as unknown as Record<string, unknown>).id as string,
+          })),
+          skipDuplicates: true,
+        });
+      }
+    }
+
+    return updated;
   });
 
   await createAuditLog({

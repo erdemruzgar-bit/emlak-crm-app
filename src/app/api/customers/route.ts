@@ -35,6 +35,7 @@ export async function GET(req: NextRequest) {
   const lastContactDays = searchParams.get("lastContactDays") || "";
   const assignedAgentId = searchParams.get("assignedAgentId") || "";
   const branchId = searchParams.get("branchId") || "";
+  const interestedProjectId = searchParams.get("interestedProjectId") || "";
 
   const user = session.user as unknown as Record<string, unknown>;
   const where: Record<string, unknown> = {};
@@ -75,6 +76,9 @@ export async function GET(req: NextRequest) {
   if (rooms) where.minRooms = rooms;
   if (assignedAgentId) where.assignedAgentId = assignedAgentId;
   if (branchId) where.branchId = branchId;
+  if (interestedProjectId) {
+    where.interestedProjects = { some: { projectId: interestedProjectId } };
+  }
   if (tags) {
     const tagList = tags.split(",").map((t) => t.trim()).filter(Boolean);
     if (tagList.length > 0) where.tags = { hasSome: tagList };
@@ -139,7 +143,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: parsed.error.issues }, { status: 400 });
   }
 
-  const { consents, tcKimlikNo, ...data } = parsed.data;
+  const { consents, tcKimlikNo, interestedProjectIds, ...data } = parsed.data;
   const user = session.user as unknown as Record<string, unknown>;
 
   const customer = await prisma.customer.create({
@@ -149,6 +153,16 @@ export async function POST(req: NextRequest) {
       assignedAgentId: data.assignedAgentId || (user.id as string),
       createdById: user.id as string,
       branchId: data.branchId || (user.branchId as string),
+      ...(interestedProjectIds && interestedProjectIds.length > 0
+        ? {
+            interestedProjects: {
+              create: Array.from(new Set(interestedProjectIds)).map((projectId) => ({
+                projectId,
+                addedById: user.id as string,
+              })),
+            },
+          }
+        : {}),
       consents: {
         createMany: {
           data: [

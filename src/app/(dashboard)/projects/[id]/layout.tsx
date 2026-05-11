@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { use, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { ArrowLeft, Building2, Home, Upload, Layers } from "lucide-react";
+import { ArrowLeft, Building2, Home, Upload, Users } from "lucide-react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 
@@ -36,7 +36,7 @@ export default function ProjectDetailLayout({
 
   const tabs = [
     { href: `/projects/${id}/units`, label: "Daireler & Sahipleri", icon: Home },
-    { href: `/projects/${id}/bulk`, label: "Toplu Üret", icon: Layers },
+    { href: `/projects/${id}/customers`, label: "İlgili Müşteriler", icon: Users },
     { href: `/projects/${id}/excel`, label: "Excel", icon: Upload },
   ];
 

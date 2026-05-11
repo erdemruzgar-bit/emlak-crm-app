@@ -32,7 +32,9 @@ ART CRM, bu sorunların hepsini çözer.
 |-------|------|
 | **Müşteri Yönetimi** | Zengin talep profili, otomatik ilan eşleştirme, tek tıkla iletişim kaydı, Excel import/export |
 | **Portföy Yönetimi** | Fotoğraf/video galerisi, sahip-kiracı ilişkisi, durum takibi, Tapu bilgileri (ada/pafta/parsel), Vatandaşlığa Uygun bayrağı, Excel import/export |
-| **Proje / Blok Hiyerarşisi** | Toplu konut projeleri için Proje → Blok → Daire yapısı |
+| **Proje / Blok Hiyerarşisi** | Toplu konut projeleri için Proje → Blok → Daire yapısı, opsiyonel kısa kod (toplu yapıştırma için) |
+| **Müşteri ↔ Proje İlişkisi** | Bir müşteri birden çok proje/site ile ilgilenebilir; proje sayfasında "İlgili Müşteriler" sekmesi ile filtrelenir |
+| **Toplu Mülk Üretme** | Tek seferde 1000'e kadar placeholder daire/dükkan/villa: ardışık aralık veya yapıştırılabilir liste (çoklu proje) |
 | **Otomatik Eşleştirme** | Bütçe, şehir, tip, m² kriterlerine göre skorlu eşleşme |
 | **Takvim & Randevu** | Gösterim, toplantı, tamamlama ve iptal akışları |
 | **Görev Yönetimi** | Kendine ve ekibe atama, öncelik, son tarih |
@@ -70,7 +72,7 @@ ART CRM, bu sorunların hepsini çözer.
 
 ### Müşteri Detayı — 8 Sekme
 1. **Bilgiler** — Ad, telefon, e-posta, TC (AES-256 şifreli), adres, fotoğraf
-2. **Talep Profili** — Aşama, aciliyet, bütçe, mülk tercihleri, finansman, etiketler
+2. **Talep Profili** — Aşama, aciliyet, bütçe, mülk tercihleri, **ilgilendiği projeler (çoklu)**, finansman, etiketler
 3. **Notlar** — Serbest metin
 4. **İletişim** — Telefon/e-posta/WhatsApp/Ziyaret kayıtları
 5. **Randevular** — Bu müşteriyle ilgili tüm randevular

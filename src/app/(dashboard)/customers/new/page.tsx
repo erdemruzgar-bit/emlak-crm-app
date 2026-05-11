@@ -1,13 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, ShieldCheck, Info, AlertCircle, Loader2, Target } from "lucide-react";
+import { ArrowLeft, ShieldCheck, Info, AlertCircle, Loader2, Target, Building2, X } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
 import { HelpButton } from "@/components/ui/help-button";
+
+type ProjectOption = { id: string; name: string; code?: string | null; city?: string | null; district?: string | null };
 
 // "Oda" alanları yalnızca oda kavramı olan mülk tiplerinde gösterilir.
 // ARSA için saklı, diğerleri (DAIRE, VILLA, MUSTAKILEV, ISYERI) için açık.
@@ -24,6 +26,10 @@ export default function NewCustomerPage() {
   const [roomTypeOptions, setRoomTypeOptions] = useState<{ id: string; name: string }[]>([]);
   const [minRooms, setMinRooms] = useState("");
   const [maxRooms, setMaxRooms] = useState("");
+  const [projectOptions, setProjectOptions] = useState<ProjectOption[]>([]);
+  const [interestedProjects, setInterestedProjects] = useState<ProjectOption[]>([]);
+  const [projectSearch, setProjectSearch] = useState("");
+  const [showProjectDropdown, setShowProjectDropdown] = useState(false);
 
   useEffect(() => {
     fetch("/api/customer-types")
@@ -39,7 +45,30 @@ export default function NewCustomerPage() {
         if (Array.isArray(data)) setRoomTypeOptions(data);
       })
       .catch(() => setRoomTypeOptions([]));
+
+    fetch("/api/projects")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => {
+        if (Array.isArray(data)) setProjectOptions(data);
+      })
+      .catch(() => setProjectOptions([]));
   }, []);
+
+  const filteredProjectOptions = useMemo(() => {
+    const selectedIds = new Set(interestedProjects.map((p) => p.id));
+    const term = projectSearch.trim().toLowerCase();
+    return projectOptions
+      .filter((p) => !selectedIds.has(p.id))
+      .filter((p) => {
+        if (!term) return true;
+        return (
+          p.name.toLowerCase().includes(term) ||
+          (p.code ?? "").toLowerCase().includes(term) ||
+          (p.city ?? "").toLowerCase().includes(term)
+        );
+      })
+      .slice(0, 12);
+  }, [projectOptions, interestedProjects, projectSearch]);
 
   // Oda alanları: tercih edilen tipler arasında oda kavramı olan en az bir tip varsa açık
   const showRoomFields =
@@ -84,6 +113,7 @@ export default function NewCustomerPage() {
       preferredFeatures: preferredFeatures.length > 0 ? preferredFeatures : undefined,
       minRooms: showRoomFields && minRooms ? minRooms : undefined,
       maxRooms: showRoomFields && maxRooms ? maxRooms : undefined,
+      interestedProjectIds: interestedProjects.length > 0 ? interestedProjects.map((p) => p.id) : undefined,
     };
 
     const res = await fetch("/api/customers", {
@@ -275,6 +305,71 @@ export default function NewCustomerPage() {
                   )}>{f}</button>
               ))}
             </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3 flex items-center gap-2">
+              <Building2 className="w-3.5 h-3.5" />
+              İlgilendiği Projeler / Siteler
+            </label>
+            {interestedProjects.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-3">
+                {interestedProjects.map((p) => (
+                  <span key={p.id} className="inline-flex items-center gap-1.5 pl-3 pr-1.5 py-1.5 rounded-lg bg-primary text-white text-xs font-bold">
+                    {p.name}
+                    {p.code ? <span className="opacity-70">({p.code})</span> : null}
+                    <button
+                      type="button"
+                      onClick={() => setInterestedProjects((prev) => prev.filter((x) => x.id !== p.id))}
+                      className="ml-1 h-5 w-5 inline-flex items-center justify-center rounded-md hover:bg-white/15"
+                      aria-label="Kaldır"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+            <div className="relative">
+              <input
+                type="text"
+                value={projectSearch}
+                onChange={(e) => { setProjectSearch(e.target.value); setShowProjectDropdown(true); }}
+                onFocus={() => setShowProjectDropdown(true)}
+                onBlur={() => setTimeout(() => setShowProjectDropdown(false), 150)}
+                placeholder="Proje ara ve seç (örn. Marina Park)"
+                className={inputClass}
+              />
+              {showProjectDropdown && filteredProjectOptions.length > 0 && (
+                <div className="absolute left-0 right-0 mt-2 z-20 max-h-64 overflow-auto rounded-xl bg-surface-container-lowest shadow-lg border border-outline-variant/20">
+                  {filteredProjectOptions.map((p) => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        setInterestedProjects((prev) => [...prev, p]);
+                        setProjectSearch("");
+                      }}
+                      className="w-full px-4 py-2.5 text-left text-sm hover:bg-surface-container-low flex items-center justify-between"
+                    >
+                      <span className="font-medium text-on-surface">
+                        {p.name}
+                        {p.code ? <span className="text-on-surface-variant"> ({p.code})</span> : null}
+                      </span>
+                      {(p.city || p.district) && (
+                        <span className="text-xs text-on-surface-variant">
+                          {[p.city, p.district].filter(Boolean).join(" / ")}
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <p className="text-xs text-on-surface-variant mt-2">
+              Müşterinin ilgilendiği bir veya birden fazla projeyi seçin. Daha sonra &quot;Bu projeyle ilgilenen müşteriler&quot; şeklinde filtreleyebilirsiniz.
+            </p>
           </div>
         </div>
 

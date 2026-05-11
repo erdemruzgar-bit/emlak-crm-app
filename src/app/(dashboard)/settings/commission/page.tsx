@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Calculator, Loader2, Save, Building2, RotateCcw, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useConfirm } from "@/components/ui/confirm-dialog";
+import { HelpButton } from "@/components/ui/help-button";
 
 interface CommissionPolicy {
   id: string;
@@ -149,7 +150,10 @@ export default function CommissionSettingsPage() {
           <Calculator className="w-6 h-6" />
         </div>
         <div>
-          <h1 className="text-2xl font-black tracking-tight text-on-surface">Komisyon Politikası</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-black tracking-tight text-on-surface">Komisyon Politikası</h1>
+            <HelpButton page="settings-commission" title="Komisyon Politikası" />
+          </div>
           <p className="text-sm text-on-surface-variant">Default oranlar, KDV ve paylaşım şablonları. Hesaplayıcı bu değerlerle başlar.</p>
         </div>
       </div>

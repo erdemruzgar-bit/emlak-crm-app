@@ -5,6 +5,7 @@ import { Building2, MapPin, Phone, Loader2, Plus, X, AlertCircle, Pencil, Trash2
 import { motion, AnimatePresence } from "motion/react";
 import { toast } from "sonner";
 import { useConfirm } from "@/components/ui/confirm-dialog";
+import { HelpButton } from "@/components/ui/help-button";
 
 interface Branch {
   id: string;
@@ -101,7 +102,10 @@ export default function BranchesSettingsPage() {
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-black tracking-tighter text-on-surface">Şube Yönetimi</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-3xl font-black tracking-tighter text-on-surface">Şube Yönetimi</h1>
+            <HelpButton page="settings-branches" title="Şube Yönetimi" />
+          </div>
           <p className="text-sm text-on-surface-variant mt-1 font-medium">Şubelerinizi yönetin</p>
         </div>
         <button onClick={openCreate} className="primary-gradient text-white px-6 py-3 rounded-xl text-sm font-bold shadow-xl shadow-primary/10 hover:opacity-90 transition-all flex items-center gap-2">

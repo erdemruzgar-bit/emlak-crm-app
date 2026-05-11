@@ -34,6 +34,7 @@ import {
 import { motion, AnimatePresence } from "motion/react";
 import { toast } from "sonner";
 import { useConfirm } from "@/components/ui/confirm-dialog";
+import { HelpButton } from "@/components/ui/help-button";
 import { LinkifiedText } from "@/components/ui/linkified-text";
 import { cn } from "@/lib/utils";
 
@@ -376,9 +377,12 @@ export default function PropertyDetailPage() {
           <ArrowLeft className="w-5 h-5" />
         </Link>
         <div className="flex-1">
-          <h1 className="text-3xl font-black tracking-tighter text-on-surface">
-            {property.title}
-          </h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-3xl font-black tracking-tighter text-on-surface">
+              {property.title}
+            </h1>
+            <HelpButton page="properties-detail" title="Mülk Detayı" />
+          </div>
           <div className="flex items-center gap-2 text-on-surface-variant mt-1">
             <MapPin className="w-4 h-4 text-primary" />
             <span className="text-sm font-medium">

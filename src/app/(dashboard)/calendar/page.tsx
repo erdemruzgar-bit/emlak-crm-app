@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { ExcelToolbar } from "@/components/ui/excel-toolbar";
 import { useConfirm } from "@/components/ui/confirm-dialog";
+import { HelpButton } from "@/components/ui/help-button";
 
 interface Appointment {
   id: string;
@@ -330,7 +331,10 @@ export default function CalendarPage() {
       {/* Left: Daily Agenda Sidebar */}
       <section className="w-80 flex flex-col gap-6 shrink-0 overflow-y-auto no-scrollbar">
         <div className="space-y-1">
-          <h2 className="text-2xl font-black tracking-tighter text-on-surface">Günlük Ajanda</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-2xl font-black tracking-tighter text-on-surface">Günlük Ajanda</h2>
+            <HelpButton page="calendar" title="Takvim & Randevular" />
+          </div>
           <p className="text-sm text-on-surface-variant capitalize font-medium">{todayFormatted}</p>
         </div>
 

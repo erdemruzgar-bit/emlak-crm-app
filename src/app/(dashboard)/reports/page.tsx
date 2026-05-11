@@ -5,6 +5,7 @@ import { BarChart3, Trophy, Building2, ShieldCheck, CheckCircle, Handshake, Mega
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
 import { ExcelToolbar } from "@/components/ui/excel-toolbar";
+import { HelpButton } from "@/components/ui/help-button";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell,
@@ -68,7 +69,10 @@ export default function ReportsPage() {
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-3xl font-black tracking-tighter text-on-surface">Raporlar</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-3xl font-black tracking-tighter text-on-surface">Raporlar</h1>
+            <HelpButton page="reports" title="Raporlar" />
+          </div>
           <p className="text-on-surface-variant text-sm mt-1 font-medium">Detaylı analiz ve istatistikler</p>
         </div>
         <ExcelToolbar exportUrl="/api/reports/export" label="rapor" />

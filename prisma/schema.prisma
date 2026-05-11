@@ -209,6 +209,7 @@ model User {
   contractAttachmentsUploaded ContractAttachment[]
   reminders           Reminder[]
   propertyNotes       PropertyNote[]
+  customerInterestedProjectsAdded CustomerInterestedProject[] @relation("CustomerInterestedProjectAddedBy")
 }
 
 // ─── KVKK Audit Log ───
@@ -297,6 +298,7 @@ model Customer {
   appointments   Appointment[]
   contracts      Contract[]          @relation("ContractCustomer")
   ownedContracts Contract[]          @relation("ContractOwner")
+  interestedProjects CustomerInterestedProject[]
 
   @@index([assignedAgentId])
   @@index([createdById])
@@ -305,6 +307,24 @@ model Customer {
   @@index([urgency])
   @@index([lastContactDate])
   @@index([nextFollowUpDate])
+}
+
+// Müşteri ↔ Proje çoklu ilişki (explicit join — ileride note/addedBy gibi alan taşımak için)
+model CustomerInterestedProject {
+  id         String   @id @default(cuid())
+  customerId String
+  projectId  String
+  addedById  String?
+  note       String?
+  createdAt  DateTime @default(now())
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  project  Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  addedBy  User?    @relation("CustomerInterestedProjectAddedBy", fields: [addedById], references: [id])
+
+  @@unique([customerId, projectId])
+  @@index([customerId])
+  @@index([projectId])
 }
 
 model CustomerConsent {
@@ -474,6 +494,7 @@ model Property {
 model Project {
   id          String   @id @default(cuid())
   name        String
+  code        String?  @unique  // Kullanıcı tarafından atanan kısa kod (ör. "2124") — toplu yapıştırma akışı için
   city        String?
   district    String?
   address     String?
@@ -486,6 +507,7 @@ model Project {
 
   blocks     Block[]
   properties Property[]
+  interestedCustomers CustomerInterestedProject[]
 
   @@index([name])
   @@index([city, district])

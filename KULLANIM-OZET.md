@@ -29,10 +29,14 @@ title: "ART CRM — Hızlı Başlangıç"
 
 ### 1. Müşteri Ekle
 **Müşteriler → Yeni Müşteri** → Ad, Soyad, Tip, KVKK rızaları (Açık Rıza + Aydınlatma zorunlu).
-Detayda **Talep Profili**: bütçe, mülk tipi, şehir, oda, etiketler.
+Detayda **Talep Profili**: bütçe, mülk tipi, şehir, oda, etiketler, **ilgilendiği projeler** (çoklu seçim — sonra proje sayfasından "İlgili Müşteriler" sekmesiyle filtrelersin).
 
 ### 2. İlan Ekle
 **Portföy → Yeni İlan** → Başlık, Tip (Satılık/Kiralık), Mülk Tipi, Fiyat. Tapu (ada/pafta/parsel), proje/blok, sahibi, fotoğraf.
+
+**Toplu üret** (çok sayıda kayıt): **Portföy → Toplu Mülk Üret** → iki mod:
+- **Aralık ile Üret** — tek proje + tek blok + ardışık numaralar (örn. A1 bloğu 1–30 daire)
+- **Liste ile Üret** — `proje_kodu  blok  birim` formatında TAB ayraçlı yapıştır; çoklu proje destekli (max 1000 satır). Proje kodu Ayarlar → Projeler'den atanır.
 
 ### 3. Müşteri ↔ İlan Eşleştirme
 Sistem otomatik öneri yapar (skor 0–105). Müşteri sayfasında **İlgili İlanlar**, ilan sayfasında **İlgili Müşteriler**. **✓ İlgileniyor / ✗ Reddet** ile işaret koyun, manuel ekleme de mümkün.
@@ -75,6 +79,8 @@ Kendinin eklemediği müşterinin **telefon/e-posta/TC** alanları maskelidir (`
 | Excel izni ver | Düzenle → "Excel İçeri/Dışarı Aktarma" checkbox |
 | Şube ekle | Ayarlar → Şubeler |
 | Müşteri/İlan/Oda tipleri | Ayarlar → ilgili katalog sayfası |
+| Proje **kısa kod** ata (toplu yapıştırma için) | Ayarlar → Projeler → proje kartında **+ Kısa Kod** |
+| Toplu mülk üret | Portföy → **Toplu Mülk Üret** |
 | Komisyon politikası | Ayarlar → Komisyon |
 | Erişim logları | Sol menü → **Erişim Logları** |
 | Denetim kayıtları | Ayarlar → Denetim Kayıtları |

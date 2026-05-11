@@ -5,6 +5,7 @@ import { motion } from "motion/react";
 import { toast } from "sonner";
 import { UserCog, Plus, Trash2, Loader2, Home, Building2 } from "lucide-react";
 import { useConfirm } from "@/components/ui/confirm-dialog";
+import { HelpButton } from "@/components/ui/help-button";
 
 interface CustomerTypeCatalog {
   id: string;
@@ -105,7 +106,10 @@ export default function CustomerTypesSettingsPage() {
           <UserCog className="w-6 h-6" />
         </div>
         <div>
-          <h1 className="text-2xl font-black tracking-tight text-on-surface">Müşteri Tipleri</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-black tracking-tight text-on-surface">Müşteri Tipleri</h1>
+            <HelpButton page="settings-customer-types" title="Müşteri Tipleri" />
+          </div>
           <p className="text-sm text-on-surface-variant">
             Müşteri kategorilerini yönet. &quot;Kiracı/Alıcı&quot; ve &quot;Mülk Sahibi&quot; işaretleri
             kontrat formundaki filtreleri belirler.

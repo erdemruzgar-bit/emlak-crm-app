@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Bell, Plus, Check, Trash2, Calendar, AlertTriangle, Loader2, X, User as UserIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useConfirm } from "@/components/ui/confirm-dialog";
+import { HelpButton } from "@/components/ui/help-button";
 
 interface Reminder {
   id: string;
@@ -160,7 +161,10 @@ export default function RemindersPage() {
             <Bell className="w-7 h-7" />
           </div>
           <div>
-            <h1 className="text-3xl font-black tracking-tighter text-on-surface">Hatırlatmalar</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-3xl font-black tracking-tighter text-on-surface">Hatırlatmalar</h1>
+              <HelpButton page="reminders" title="Hatırlatmalar" />
+            </div>
             <p className="text-sm text-on-surface-variant font-medium mt-1">
               Kişisel ve ekip hatırlatmaları
             </p>

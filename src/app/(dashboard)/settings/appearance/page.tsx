@@ -5,6 +5,7 @@ import { motion } from "motion/react";
 import { Palette, Upload, X, Check, Loader2, RotateCcw, Image as ImageIcon } from "lucide-react";
 import { useTheme } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
+import { HelpButton } from "@/components/ui/help-button";
 
 // Unsplash'ten curated emlak temalı yüksek kaliteli arka planlar (ücretsiz, Unsplash License)
 const PRESET_BACKGROUNDS = [
@@ -72,9 +73,12 @@ export default function AppearancePage() {
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-black tracking-tighter text-on-surface flex items-center gap-3">
-          <Palette className="w-7 h-7 text-primary" /> Görünüm ve Tema
-        </h1>
+        <div className="flex items-center gap-2 flex-wrap">
+          <h1 className="text-3xl font-black tracking-tighter text-on-surface flex items-center gap-3">
+            <Palette className="w-7 h-7 text-primary" /> Görünüm ve Tema
+          </h1>
+          <HelpButton page="settings-appearance" title="Görünüm ve Tema" />
+        </div>
         <p className="text-sm text-on-surface-variant mt-1 font-medium">
           Arka plan görselinizi seçin veya kendi fotoğrafınızı yükleyin. Tercihiniz bu cihazda saklanır.
         </p>

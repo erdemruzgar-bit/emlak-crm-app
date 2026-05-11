@@ -5,6 +5,7 @@ import { Info, FileText, Filter, X } from "lucide-react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { TableSkeleton } from "@/components/ui/skeleton";
+import { HelpButton } from "@/components/ui/help-button";
 
 interface AuditLog {
   id: string;
@@ -79,7 +80,10 @@ export default function AuditLogPage() {
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
       <div>
-        <h1 className="text-3xl font-black tracking-tighter text-on-surface">Denetim Kayıtları</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-3xl font-black tracking-tighter text-on-surface">Denetim Kayıtları</h1>
+          <HelpButton page="settings-audit-log" title="Denetim Kayıtları" />
+        </div>
         <p className="text-sm text-on-surface-variant mt-1 font-medium">KVKK kapsamında tüm veri erişim ve değişiklik kayıtları</p>
       </div>
 

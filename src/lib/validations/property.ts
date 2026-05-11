@@ -1,6 +1,8 @@
 import { z } from "zod/v4";
 
-export const propertyCreateSchema = z.object({
+// Temel obje şema (ZodObject) — partial() çağrılabilmesi için ayrı tutulur.
+// Tam validasyon için `propertyCreateSchema` / `propertyUpdateSchema` üzerinden superRefine eklenir.
+const propertyBaseShape = z.object({
   title: z.string().min(3, "Başlık en az 3 karakter olmalı"),
   listingType: z.string().min(1, "İlan tipi gerekli"),
   propertyType: z.enum(["DAIRE", "VILLA", "ARSA", "ISYERI", "MUSTAKILEV"]),
@@ -75,7 +77,33 @@ export const propertyCreateSchema = z.object({
   kitchenType: z.enum(["ACIK", "KAPALI"]).nullable().optional(),
 });
 
-export const propertyUpdateSchema = propertyCreateSchema.partial();
+const refinePropertyConstraints = (
+  data: {
+    floor?: number | null;
+    totalFloors?: number | null;
+    parkingSpotCount?: number | null;
+    hasParking?: boolean | null;
+  },
+  ctx: z.RefinementCtx,
+) => {
+  if (data.floor != null && data.totalFloors != null && data.floor > data.totalFloors) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["floor"],
+      message: "Kat numarası toplam kat sayısından büyük olamaz",
+    });
+  }
+  if (data.parkingSpotCount != null && data.parkingSpotCount > 0 && data.hasParking === false) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["hasParking"],
+      message: "Otopark sayısı verildiğinde \"otopark var\" işaretlenmeli",
+    });
+  }
+};
+
+export const propertyCreateSchema = propertyBaseShape.superRefine(refinePropertyConstraints);
+export const propertyUpdateSchema = propertyBaseShape.partial().superRefine(refinePropertyConstraints);
 
 export type PropertyCreateInput = z.infer<typeof propertyCreateSchema>;
 export type PropertyUpdateInput = z.infer<typeof propertyUpdateSchema>;

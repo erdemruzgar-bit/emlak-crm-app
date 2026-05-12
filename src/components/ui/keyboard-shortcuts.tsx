@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import { Keyboard, Search, X, ArrowRight, Plus } from "lucide-react";
-import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/components/theme-provider";
 

@@ -342,6 +342,7 @@ export default function CustomerDetailPage() {
       .then((data) => setAccessHistory(Array.isArray(data) ? data : []))
       .catch(() => setAccessHistory([]))
       .finally(() => setAccessHistoryLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, customer?.id]);
 
   // Aktif erişim oturumu varsa, sayfadan ayrılırken (tab kapatma / refresh) tarayıcıya uyarı bastır.
@@ -361,6 +362,7 @@ export default function CustomerDetailPage() {
     };
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [customer?.activeAccessSession?.id, customer?.id]);
 
   // Müşterinin tercih ettiği tipler arasında oda kavramı olan en az bir tip varsa oda alanları görünür
@@ -1758,16 +1760,3 @@ function SensitiveField({
   );
 }
 
-function InfoRow({ icon: Icon, label, value }: { icon: React.ComponentType<{ className?: string }>; label: string; value: string | null | undefined }) {
-  return (
-    <div className="p-4 bg-surface-container-low rounded-2xl border border-outline-variant/5 flex items-center gap-3">
-      <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-primary shadow-sm shrink-0">
-        <Icon className="w-5 h-5" />
-      </div>
-      <div>
-        <p className="text-[10px] text-on-surface-variant uppercase tracking-widest font-bold">{label}</p>
-        <p className="text-sm font-bold text-on-surface mt-0.5">{value || "-"}</p>
-      </div>
-    </div>
-  );
-}

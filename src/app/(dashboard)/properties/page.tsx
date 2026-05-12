@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { PropertyCard, type PropertyCardData, formatPrice, resolvePropertyListing } from "@/components/ui/property-card";
+import { SafeImage } from "@/components/ui/safe-image";
 import { PropertyDetail } from "@/components/ui/property-detail";
 import { ExcelToolbar } from "@/components/ui/excel-toolbar";
 import { CardGridSkeleton } from "@/components/ui/skeleton";
@@ -494,9 +495,9 @@ function PropertiesPageInner() {
                       )}>
                       <td className="px-4 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl overflow-hidden bg-surface-container shrink-0">
+                          <div className="relative w-10 h-10 rounded-xl overflow-hidden bg-surface-container shrink-0">
                             {p.images[0] ? (
-                              <img src={p.images[0].url} alt="" className="w-full h-full object-cover" />
+                              <SafeImage src={p.images[0].url} alt="" className="object-cover" />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center text-on-surface-variant/30">
                                 <Home className="w-4 h-4" />
@@ -660,7 +661,7 @@ function CompactCard({ property: p, isSelected, onClick, onDoubleClick }: {
       )}>
       <div className="relative h-28 overflow-hidden bg-surface-container-high">
         {p.images[0] ? (
-          <img src={p.images[0].url} alt={p.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+          <SafeImage src={p.images[0].url} alt={p.title} className="object-cover transition-transform duration-500 group-hover:scale-105" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-on-surface-variant/20">
             <Home className="w-8 h-8" />

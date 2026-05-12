@@ -383,7 +383,7 @@ export default function PdfImportPage() {
         <div className="flex items-center gap-3 flex-wrap">
           {sitePlanUrls.map((u, i) => (
             <div key={i} className="relative group">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
+              { }
               <img
                 src={u}
                 alt={`Plan ${i + 1}`}

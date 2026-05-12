@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { toast } from "sonner";
-import { Bell, Plus, Check, Trash2, Calendar, AlertTriangle, Loader2, X, User as UserIcon } from "lucide-react";
+import { Bell, Plus, Check, Trash2, Calendar, AlertTriangle, Loader2, User as UserIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { HelpButton } from "@/components/ui/help-button";

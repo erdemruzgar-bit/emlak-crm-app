@@ -10,7 +10,6 @@ import {
   Flame,
   Calendar,
   MapPin,
-  Navigation,
   Send,
   Share2,
   TrendingUp,

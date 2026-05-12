@@ -37,7 +37,6 @@ export async function GET(req: NextRequest) {
   const branchId = searchParams.get("branchId") || "";
   const interestedProjectId = searchParams.get("interestedProjectId") || "";
 
-  const user = session.user as unknown as Record<string, unknown>;
   const where: Record<string, unknown> = {};
 
   // Müşteriler tüm şubelerde ortak; ek rol filtresi yok

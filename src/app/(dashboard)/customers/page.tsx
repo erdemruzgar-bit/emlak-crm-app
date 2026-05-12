@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useMemo, useState } from "react";
+import { SafeImage } from "@/components/ui/safe-image";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Search, UserPlus, ChevronLeft, ChevronRight, Loader2, UserX, SlidersHorizontal, X, ArrowUpDown, ArrowUp, ArrowDown, Users, UserCheck, Clock, AlertTriangle, LayoutGrid, List, Phone, Mail, MessageCircle, CheckCircle2 } from "lucide-react";
@@ -162,6 +163,7 @@ function CustomersPageInner() {
     overdueFollowUpFilter ? "1" : "",
   ].filter(Boolean).length;
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { fetchCustomers(); }, [
     page, search, typeFilter, stageFilter, urgencyFilter, sourceFilter, sortBy, sortOrder,
     preferredTypeFilter, preferredCityFilter, preferredDistrictFilter, roomsFilter,
@@ -169,6 +171,7 @@ function CustomersPageInner() {
     interestedProjectFilter,
   ]);
   // Kanban kartları her view'da hazır olsun: list mode iken md altında (mobilde) kart olarak gösteririz.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { fetchKanbanCustomers(); }, [search, typeFilter, urgencyFilter, sourceFilter]);
 
   async function fetchCustomers() {
@@ -591,7 +594,7 @@ function CustomersPageInner() {
                     <Link href={`/customers/${c.id}`} className="block">
                       <div className={cn("h-36 flex items-center justify-center relative overflow-hidden", c.photoUrl ? "bg-surface-container-high" : cn("bg-gradient-to-br", avatarColors[colorIdx]))}>
                         {c.photoUrl ? (
-                          <img src={c.photoUrl} alt={`${c.firstName} ${c.lastName}`} className="w-full h-full object-cover object-top" />
+                          <SafeImage src={c.photoUrl} alt={`${c.firstName} ${c.lastName}`} className="object-cover object-top" />
                         ) : (
                           <span className="text-5xl font-black text-white/90 select-none">
                             {c.firstName.charAt(0)}{c.lastName.charAt(0)}

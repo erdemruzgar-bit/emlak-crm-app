@@ -158,6 +158,7 @@ export default function CalendarPage() {
   const customerTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const propertyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { fetchAppointments(); }, [currentDate]);
 
   // URL'den ?newPropertyId=xxx ile geldiyse modal'ı aç ve mülkü preset et

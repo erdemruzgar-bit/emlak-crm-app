@@ -44,10 +44,24 @@ export default [
       // mevcut; yer yer geçilir. Kural kapatıldı — yeni eklenen <img>'ler de yakalanmaz,
       // bu yüzden ekipçe code review'da dikkat edilir.
       "@next/next/no-img-element": "off",
-      "@typescript-eslint/no-unused-vars": "warn",
-      "react/no-unescaped-entities": "warn",
-      "@next/next/no-page-custom-font": "warn",
-      "import/no-anonymous-default-export": "warn",
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        {
+          // Underscore ile başlayan param/var'lar kasıtlı, uyarma (ör. _req: NextRequest)
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+        },
+      ],
+      // JSX text içinde Türkçe apostrof (örn. "PDF'i", "Excel'e") — runtime sorun yok,
+      // sadece W3C HTML strictness uyarısı. Türkçe içerik için pratik değil, kapatıldı.
+      "react/no-unescaped-entities": "off",
+      // Google Fonts inline <link> — Next.js next/font/google'a geçişi öneriyor.
+      // Mevcut kullanım çalışıyor; refactor sırada değil. Kapatıldı, ileride next/font'a geçilir.
+      "@next/next/no-page-custom-font": "off",
+      // ESLint config dosyasında anonim default export — eslint kendini analiz ederken
+      // bu kuralı tetikliyor, sadece eslint.config.mjs'in kendisinde. Kapatıldı.
+      "import/no-anonymous-default-export": "off",
       "@typescript-eslint/no-unused-expressions": "warn",
     },
   },

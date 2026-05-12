@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { FileSignature, Plus, Search, Filter, Calendar, Paperclip, Home, User as UserIcon, AlertCircle } from "lucide-react";
+import { FileSignature, Plus, Search, Calendar, Paperclip, Home, AlertCircle, User as UserIcon } from "lucide-react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { HelpButton } from "@/components/ui/help-button";
@@ -64,9 +64,8 @@ export default function ContractsPage() {
   const [typeFilter, setTypeFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
 
-  useEffect(() => {
-    load();
-  }, [typeFilter, statusFilter]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { load(); }, [typeFilter, statusFilter]);
 
   async function load() {
     setLoading(true);

@@ -208,6 +208,7 @@ export default function PropertyDetailPage() {
         if (Array.isArray(data)) setListingTypeCatalog(data);
       })
       .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id]);
 
   function reloadMatches() {

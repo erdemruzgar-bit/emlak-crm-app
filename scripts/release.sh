@@ -9,7 +9,7 @@ APP_DIR="/home/crmadmin/emlak-crm-app"
 BACKUP_ROOT="/home/crmadmin/backups"
 DB_CONTAINER="emlak-crm-db"
 SERVICE="emlak-crm"
-RETENTION_DAYS=90  # 3 ay
+RETENTION_DAYS=30  # 1 ay (eskiden 90 idi; depolama tasarrufu + Drive kotası)
 
 # ─── Yardımcı fonksiyonlar ───
 red()    { echo -e "\e[31m$*\e[0m"; }

@@ -418,7 +418,7 @@ export default function CommissionCalculatorPage() {
   useEffect(() => {
     if (!policy) return;
     setShares(buildDefaultShares(template, policy, buyerAgent, sellerAgent));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [template, policy, buyerAgent, sellerAgent]);
 
   // ============== HESAP ==============

@@ -6,10 +6,10 @@ import Link from "next/link";
 import {
   Search, SlidersHorizontal, Plus, LayoutGrid, List, Loader2, Home,
   X, MapPin, DoorOpen, Maximize, ArrowUpDown, LayoutList, CalendarPlus, MessageSquare, Building2, Globe,
-  ClipboardPaste,
+  ClipboardPaste, Layers, ChevronLeft, ChevronRight,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { PropertyCard, type PropertyCardData, formatPrice } from "@/components/ui/property-card";
+import { PropertyCard, type PropertyCardData, formatPrice, resolvePropertyListing } from "@/components/ui/property-card";
 import { PropertyDetail } from "@/components/ui/property-detail";
 import { ExcelToolbar } from "@/components/ui/excel-toolbar";
 import { CardGridSkeleton } from "@/components/ui/skeleton";
@@ -52,6 +52,9 @@ function PropertiesPageInner() {
   const router = useRouter();
   const urlParams = useSearchParams();
   const [properties, setProperties] = useState<PropertyCardData[]>([]);
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState<{ page: number; limit: number; total: number; totalPages: number } | null>(null);
+  const totalCount = pagination?.total ?? 0;
   const [selectedProperty, setSelectedProperty] = useState<PropertyFull | null>(null);
   const [search, setSearch] = useState(urlParams.get("search") || "");
 
@@ -130,6 +133,12 @@ function PropertiesPageInner() {
   useEffect(() => {
     fetchProperties();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, search, listingType, propertyType, status, minPrice, maxPrice, rooms, minArea, maxArea, city, projectId, blockId, usageType, occupancyStatus, ownerCitizenship, isCitizenshipEligible, assignedAgentId, branchId, sortBy, sortOrder]);
+
+  // Filter veya arama değişince sayfayı 1'e döndür (yeni sonuç setine geçiş)
+  useEffect(() => {
+    setPage(1);
+     
   }, [search, listingType, propertyType, status, minPrice, maxPrice, rooms, minArea, maxArea, city, projectId, blockId, usageType, occupancyStatus, ownerCitizenship, isCitizenshipEligible, assignedAgentId, branchId, sortBy, sortOrder]);
 
   async function fetchProperties() {
@@ -155,10 +164,13 @@ function PropertiesPageInner() {
       ...(branchId && { branchId }),
       sortBy,
       sortOrder,
+      page: page.toString(),
+      limit: "24",
     });
     const res = await fetch(`/api/properties?${params}`);
     const data = await res.json();
     setProperties(data.properties || []);
+    setPagination(data.pagination ?? null);
     setLoading(false);
   }
 
@@ -208,7 +220,7 @@ function PropertiesPageInner() {
               <h1 className="text-3xl font-black tracking-tighter text-on-surface">Portföy</h1>
               <HelpButton page="properties-list" title="Portföy" />
             </div>
-            <p className="text-on-surface-variant text-sm mt-1 font-medium">{properties.length} ilan</p>
+            <p className="text-on-surface-variant text-sm mt-1 font-medium">{totalCount} ilan</p>
           </div>
           <div className="flex items-center gap-3">
             <ExcelToolbar
@@ -498,10 +510,44 @@ function PropertiesPageInner() {
                         {projBlock || <span className="text-on-surface-variant/40">—</span>}
                       </td>
                       <td className="px-4 py-4 text-sm text-on-surface-variant">
-                        {listingLabels[p.listingType]} · {propertyTypeLabels[p.propertyType]}
+                        <div className="flex flex-wrap items-center gap-1">
+                          {(p.listingTypes && p.listingTypes.length > 0 ? p.listingTypes : [p.listingType]).map((t) => (
+                            <span
+                              key={t}
+                              className={cn(
+                                "text-[10px] px-1.5 py-0.5 rounded font-bold",
+                                t === "KIRALIK" && "bg-blue-100 text-blue-700",
+                                t === "SATILIK" && "bg-amber-100 text-amber-700",
+                                t !== "KIRALIK" && t !== "SATILIK" && "bg-surface-container-high text-on-surface-variant"
+                              )}
+                            >
+                              {listingLabels[t] || t}
+                            </span>
+                          ))}
+                          <span>· {propertyTypeLabels[p.propertyType]}</span>
+                        </div>
                       </td>
                       <td className="px-4 py-4 text-sm font-bold text-on-surface">
-                        <div>{formatPrice(p.price, p.currency)}</div>
+                        {(() => {
+                          const r = resolvePropertyListing(p);
+                          return (
+                            <div className="leading-tight">
+                              {r.salePrice != null && (
+                                <div>
+                                  {r.showRent && <span className="text-[10px] text-amber-700 font-bold mr-1">SATIŞ</span>}
+                                  {formatPrice(r.salePrice, p.currency)}
+                                </div>
+                              )}
+                              {r.rentPrice != null && (
+                                <div className={cn(r.showSale && "text-xs font-semibold text-on-surface-variant")}>
+                                  {r.showSale && <span className="text-[10px] text-blue-700 font-bold mr-1">KİRA</span>}
+                                  {formatPrice(r.rentPrice, p.currency)}
+                                  {!r.showSale && <span className="text-[10px] font-normal opacity-70"> / ay</span>}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })()}
                         {p.isCitizenshipEligible && p.citizenshipPriceDiff != null && p.citizenshipPriceDiff > 0 && (
                           <div className="text-[10px] font-bold text-tertiary mt-0.5 flex items-center gap-1" title="Vatandaşlığa uygun fiyatı">
                             <Globe className="w-3 h-3" />
@@ -557,6 +603,37 @@ function PropertiesPageInner() {
             </table>
           </div>
         )}
+
+        {/* Pagination bar — 3 görünüm için ortak */}
+        {pagination && pagination.totalPages > 1 && (
+          <div className="flex items-center justify-between gap-3 px-4 py-4 mt-4 bg-surface-container-low rounded-2xl">
+            <p className="text-xs text-on-surface-variant font-medium">
+              Toplam <span className="font-bold text-on-surface">{pagination.total}</span> ilan
+              {" · "}Sayfa başına {pagination.limit}
+            </p>
+            <div className="flex items-center bg-white rounded-xl p-1 shadow-sm">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1 || loading}
+                className="p-1.5 hover:bg-surface-container-low rounded-lg text-on-surface-variant disabled:opacity-30 transition-all"
+                aria-label="Önceki"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <span className="px-4 py-1.5 text-xs font-bold text-primary">
+                {page} / {pagination.totalPages}
+              </span>
+              <button
+                onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
+                disabled={page === pagination.totalPages || loading}
+                className="p-1.5 hover:bg-surface-container-low rounded-lg text-on-surface-variant disabled:opacity-30 transition-all"
+                aria-label="Sonraki"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
       </motion.section>
 
       {/* Detail Panel */}
@@ -592,13 +669,43 @@ function CompactCard({ property: p, isSelected, onClick, onDoubleClick }: {
         <span className={cn("absolute top-2 right-2 text-[9px] px-1.5 py-0.5 rounded font-bold uppercase", statusColors[p.status])}>
           {statusLabels[p.status]}
         </span>
-        <span className="absolute bottom-2 left-2 glass-badge text-[9px] px-1.5 py-0.5 rounded font-bold text-primary">
-          {DEFAULT_LISTING_LABELS[p.listingType] || p.listingType}
-        </span>
+        <div className="absolute bottom-2 left-2 flex flex-wrap gap-1">
+          {(p.listingTypes && p.listingTypes.length > 0 ? p.listingTypes : [p.listingType]).map((t) => (
+            <span
+              key={t}
+              className={cn(
+                "text-[9px] px-1.5 py-0.5 rounded font-bold",
+                t === "KIRALIK" && "bg-blue-100 text-blue-700",
+                t === "SATILIK" && "bg-amber-100 text-amber-700",
+                t !== "KIRALIK" && t !== "SATILIK" && "glass-badge text-primary"
+              )}
+            >
+              {DEFAULT_LISTING_LABELS[t] || t}
+            </span>
+          ))}
+        </div>
       </div>
       <div className="p-3">
         <p className="text-xs font-bold text-on-surface truncate group-hover:text-primary transition-colors">{p.title}</p>
-        <p className="text-[10px] font-black text-primary mt-1">{formatPrice(p.price, p.currency)}</p>
+        {(() => {
+          const r = resolvePropertyListing(p);
+          return (
+            <div className="mt-1 leading-tight">
+              {r.salePrice != null && (
+                <p className="text-[10px] font-black text-primary">
+                  {r.showRent && <span className="text-amber-700 mr-0.5">S:</span>}
+                  {formatPrice(r.salePrice, p.currency)}
+                </p>
+              )}
+              {r.rentPrice != null && (
+                <p className={cn("font-black text-primary", r.showSale ? "text-[9px]" : "text-[10px]")}>
+                  {r.showSale && <span className="text-blue-700 mr-0.5">K:</span>}
+                  {formatPrice(r.rentPrice, p.currency)}{!r.showSale && <span className="text-[8px] font-normal opacity-70"> /ay</span>}
+                </p>
+              )}
+            </div>
+          );
+        })()}
         {p.isCitizenshipEligible && p.citizenshipPriceDiff != null && p.citizenshipPriceDiff > 0 && (
           <p className="text-[9px] font-bold text-tertiary mt-0.5 flex items-center gap-0.5" title="Vatandaşlığa uygun fiyatı">
             <Globe className="w-2.5 h-2.5" />
@@ -622,6 +729,17 @@ function CompactCard({ property: p, isSelected, onClick, onDoubleClick }: {
             </span>
           )}
         </div>
+        {p.project?.name && (
+          <p className="flex items-center gap-0.5 mt-1 text-[9px] text-on-surface-variant truncate" title={`${p.project.name}${p.block?.name ? ` · ${p.block.name}${p.unitNumber ? ` / ${p.unitNumber}` : ""}` : ""}`}>
+            <Layers className="w-2.5 h-2.5 shrink-0" />
+            <span className="font-semibold truncate">
+              {p.project.name}
+              {p.block?.name && (
+                <span className="font-normal opacity-80">{" · "}{p.block.name}{p.unitNumber ? `/${p.unitNumber}` : ""}</span>
+              )}
+            </span>
+          </p>
+        )}
         {p.branch?.name && (
           <p className="flex items-center gap-0.5 mt-1 text-[9px] text-on-surface-variant truncate">
             <Building2 className="w-2.5 h-2.5 shrink-0" />

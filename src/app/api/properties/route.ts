@@ -128,11 +128,19 @@ export async function POST(req: NextRequest) {
 
   const user = session.user as unknown as Record<string, unknown>;
 
+  // listingType (tekli, indeksli, geriye uyum) ile listingTypes (çoklu) senkronizasyonu
+  const data = { ...parsed.data };
+  if (data.listingTypes && data.listingTypes.length > 0) {
+    data.listingType = data.listingTypes[0];
+  } else if (data.listingType) {
+    data.listingTypes = [data.listingType];
+  }
+
   const property = await prisma.property.create({
     data: {
-      ...parsed.data,
-      assignedAgentId: parsed.data.assignedAgentId || (user.id as string),
-      branchId: parsed.data.branchId || (user.branchId as string),
+      ...data,
+      assignedAgentId: data.assignedAgentId || (user.id as string),
+      branchId: data.branchId || (user.branchId as string),
     },
   });
 

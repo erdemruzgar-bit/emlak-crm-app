@@ -66,6 +66,19 @@ export default function NewPropertyPage() {
   const [citizenshipPriceDiff, setCitizenshipPriceDiff] = useState("");
   const [salePrice, setSalePrice] = useState(""); // Vatandaşlık fiyatı önizlemesi için satış fiyatını izleriz
 
+  // Çoklu listing tipi: hem SATILIK hem KIRALIK olabilir (örn. dükkanlar)
+  const [selectedListingTypes, setSelectedListingTypes] = useState<string[]>([]);
+  const [monthlyRentInput, setMonthlyRentInput] = useState("");
+
+  const showSale = selectedListingTypes.includes("SATILIK");
+  const showRent = selectedListingTypes.includes("KIRALIK");
+
+  function toggleListingType(code: string) {
+    setSelectedListingTypes((prev) =>
+      prev.includes(code) ? prev.filter((x) => x !== code) : [...prev, code]
+    );
+  }
+
   useEffect(() => {
     fetch("/api/projects")
       .then((r) => r.json())
@@ -130,11 +143,37 @@ export default function NewPropertyPage() {
       return v === "true" ? true : v === "false" ? false : undefined;
     };
 
+    // Çoklu listing tipi: state'ten al
+    if (selectedListingTypes.length === 0) {
+      toast.error("En az bir ilan tipi seçin (Satılık veya Kiralık)");
+      setLoading(false);
+      return;
+    }
+    const _showSale = selectedListingTypes.includes("SATILIK");
+    const _showRent = selectedListingTypes.includes("KIRALIK");
+    // price = satış fiyatı (varsa) ya da aylık kira (sadece KIRALIK ise — legacy)
+    const _salePrice = parseFloat(salePrice || "0");
+    const _rentPrice = parseFloat(monthlyRentInput || "0");
+    if (_showSale && !(_salePrice > 0)) {
+      toast.error("Satılık seçildi, satış fiyatı girilmeli");
+      setLoading(false);
+      return;
+    }
+    if (_showRent && !(_rentPrice > 0)) {
+      toast.error("Kiralık seçildi, aylık kira girilmeli");
+      setLoading(false);
+      return;
+    }
+    const _price = _showSale ? _salePrice : _rentPrice; // schema price required+positive
+    const _monthlyRent = _showRent ? _rentPrice : null;
+
     const body = {
       title: fd.get("title"),
-      listingType: fd.get("listingType"),
+      listingType: selectedListingTypes[0],
+      listingTypes: selectedListingTypes,
       propertyType,
-      price: parseFloat(fd.get("price") as string),
+      price: _price,
+      monthlyRent: _monthlyRent,
       currency: fd.get("currency") || "TRY",
       area: fd.get("area") ? parseFloat(fd.get("area") as string) : undefined,
       rooms: optStr("rooms"),
@@ -255,36 +294,79 @@ export default function NewPropertyPage() {
             <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">İlan Başlığı <span className="text-error">*</span></label>
             <input name="title" required className={inputClass} placeholder="Kadıköy'de Deniz Manzaralı 3+1 Daire" />
           </div>
+          <div>
+            <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">İlan Tipi <span className="text-error">*</span><span className="ml-2 text-[10px] font-normal text-on-surface-variant normal-case">(birden fazla seçilebilir)</span></label>
+            {listingTypes.length === 0 ? (
+              <p className="text-[11px] text-error">
+                Hiç ilan tipi tanımlı değil.{" "}
+                <Link href="/settings/listing-types" className="font-bold underline hover:no-underline">
+                  Ayarlar → İlan Tipleri
+                </Link>
+                {" "}sayfasından ekleyin (örn. Satılık, Kiralık).
+              </p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {listingTypes.map((t) => {
+                  const checked = selectedListingTypes.includes(t.code);
+                  return (
+                    <button
+                      key={t.code}
+                      type="button"
+                      onClick={() => toggleListingType(t.code)}
+                      className={cn(
+                        "px-4 py-2 rounded-xl text-sm font-bold transition-all border-2",
+                        checked
+                          ? t.code === "KIRALIK"
+                            ? "bg-blue-100 border-blue-500 text-blue-800"
+                            : t.code === "SATILIK"
+                            ? "bg-amber-100 border-amber-500 text-amber-800"
+                            : "primary-gradient text-white border-transparent"
+                          : "bg-surface-container-low text-on-surface-variant hover:bg-surface-container border-transparent"
+                      )}
+                    >
+                      {checked ? "✓ " : ""}{t.label}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">İlan Tipi <span className="text-error">*</span></label>
-              <select name="listingType" required className={inputClass} defaultValue="" disabled={listingTypes.length === 0}>
-                <option value="" disabled>{listingTypes.length === 0 ? "Önce ilan tipi tanımlayın" : "Seçiniz"}</option>
-                {listingTypes.map((t) => (
-                  <option key={t.code} value={t.code}>{t.label}</option>
-                ))}
-              </select>
-              {listingTypes.length === 0 && (
-                <p className="text-[11px] text-error mt-1">
-                  Hiç ilan tipi tanımlı değil.{" "}
-                  <Link href="/settings/listing-types" className="font-bold underline hover:no-underline">
-                    Ayarlar → İlan Tipleri
-                  </Link>
-                  {" "}sayfasından ekleyin (örn. Satılık, Kiralık).
-                </p>
-              )}
-            </div>
-            <div>
-              <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Fiyat (TL) <span className="text-error">*</span></label>
-              <input
-                name="price"
-                type="number"
-                required
-                value={salePrice}
-                onChange={(e) => setSalePrice(e.target.value)}
-                className={inputClass}
-              />
-            </div>
+            {showSale && (
+              <div>
+                <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">
+                  Satış Fiyatı (TL) <span className="text-error">*</span>
+                </label>
+                <input
+                  type="number"
+                  required
+                  value={salePrice}
+                  onChange={(e) => setSalePrice(e.target.value)}
+                  className={inputClass}
+                  placeholder="örn. 5.000.000"
+                />
+              </div>
+            )}
+            {showRent && (
+              <div>
+                <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">
+                  Aylık Kira (TL) <span className="text-error">*</span>
+                </label>
+                <input
+                  type="number"
+                  required
+                  value={monthlyRentInput}
+                  onChange={(e) => setMonthlyRentInput(e.target.value)}
+                  className={inputClass}
+                  placeholder="örn. 25.000"
+                />
+              </div>
+            )}
+            {!showSale && !showRent && (
+              <div className="sm:col-span-2 text-[11px] text-on-surface-variant italic px-1">
+                Önce yukarıdan en az bir ilan tipi (Satılık veya Kiralık) seçin → fiyat alanı görünecek.
+              </div>
+            )}
           </div>
           <div>
             <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3">Emlak Tipi</label>

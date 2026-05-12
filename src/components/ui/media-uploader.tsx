@@ -1,8 +1,9 @@
 "use client";
 
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState } from "react";
 import { Upload, X, Image as ImageIcon, Video, Link2, Plus, Loader2, Star, ArrowLeft, ArrowRight, GripVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SafeImage } from "@/components/ui/safe-image";
 
 export interface MediaItem {
   url: string;
@@ -63,11 +64,13 @@ export function MediaUploader({ value, onChange, maxItems = 20 }: MediaUploaderP
     setUploading(false);
   }
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
+  // useCallback'i kaldırdık: uploadFiles inline fonksiyon ve her render'da yeniden
+  // yaratılıyor, useCallback faydasız + dep uyuşmazlığı veriyordu.
+  function handleDrop(e: React.DragEvent) {
     e.preventDefault();
     setDragOver(false);
     if (e.dataTransfer.files.length > 0) uploadFiles(e.dataTransfer.files);
-  }, [value]);
+  }
 
   function addUrl() {
     const url = urlInput.trim();
@@ -210,8 +213,7 @@ export function MediaUploader({ value, onChange, maxItems = 20 }: MediaUploaderP
                   <video src={item.url} className="absolute inset-0 w-full h-full object-cover opacity-20" />
                 </div>
               ) : (
-                <img src={item.url} alt="" className="w-full h-full object-cover pointer-events-none"
-                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                <SafeImage src={item.url} alt="" className="object-cover pointer-events-none" />
               )}
 
               {/* Sıra numarası */}

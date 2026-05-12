@@ -4,10 +4,15 @@ import { z } from "zod/v4";
 // Tam validasyon için `propertyCreateSchema` / `propertyUpdateSchema` üzerinden superRefine eklenir.
 const propertyBaseShape = z.object({
   title: z.string().min(3, "Başlık en az 3 karakter olmalı"),
+  // Birincil listing tipi — listingTypes[0] ile senkronize tutulur (geriye uyumluluk + index).
   listingType: z.string().min(1, "İlan tipi gerekli"),
+  // Çoklu listing tipleri — bir ilan hem KIRALIK hem SATILIK olabilir.
+  listingTypes: z.array(z.string()).min(1, "En az bir ilan tipi seçilmeli").optional(),
   propertyType: z.enum(["DAIRE", "VILLA", "ARSA", "ISYERI", "MUSTAKILEV"]),
   status: z.enum(["ACTIVE", "SOLD", "RENTED", "INACTIVE"]).optional(),
   price: z.number().positive("Fiyat pozitif olmalı"),
+  // Aylık kira (KIRALIK listing'lerde dolu). Sadece SATILIK ilanlarda null.
+  monthlyRent: z.number().nonnegative().nullable().optional(),
   currency: z.string().default("TRY"),
   area: z.number().positive().optional(),
   rooms: z.string().optional(),

@@ -21,15 +21,17 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
-import { formatPrice } from "./property-card";
+import { formatPrice, resolvePropertyListing } from "./property-card";
 import { LinkifiedText } from "./linkified-text";
 
 interface PropertyDetailData {
   id: string;
   title: string;
   listingType: string;
+  listingTypes?: string[];
   propertyType: string;
   price: number;
+  monthlyRent?: number | null;
   currency: string;
   area: number | null;
   rooms: string | null;
@@ -347,7 +349,17 @@ export function PropertyDetail({ property, onClose }: PropertyDetailProps) {
                 exit={{ opacity: 0, y: -10 }}
                 className="grid grid-cols-1 gap-3"
               >
-                <InfoRow label="İlan Tipi" value={listingLabels[property.listingType] || property.listingType} />
+                <InfoRow
+                  label="İlan Tipi"
+                  value={
+                    (property.listingTypes && property.listingTypes.length > 0
+                      ? property.listingTypes
+                      : [property.listingType]
+                    )
+                      .map((t) => listingLabels[t] || t)
+                      .join(" + ")
+                  }
+                />
                 <InfoRow label="Mülk Tipi" value={propertyTypeLabels[property.propertyType] || property.propertyType} />
                 {property.rooms && <InfoRow label="Oda Sayısı" value={property.rooms} />}
                 {property.bathrooms != null && <InfoRow label="Banyo" value={String(property.bathrooms)} />}
@@ -470,9 +482,28 @@ export function PropertyDetail({ property, onClose }: PropertyDetailProps) {
             <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">
               Fiyatlandırma
             </span>
-            <span className="block text-2xl font-black text-on-surface">
-              {formatPrice(property.price, property.currency)}
-            </span>
+            {(() => {
+              const r = resolvePropertyListing(property);
+              return (
+                <div className="leading-tight">
+                  {r.salePrice != null && (
+                    <div className="block">
+                      {r.showRent && <span className="text-[10px] font-bold text-amber-700 mr-1">SATIŞ</span>}
+                      <span className="text-2xl font-black text-on-surface">{formatPrice(r.salePrice, property.currency)}</span>
+                    </div>
+                  )}
+                  {r.rentPrice != null && (
+                    <div className="block mt-0.5">
+                      {r.showSale && <span className="text-[10px] font-bold text-blue-700 mr-1">KİRA</span>}
+                      <span className={cn("font-black text-on-surface", r.showSale ? "text-lg" : "text-2xl")}>
+                        {formatPrice(r.rentPrice, property.currency)}
+                        {!r.showSale && <span className="text-xs font-normal text-on-surface-variant ml-1">/ ay</span>}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
             <p className="text-[10px] text-tertiary font-bold flex items-center gap-1 mt-1">
               <TrendingUp className="w-3 h-3" /> Bu çeyrekte +%4.2
             </p>

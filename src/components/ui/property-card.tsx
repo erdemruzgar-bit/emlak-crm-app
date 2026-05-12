@@ -1,6 +1,6 @@
 "use client";
 
-import { MapPin, ArrowRight, Bookmark, Building2, Globe } from "lucide-react";
+import { MapPin, ArrowRight, Bookmark, Building2, Globe, Layers } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
 
@@ -8,8 +8,10 @@ export interface PropertyCardData {
   id: string;
   title: string;
   listingType: string;
+  listingTypes?: string[];
   propertyType: string;
   price: number;
+  monthlyRent?: number | null;
   currency: string;
   area: number | null;
   rooms: string | null;
@@ -60,6 +62,36 @@ export function formatPrice(price: number, currency: string) {
   return new Intl.NumberFormat("tr-TR", { style: "currency", currency }).format(
     price
   );
+}
+
+/**
+ * Bir property için gösterilecek listing tiplerini ve fiyatlarını çözümler.
+ * Geriye uyumluluk: listingTypes boşsa listingType tek elemanlı array gibi davranır.
+ * monthlyRent null + sadece KIRALIK ise price aylık kira olarak yorumlanır (eski veri).
+ */
+export function resolvePropertyListing(property: {
+  listingType: string;
+  listingTypes?: string[];
+  price: number;
+  monthlyRent?: number | null;
+}) {
+  const types =
+    property.listingTypes && property.listingTypes.length > 0
+      ? property.listingTypes
+      : [property.listingType];
+  const showSale = types.includes("SATILIK");
+  const showRent = types.includes("KIRALIK");
+  // Hem K hem S → price=satış, monthlyRent=kira
+  // Sadece S → price=satış
+  // Sadece K + monthlyRent dolu → monthlyRent=kira (price ignore)
+  // Sadece K + monthlyRent null → price=aylık kira (legacy)
+  const salePrice = showSale ? property.price : null;
+  let rentPrice: number | null = null;
+  if (showRent) {
+    if (property.monthlyRent != null) rentPrice = property.monthlyRent;
+    else if (!showSale) rentPrice = property.price;
+  }
+  return { types, showSale, showRent, salePrice, rentPrice };
 }
 
 interface PropertyCardProps {
@@ -136,13 +168,26 @@ export function PropertyCard({
           </span>
         </div>
 
-        <div className="flex items-center gap-2 mb-1">
-          <span className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
-            {listingLabels[property.listingType] || property.listingType}
-          </span>
+        <div className="flex items-center gap-2 mb-1 flex-wrap">
+          {(property.listingTypes && property.listingTypes.length > 0
+            ? property.listingTypes
+            : [property.listingType]
+          ).map((t) => (
+            <span
+              key={t}
+              className={cn(
+                "text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-md",
+                t === "KIRALIK" && "bg-blue-100 text-blue-700",
+                t === "SATILIK" && "bg-amber-100 text-amber-700",
+                t !== "KIRALIK" && t !== "SATILIK" && "bg-surface-container-high text-on-surface-variant"
+              )}
+            >
+              {listingLabels[t] || t}
+            </span>
+          ))}
           {property.rooms && (
             <span className="text-xs text-on-surface-variant font-medium">
-              · {property.rooms} {property.area ? `· ${property.area} m²` : ""}
+              {property.rooms} {property.area ? `· ${property.area} m²` : ""}
             </span>
           )}
         </div>
@@ -151,6 +196,20 @@ export function PropertyCard({
           <MapPin className="w-3 h-3" />
           {location || "Konum belirtilmemiş"}
         </p>
+
+        {property.project?.name && (
+          <p className="flex items-center gap-1 text-on-surface-variant text-xs mb-1">
+            <Layers className="w-3 h-3" />
+            <span className="font-semibold">{property.project.name}</span>
+            {property.block?.name && (
+              <span className="text-on-surface-variant/80">
+                {" · "}
+                {property.block.name}
+                {property.unitNumber ? ` / ${property.unitNumber}` : ""}
+              </span>
+            )}
+          </p>
+        )}
 
         {property.branch?.name && (
           <p className="flex items-center gap-1 text-on-surface-variant text-xs mb-4">
@@ -161,9 +220,28 @@ export function PropertyCard({
 
         <div className="flex justify-between items-end gap-3">
           <div className="min-w-0 flex-1">
-            <span className="text-lg font-black text-primary block">
-              {formatPrice(property.price, property.currency)}
-            </span>
+            {(() => {
+              const r = resolvePropertyListing(property);
+              return (
+                <>
+                  {r.salePrice != null && (
+                    <span className="block">
+                      {r.showRent && <span className="text-[10px] font-bold text-amber-700 mr-1">Satış</span>}
+                      <span className="text-lg font-black text-primary">{formatPrice(r.salePrice, property.currency)}</span>
+                    </span>
+                  )}
+                  {r.rentPrice != null && (
+                    <span className="block">
+                      {r.showSale && <span className="text-[10px] font-bold text-blue-700 mr-1">Aylık</span>}
+                      <span className={cn("font-black text-primary", r.showSale ? "text-sm" : "text-lg")}>
+                        {formatPrice(r.rentPrice, property.currency)}
+                        {!r.showSale && <span className="text-[10px] font-normal text-on-surface-variant ml-1">/ ay</span>}
+                      </span>
+                    </span>
+                  )}
+                </>
+              );
+            })()}
             {property.isCitizenshipEligible && property.citizenshipPriceDiff != null && property.citizenshipPriceDiff > 0 && (
               <span
                 className="mt-1 inline-flex items-center gap-1 text-[10px] font-bold text-tertiary bg-tertiary-fixed/60 px-2 py-1 rounded-md"

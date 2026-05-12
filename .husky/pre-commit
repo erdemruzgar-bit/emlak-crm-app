@@ -1,0 +1,5 @@
+# Pre-commit hook: hızlı kalite kontrolü
+# - lint-staged: sadece commit edilen dosyalarda eslint + tsc (saniyeler içinde)
+# Tam pre-deploy zinciri için: npm run check
+
+npx lint-staged

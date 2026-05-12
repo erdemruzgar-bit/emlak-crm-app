@@ -38,3 +38,11 @@ next-env.d.ts
 # uploaded files (backed up by release script)
 /public/uploads/*
 !/public/uploads/.gitkeep
+
+# playwright
+/playwright/.auth/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/scripts/pdf-import/work/

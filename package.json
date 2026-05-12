@@ -11,18 +11,37 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
-    "db:seed": "npx tsx prisma/seed.ts"
+    "db:seed": "npx tsx prisma/seed.ts",
+    "typecheck": "tsc --noEmit",
+    "healthcheck:db": "npx tsx scripts/healthcheck/db-check.ts",
+    "healthcheck:http": "bash scripts/healthcheck/http-smoke.sh",
+    "check": "bash scripts/pre-deploy.sh",
+    "deploy": "bash scripts/deploy.sh",
+    "e2e": "npx playwright test",
+    "e2e:headed": "npx playwright test --headed",
+    "e2e:debug": "npx playwright test --debug",
+    "e2e:ui": "npx playwright test --ui",
+    "lint:baseline:update": "npx tsx scripts/lint-baseline-update.ts",
+    "lint:baseline:check": "npx tsx scripts/lint-baseline-check.ts",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,mjs,cjs}": [
+      "eslint"
+    ]
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "module",
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.95.2",
     "@prisma/adapter-pg": "^7.6.0",
     "@prisma/client": "^7.6.0",
     "@tanstack/react-query": "^5.96.1",
     "bcryptjs": "^3.0.3",
     "clsx": "^2.1.1",
+    "dotenv": "^17.4.2",
     "lucide-react": "^1.7.0",
     "motion": "^12.38.0",
     "next": "^16.2.2",
@@ -42,6 +61,7 @@
     "zustand": "^5.0.12"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@tailwindcss/postcss": "^4.2.2",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^25.5.0",
@@ -50,6 +70,8 @@
     "@types/react-dom": "^19.2.3",
     "eslint": "^9.39.4",
     "eslint-config-next": "^16.2.2",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
     "postcss": "^8.5.8",
     "tailwindcss": "^4.2.2",
     "typescript": "^6.0.2"

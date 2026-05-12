@@ -1,0 +1,137 @@
+{
+  "generatedAt": "2026-05-12T19:37:08.300Z",
+  "totalFiles": 35,
+  "totalWarnings": 58,
+  "totalErrors": 0,
+  "note": "Bu dosya, mevcut kod tabanındaki kabul edilmiş ESLint warning'lerinin snapshot'ıdır. Yeni warning eklenirse `lint:baseline:check` script'i fail eder. Güncellemek için: npm run lint:baseline:update",
+  "warnings": {
+    "eslint.config.mjs": [
+      "4:import/no-anonymous-default-export"
+    ],
+    "src/app/(dashboard)/access-logs/page.tsx": [
+      "65:react-hooks/set-state-in-effect"
+    ],
+    "src/app/(dashboard)/calendar/page.tsx": [
+      "161:react-hooks/exhaustive-deps",
+      "161:react-hooks/immutability"
+    ],
+    "src/app/(dashboard)/contracts/new/page.tsx": [
+      "517:react/no-unescaped-entities"
+    ],
+    "src/app/(dashboard)/contracts/page.tsx": [
+      "5:@typescript-eslint/no-unused-vars",
+      "68:react-hooks/immutability",
+      "69:react-hooks/exhaustive-deps"
+    ],
+    "src/app/(dashboard)/customers/[id]/page.tsx": [
+      "1007:react-hooks/immutability",
+      "1060:react-hooks/immutability",
+      "1761:@typescript-eslint/no-unused-vars",
+      "345:react-hooks/exhaustive-deps",
+      "364:react-hooks/exhaustive-deps"
+    ],
+    "src/app/(dashboard)/customers/new/page.tsx": [
+      "81:react-hooks/set-state-in-effect"
+    ],
+    "src/app/(dashboard)/customers/page.tsx": [
+      "165:react-hooks/exhaustive-deps",
+      "165:react-hooks/immutability",
+      "172:react-hooks/exhaustive-deps",
+      "172:react-hooks/immutability",
+      "91:react-hooks/immutability"
+    ],
+    "src/app/(dashboard)/projects/[id]/customers/page.tsx": [
+      "31:react-hooks/set-state-in-effect"
+    ],
+    "src/app/(dashboard)/projects/pdf-import/page.tsx": [
+      "260:react/no-unescaped-entities",
+      "386:unknown",
+      "577:react/no-unescaped-entities"
+    ],
+    "src/app/(dashboard)/properties/[id]/page.tsx": [
+      "200:react-hooks/immutability",
+      "211:react-hooks/exhaustive-deps"
+    ],
+    "src/app/(dashboard)/properties/bulk-paste/page.tsx": [
+      "403:react/no-unescaped-entities"
+    ],
+    "src/app/(dashboard)/reminders/page.tsx": [
+      "6:@typescript-eslint/no-unused-vars"
+    ],
+    "src/app/(dashboard)/settings/audit-log/page.tsx": [
+      "58:react-hooks/set-state-in-effect"
+    ],
+    "src/app/(dashboard)/settings/commission/page.tsx": [
+      "281:react/no-unescaped-entities"
+    ],
+    "src/app/(dashboard)/settings/customer-types/page.tsx": [
+      "34:react-hooks/immutability"
+    ],
+    "src/app/(dashboard)/settings/listing-types/page.tsx": [
+      "30:react-hooks/immutability"
+    ],
+    "src/app/(dashboard)/settings/occupancy-types/page.tsx": [
+      "30:react-hooks/immutability"
+    ],
+    "src/app/(dashboard)/settings/projects/page.tsx": [
+      "431:react/no-unescaped-entities",
+      "431:react/no-unescaped-entities",
+      "487:react-hooks/set-state-in-effect",
+      "51:react-hooks/immutability",
+      "63:@typescript-eslint/no-unused-expressions"
+    ],
+    "src/app/(dashboard)/settings/room-types/page.tsx": [
+      "27:react-hooks/immutability"
+    ],
+    "src/app/(dashboard)/settings/users/page.tsx": [
+      "490:react/no-unescaped-entities",
+      "499:react/no-unescaped-entities"
+    ],
+    "src/app/(dashboard)/tasks/page.tsx": [
+      "56:react-hooks/immutability"
+    ],
+    "src/app/(dashboard)/tools/citizenship-calculator/page.tsx": [
+      "132:react/no-unescaped-entities"
+    ],
+    "src/app/(dashboard)/tools/commission-calculator/page.tsx": [
+      "3:@typescript-eslint/no-unused-vars"
+    ],
+    "src/app/api/appointments/export/route.ts": [
+      "35:@typescript-eslint/no-unused-vars"
+    ],
+    "src/app/api/customers/route.ts": [
+      "40:@typescript-eslint/no-unused-vars"
+    ],
+    "src/app/api/reports/export/route.ts": [
+      "15:@typescript-eslint/no-unused-vars"
+    ],
+    "src/app/api/tasks/export/route.ts": [
+      "29:@typescript-eslint/no-unused-vars"
+    ],
+    "src/app/layout.tsx": [
+      "45:@next/next/no-page-custom-font",
+      "49:@next/next/no-page-custom-font"
+    ],
+    "src/components/theme-provider.tsx": [
+      "36:react-hooks/set-state-in-effect"
+    ],
+    "src/components/ui/excel-toolbar.tsx": [
+      "141:react/no-unescaped-entities",
+      "155:react/no-unescaped-entities"
+    ],
+    "src/components/ui/help-button.tsx": [
+      "25:react-hooks/set-state-in-effect"
+    ],
+    "src/components/ui/keyboard-shortcuts.tsx": [
+      "186:react-hooks/set-state-in-effect",
+      "191:react-hooks/set-state-in-effect",
+      "7:@typescript-eslint/no-unused-vars"
+    ],
+    "src/components/ui/property-detail.tsx": [
+      "13:@typescript-eslint/no-unused-vars"
+    ],
+    "src/components/ui/sidebar.tsx": [
+      "97:react-hooks/set-state-in-effect"
+    ]
+  }
+}

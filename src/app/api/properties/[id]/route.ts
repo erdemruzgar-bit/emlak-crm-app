@@ -130,9 +130,17 @@ export async function PUT(
       }
     }
 
+    // listingType ile listingTypes senkronizasyonu (POST ile aynı kural)
+    const updateData = { ...parsed.data };
+    if (updateData.listingTypes && updateData.listingTypes.length > 0) {
+      updateData.listingType = updateData.listingTypes[0];
+    } else if (updateData.listingType && !updateData.listingTypes) {
+      updateData.listingTypes = [updateData.listingType];
+    }
+
     const property = await prisma.property.update({
       where: { id },
-      data: parsed.data,
+      data: updateData,
     });
 
     const user = session.user as unknown as Record<string, unknown>;

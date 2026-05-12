@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Search, Bell, LogOut, Users, Home, Menu, Moon, Sun, Keyboard } from "lucide-react";
 import { useTheme } from "@/components/theme-provider";
+import { SafeImage } from "@/components/ui/safe-image";
 
 
 export default function Header() {
@@ -150,11 +151,11 @@ export default function Header() {
             onClick={() => setMenuOpen(!menuOpen)}
             className="flex items-center gap-3 pl-4 border-l border-outline-variant/30 hover:bg-surface-container-low rounded-xl px-3 py-2 transition-all"
           >
-            <div className="h-10 w-10 rounded-full overflow-hidden border-2 border-primary/10 bg-primary-container flex items-center justify-center text-on-primary-container text-sm font-bold">
+            <div className="relative h-10 w-10 rounded-full overflow-hidden border-2 border-primary/10 bg-primary-container flex items-center justify-center text-on-primary-container text-sm font-bold">
               {(() => {
                 const photoUrl = (user as unknown as Record<string, unknown>)?.photoUrl as string | undefined;
                 return photoUrl ? (
-                  <img src={photoUrl} alt={user?.name || "Kullanıcı"} className="w-full h-full object-cover object-top" />
+                  <SafeImage src={photoUrl} alt={user?.name || "Kullanıcı"} className="object-cover object-top" />
                 ) : (
                   user?.name?.charAt(0)?.toUpperCase() || "U"
                 );

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
 import { toast } from "sonner";
 import { Blocks, Plus, Trash2, X, Home as HomeIcon, ChevronDown, ChevronRight, Loader2 } from "lucide-react";
@@ -205,9 +206,9 @@ export default function ProjectsSettingsPage() {
             </div>
             <p className="text-sm text-on-surface-variant">
               Toplu konut projelerini ve bloklarını yönet · Günlük operasyon için{" "}
-              <a href="/projects" className="text-primary font-bold hover:underline">
+              <Link href="/projects" className="text-primary font-bold hover:underline">
                 Projeler modülü
-              </a>
+              </Link>
             </p>
           </div>
         </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Search, UserPlus, ChevronLeft, ChevronRight, Loader2, UserX, SlidersHorizontal, X, ArrowUpDown, ArrowUp, ArrowDown, Users, UserCheck, Clock, AlertTriangle, LayoutGrid, List, Phone, Mail, MessageCircle, CheckCircle2 } from "lucide-react";
@@ -232,9 +232,20 @@ function CustomersPageInner() {
   }
 
   const totalCount = pagination?.total || 0;
-  const activeLeads = customers.filter((c) => ["LEAD", "QUALIFIED", "ACTIVE"].includes(c.stage || "")).length;
-  const overdueFollowUp = customers.filter((c) => c.nextFollowUpDate && new Date(c.nextFollowUpDate) < new Date()).length;
-  const noContact30 = customers.filter((c) => { if (!c.lastContactDate) return true; return (Date.now() - new Date(c.lastContactDate).getTime()) > 30 * 24 * 60 * 60 * 1000; }).length;
+  // 'şimdi' referansını mount-time'da yakala (Date.now render'da pure değil).
+  // Customer listesi her güncellenince useMemo yeniden çalışır ama 'now' sabit kalır;
+  // gün geçişlerinde küçük bir gecikme olabilir (kullanıcı sayfayı yenileyince refresh).
+  const [now] = useState(() => Date.now());
+  const { activeLeads, overdueFollowUp, noContact30 } = useMemo(() => {
+    return {
+      activeLeads: customers.filter((c) => ["LEAD", "QUALIFIED", "ACTIVE"].includes(c.stage || "")).length,
+      overdueFollowUp: customers.filter((c) => c.nextFollowUpDate && new Date(c.nextFollowUpDate).getTime() < now).length,
+      noContact30: customers.filter((c) => {
+        if (!c.lastContactDate) return true;
+        return (now - new Date(c.lastContactDate).getTime()) > 30 * 24 * 60 * 60 * 1000;
+      }).length,
+    };
+  }, [customers, now]);
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">

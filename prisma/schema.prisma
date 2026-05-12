@@ -402,9 +402,18 @@ model CustomerInteraction {
 model Property {
   id             String         @id @default(cuid())
   title          String
-  listingType    String        // ListingTypeCatalog.code referansı
+  // Birincil / legacy alan: indeksli, geriye uyumluluk + tekli arama için tutuluyor.
+  // Çoklu listeleme tipleri için (örn. hem KIRALIK hem SATILIK) listingTypes alanı kullanılır.
+  listingType    String        // ListingTypeCatalog.code referansı (birincil)
+  // Çoklu listing tipleri (KIRALIK, SATILIK aynı dükkanda olabilir).
+  // listingType ile senkronize edilir: listingTypes[0] her zaman listingType olur.
+  listingTypes   String[]      @default([])
   propertyType   PropertyType
+  // Satış fiyatı (SATILIK için ana fiyat). Sadece KIRALIK olan eski ilanlarda
+  // bu alana aylık kira yazılmış olabilir — geriye uyumluluk için tutuluyor.
   price          Float
+  // Aylık kira (KIRALIK için). Eğer hem KIRALIK hem SATILIK ise price=satış, monthlyRent=kira.
+  monthlyRent    Float?
   currency       String         @default("TRY")
   area           Float?         // m²
   rooms          String?        // 3+1, 2+1, vs.
@@ -502,6 +511,8 @@ model Project {
   description String?  @db.Text
   // Bu projeye özel manzara/yön kodları (autocomplete listesi). Boş array = serbest giriş.
   viewTypes   String[] @default([])
+  // Vaziyet planı / kat planı / şematik görsel URL'leri (PDF import sırasında doldurulur).
+  sitePlanImageUrls String[] @default([])
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

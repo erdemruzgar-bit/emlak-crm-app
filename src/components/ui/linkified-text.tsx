@@ -18,8 +18,9 @@ import { cn } from "@/lib/utils";
 
 // http(s):// veya www. ile başlayan URL'ler. Sondaki noktalama işaretlerini
 // match'e dahil etme (yan etkilerden kaçınmak için).
-const URL_REGEX =
-  /\b((?:https?:\/\/|www\.)[^\s<]+[^\s<.,;!?'")\]])/gi;
+// NOT: Global regex'ler lastIndex state'i taşır; bu yüzden modül seviyesinde
+// reuse edilmez. matchAll() her çağrıda kendi iterator'üyle çalışır, state-leak yok.
+const URL_PATTERN = "(?:https?:\\/\\/|www\\.)[^\\s<]+[^\\s<.,;!?'\")\\]]";
 
 export function LinkifiedText({
   text,
@@ -30,23 +31,23 @@ export function LinkifiedText({
 }) {
   if (!text) return null;
 
-  // Çok kısa metin veya hiç URL yoksa direkt yazdır
-  if (!URL_REGEX.test(text)) {
-    URL_REGEX.lastIndex = 0;
+  // Her render'da YENİ regex — state taşımaz, immutability güvenli
+  const urlRegex = new RegExp(URL_PATTERN, "gi");
+  const matches = Array.from(text.matchAll(urlRegex));
+
+  if (matches.length === 0) {
     return <span className={cn("whitespace-pre-line", className)}>{text}</span>;
   }
-  URL_REGEX.lastIndex = 0;
 
   const parts: Array<{ kind: "text" | "url"; value: string }> = [];
   let lastIndex = 0;
-  let match: RegExpExecArray | null;
-
-  while ((match = URL_REGEX.exec(text)) !== null) {
-    if (match.index > lastIndex) {
-      parts.push({ kind: "text", value: text.slice(lastIndex, match.index) });
+  for (const m of matches) {
+    const start = m.index ?? 0;
+    if (start > lastIndex) {
+      parts.push({ kind: "text", value: text.slice(lastIndex, start) });
     }
-    parts.push({ kind: "url", value: match[0] });
-    lastIndex = match.index + match[0].length;
+    parts.push({ kind: "url", value: m[0] });
+    lastIndex = start + m[0].length;
   }
   if (lastIndex < text.length) {
     parts.push({ kind: "text", value: text.slice(lastIndex) });

@@ -207,8 +207,8 @@ else
   yellow "     • rclone/drive yapılandırılmamış — atlanıyor (kurmak için: rclone config)"
 fi
 
-# ─── 90 günden eski yedekleri temizle (lokal + Drive) ───
-step "Bonus: 90 günden eski yedekler temizleniyor"
+# ─── $RETENTION_DAYS günden eski yedekleri temizle (lokal + Drive) ───
+step "Bonus: $RETENTION_DAYS günden eski yedekler temizleniyor"
 DELETED=$(find "$BACKUP_ROOT" -maxdepth 1 -type d -name "20*-v*" -mtime +$RETENTION_DAYS -exec rm -rf {} \; -print 2>/dev/null | wc -l)
 if [ "$DELETED" -gt 0 ]; then
   yellow "     • Lokal: $DELETED eski yedek silindi"

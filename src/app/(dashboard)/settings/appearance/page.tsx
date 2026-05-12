@@ -6,6 +6,7 @@ import { Palette, Upload, X, Check, Loader2, RotateCcw, Image as ImageIcon } fro
 import { useTheme } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
 import { HelpButton } from "@/components/ui/help-button";
+import { SafeImage } from "@/components/ui/safe-image";
 
 // Unsplash'ten curated emlak temalı yüksek kaliteli arka planlar (ücretsiz, Unsplash License)
 const PRESET_BACKGROUNDS = [
@@ -90,7 +91,7 @@ export default function AppearancePage() {
           <div className="flex items-center gap-4">
             <div className="w-20 h-20 rounded-2xl overflow-hidden bg-surface-container-high shrink-0 relative">
               {backgroundUrl ? (
-                <img src={backgroundUrl} alt="" className="w-full h-full object-cover" />
+                <SafeImage src={backgroundUrl} alt="" className="object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-on-surface-variant">
                   <ImageIcon className="w-8 h-8 opacity-40" />
@@ -132,8 +133,8 @@ export default function AppearancePage() {
                   active ? "ring-4 ring-primary shadow-lg" : "ring-1 ring-outline-variant/10 hover:ring-primary/40 hover:shadow-md"
                 )}
               >
-                <img src={bg.thumb} alt={bg.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                <SafeImage src={bg.thumb} alt={bg.name}
+                  className="object-cover group-hover:scale-105 transition-transform duration-500" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
                   <p className="text-xs font-black">{bg.name}</p>

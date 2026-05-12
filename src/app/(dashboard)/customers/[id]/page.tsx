@@ -17,6 +17,7 @@ import { LinkifiedText } from "@/components/ui/linkified-text";
 import { cn } from "@/lib/utils";
 import { EditableText, EditableSelect, EditableTextarea } from "@/components/ui/editable-field";
 import { HelpButton } from "@/components/ui/help-button";
+import { SafeImage } from "@/components/ui/safe-image";
 import { DEFAULT_CUSTOMER_TYPE_LABELS } from "@/lib/customer-type-styles";
 
 interface ActiveAccessSession {
@@ -404,7 +405,7 @@ export default function CustomerDetailPage() {
           </button>
           {/* Avatar / Photo */}
           {customer.photoUrl ? (
-            <img src={customer.photoUrl} alt={`${customer.firstName} ${customer.lastName}`}
+            <SafeImage src={customer.photoUrl} alt={`${customer.firstName} ${customer.lastName}`} width={64} height={64}
               className="w-16 h-16 rounded-2xl object-cover object-top shadow-md" />
           ) : (
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/40 to-primary/70 flex items-center justify-center shadow-md">
@@ -493,7 +494,7 @@ export default function CustomerDetailPage() {
             {/* Fotoğraf bölümü — her zaman aynı yerde; upload butonu sadece düzenleme modunda */}
             <div className="flex items-center gap-4 p-4 bg-surface-container-low rounded-2xl min-h-[112px]">
               {customer.photoUrl ? (
-                <img src={customer.photoUrl} alt="" className="w-20 h-20 rounded-2xl object-cover object-top shrink-0" />
+                <SafeImage src={customer.photoUrl} alt="" width={80} height={80} className="w-20 h-20 rounded-2xl object-cover object-top shrink-0" />
               ) : (
                 <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/40 to-primary/70 flex items-center justify-center shrink-0">
                   <span className="text-2xl font-black text-white select-none">
@@ -1300,8 +1301,8 @@ export default function CustomerDetailPage() {
                         m.status === "INTERESTED" ? "bg-green-50 border border-green-200" : "bg-surface-container-low hover:bg-surface-container"
                       )}>
                       <Link href={`/properties/${p.id}`} className="flex gap-3">
-                        <div className="w-20 h-20 rounded-xl overflow-hidden shrink-0 bg-surface-container-high">
-                          {img ? <img src={img} alt={p.title} className="w-full h-full object-cover" /> : <Home className="w-6 h-6 text-on-surface-variant m-auto mt-6" />}
+                        <div className="relative w-20 h-20 rounded-xl overflow-hidden shrink-0 bg-surface-container-high">
+                          {img ? <SafeImage src={img} alt={p.title} className="object-cover" /> : <Home className="w-6 h-6 text-on-surface-variant m-auto mt-6" />}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1.5 mb-0.5">

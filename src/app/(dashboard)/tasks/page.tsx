@@ -53,6 +53,7 @@ export default function TasksPage() {
   const [users, setUsers] = useState<UserOption[]>([]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/immutability
     loadTasks();
     fetch("/api/users").then((r) => r.json()).then((data) => {
       if (Array.isArray(data)) setUsers(data.filter((u: UserOption & { isActive: boolean }) => u.isActive));

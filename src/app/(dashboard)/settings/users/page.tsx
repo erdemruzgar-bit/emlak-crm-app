@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { TableSkeleton } from "@/components/ui/skeleton";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { HelpButton } from "@/components/ui/help-button";
+import { SafeImage } from "@/components/ui/safe-image";
 
 interface User {
   id: string;
@@ -248,7 +249,7 @@ export default function UsersSettingsPage() {
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       {u.photoUrl ? (
-                        <img src={u.photoUrl} alt={u.name}
+                        <SafeImage src={u.photoUrl} alt={u.name} width={40} height={40}
                           className="w-10 h-10 rounded-xl object-cover object-top shrink-0" />
                       ) : (
                         <div className="w-10 h-10 rounded-xl bg-primary-container flex items-center justify-center text-on-primary-container font-bold text-sm shrink-0">
@@ -362,7 +363,7 @@ export default function UsersSettingsPage() {
                 {/* Fotoğraf yükleme */}
                 <div className="flex items-center gap-4 p-4 bg-surface-container-low rounded-2xl">
                   {form.photoUrl ? (
-                    <img src={form.photoUrl} alt="" className="w-16 h-16 rounded-2xl object-cover object-top shrink-0" />
+                    <SafeImage src={form.photoUrl} alt="" width={64} height={64} className="w-16 h-16 rounded-2xl object-cover object-top shrink-0" />
                   ) : (
                     <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/40 to-primary/70 flex items-center justify-center shrink-0">
                       <span className="text-xl font-black text-white select-none">

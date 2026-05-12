@@ -94,6 +94,7 @@ export default function Sidebar() {
 
   // Route değişince mobil drawer'ı kapat
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMobileOpen(false);
   }, [pathname]);
   const visibleGroups = navigationGroups

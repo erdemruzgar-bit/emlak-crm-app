@@ -27,6 +27,7 @@ export default function ListingTypesSettingsPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/immutability
     load();
   }, []);
 

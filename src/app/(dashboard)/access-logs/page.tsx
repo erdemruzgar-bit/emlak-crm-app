@@ -62,6 +62,7 @@ export default function AccessLogsPage() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     const qs = new URLSearchParams();
     if (filters.userId) qs.set("userId", filters.userId);

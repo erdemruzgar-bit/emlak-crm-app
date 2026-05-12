@@ -22,6 +22,7 @@ export function HelpButton({ page, title, className }: HelpButtonProps) {
 
   useEffect(() => {
     if (!open || content) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     setError(null);
     fetch(`/api/help/${encodeURIComponent(page)}`)

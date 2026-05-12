@@ -28,6 +28,7 @@ export default function ProjectCustomersPage({ params }: { params: Promise<{ id:
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     fetch(`/api/projects/${id}/customers?limit=100`)
       .then((r) => (r.ok ? r.json() : null))

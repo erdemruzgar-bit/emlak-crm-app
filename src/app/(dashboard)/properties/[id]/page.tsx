@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import { SafeImage } from "@/components/ui/safe-image";
 import {
   ArrowLeft,
   DoorOpen,
@@ -788,7 +789,7 @@ export default function PropertyDetailPage() {
                       )}>
                       <div className="flex items-center gap-3">
                         {m.customer.photoUrl ? (
-                          <img src={m.customer.photoUrl} alt="" className="w-9 h-9 rounded-xl object-cover object-top shrink-0" />
+                          <SafeImage src={m.customer.photoUrl} alt="" width={36} height={36} className="w-9 h-9 rounded-xl object-cover object-top shrink-0" />
                         ) : (
                           <div className="w-9 h-9 rounded-xl bg-primary-container flex items-center justify-center text-on-primary-container text-xs font-bold shrink-0">
                             {m.customer.firstName.charAt(0)}{m.customer.lastName.charAt(0)}

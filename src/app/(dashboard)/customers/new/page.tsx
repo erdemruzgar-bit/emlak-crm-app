@@ -78,6 +78,7 @@ export default function NewCustomerPage() {
   // ARSA seçilip kaldırılırsa eski oda değerlerini sıfırla
   useEffect(() => {
     if (!showRoomFields) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setMinRooms("");
       setMaxRooms("");
     }

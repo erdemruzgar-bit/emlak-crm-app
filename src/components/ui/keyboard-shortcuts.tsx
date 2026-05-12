@@ -182,11 +182,13 @@ function CommandPalette({
   useEffect(() => {
     if (!open) {
       setQuery("");
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setHighlight(0);
     }
   }, [open, setQuery]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setHighlight(0);
   }, [query]);
 

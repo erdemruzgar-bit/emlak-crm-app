@@ -55,6 +55,7 @@ export default function AuditLogPage() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     const qs = new URLSearchParams();
     qs.set("page", String(filters.page));

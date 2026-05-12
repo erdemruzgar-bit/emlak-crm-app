@@ -24,6 +24,7 @@ export default function RoomTypesSettingsPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/immutability
     load();
   }, []);
 

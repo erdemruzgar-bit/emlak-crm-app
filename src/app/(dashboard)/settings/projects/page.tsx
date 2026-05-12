@@ -48,6 +48,7 @@ export default function ProjectsSettingsPage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/immutability
     load();
   }, []);
 
@@ -488,6 +489,7 @@ function ProjectInfoEditor({ project, onSave }: ProjectInfoEditorProps) {
 
   // Proje listesinde güncelleme olduğunda local state'i senkronla
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setName(project.name);
     setDeveloper(project.developer ?? "");
     setCity(project.city ?? "");

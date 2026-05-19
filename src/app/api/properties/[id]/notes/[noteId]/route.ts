@@ -39,7 +39,10 @@ export async function DELETE(
     entityId: noteId,
     oldValue: { propertyId, kind: note.kind, contentPreview: note.content.slice(0, 100) },
     ipAddress: req.headers.get("x-forwarded-for") || undefined,
-  }).catch(() => {});
+  }).catch((e) => {
+    // Silme başarılı sayılır ama audit izi düştü — KVKK izlenebilirliği için göz at
+    console.error("[propertyNote DELETE] audit log başarısız:", e);
+  });
 
   return NextResponse.json({ ok: true });
 }

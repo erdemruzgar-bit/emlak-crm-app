@@ -436,10 +436,10 @@ export async function GET(req: NextRequest) {
     },
   });
   } catch (e) {
-    console.error("[presentation/export] Error:", e);
-    return NextResponse.json({
-      error: "Sunum üretilirken hata oluştu",
-      detail: e instanceof Error ? e.message : String(e),
-    }, { status: 500 });
+    console.error("[presentation/export] Hata:", e);
+    return NextResponse.json(
+      { error: "Sunum üretilirken hata oluştu" },
+      { status: 500 },
+    );
   }
 }

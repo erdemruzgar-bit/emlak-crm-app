@@ -18,6 +18,7 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  try {
   const user = session.user as unknown as Record<string, unknown>;
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -150,4 +151,11 @@ export async function GET() {
     overdueFollowUps,
     todayAppointments,
   });
+  } catch (e) {
+    console.error("[dashboard] Hata:", e);
+    return NextResponse.json(
+      { error: "Dashboard verisi yüklenemedi" },
+      { status: 500 },
+    );
+  }
 }

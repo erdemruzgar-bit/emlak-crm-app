@@ -32,6 +32,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  try {
   const now = new Date();
   const sevenDaysLater = new Date(now);
   sevenDaysLater.setDate(sevenDaysLater.getDate() + 7);
@@ -139,6 +140,14 @@ export async function POST(req: NextRequest) {
     },
     skipped,
   });
+  } catch (e) {
+    // Cron monitoring bu 500'ü görsün; mesaj sunucu loglarında, client'a generic
+    console.error("[cron/reminders] Hata:", e);
+    return NextResponse.json(
+      { error: "Reminder üretimi başarısız" },
+      { status: 500 },
+    );
+  }
 }
 
 // GET — health check (auth gerektirmez, ama veri döndürmez)

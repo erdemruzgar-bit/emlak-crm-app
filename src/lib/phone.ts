@@ -23,7 +23,7 @@ export function normalizeTrPhone(input: string | null | undefined): string | nul
   // 0090... → 90...
   let d = digits.replace(/^00/, "");
   // 90 prefix yoksa ekle
-  if (d.length === 10 && d.startsWith("5")) d = "90" + d;
+  if (d.length === 10 && /^[2-5]/.test(d)) d = "90" + d;
   else if (d.length === 11 && d.startsWith("0")) d = "9" + d;
   // 12 hane ve "90" ile başlıyorsa OK
   if (d.length !== 12 || !d.startsWith("90")) {
@@ -83,8 +83,11 @@ export function maskPhoneDisplay(value: string | null | undefined): string {
   if (!value) return "";
   const digits = value.replace(/\D/g, "");
   if (digits.length < 4) return "***";
-  const tail = digits.slice(-2);
-  return `5** *** ** ${tail}`;
+  // Son 10 haneye indir (90 ülke kodu varsa at) — ilk hane operatör/alan kodu
+  const local = digits.slice(-10);
+  const first = local[0] ?? "*";
+  const tail = local.slice(-2);
+  return `${first}** *** ** ${tail}`;
 }
 
 /**

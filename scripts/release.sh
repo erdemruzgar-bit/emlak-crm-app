@@ -158,7 +158,28 @@ if ! git config user.email > /dev/null 2>&1; then
   export GIT_COMMITTER_EMAIL="$LAST_EMAIL"
 fi
 git tag -a "$TAG" -m "$MESSAGE"
-green "     ✓ Tag oluşturuldu (push için: git push origin $TAG)"
+green "     ✓ Tag oluşturuldu: $TAG"
+
+# ─── 7b. GitHub'a otomatik push (uzaktan yedek) ───
+# Tag + mevcut branch'i origin'e push et. Başarısız olursa release iptal edilmez
+# (yedek + build + restart zaten yapıldı); sadece warn — manuel push komutu verilir.
+if git remote get-url origin >/dev/null 2>&1; then
+  CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
+  PUSH_BRANCH_OK=1
+  PUSH_TAG_OK=1
+  if [ -n "$CURRENT_BRANCH" ] && [ "$CURRENT_BRANCH" != "HEAD" ]; then
+    git push origin "$CURRENT_BRANCH" >/dev/null 2>&1 || PUSH_BRANCH_OK=0
+  fi
+  git push origin "$TAG" >/dev/null 2>&1 || PUSH_TAG_OK=0
+
+  if [ "$PUSH_BRANCH_OK" = "1" ] && [ "$PUSH_TAG_OK" = "1" ]; then
+    green "     ✓ GitHub'a push (branch + tag)"
+  else
+    yellow "     ⚠ GitHub push başarısız — release etkilenmedi, manuel: git push origin $CURRENT_BRANCH && git push origin $TAG"
+  fi
+else
+  yellow "     ⚠ Git remote 'origin' yok — GitHub yedek atlandı"
+fi
 
 # ─── 8. Servis restart ───
 step "8/8  Servis yeniden başlatılıyor"

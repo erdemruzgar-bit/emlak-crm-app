@@ -190,9 +190,10 @@ export default function NewContractPage() {
 
       const contract = await res.json();
 
-      // Ekleri yükle
+      // Ekleri yükle — hata olursa sözleşme yine de oluşturuldu, kullanıcıyı bilgilendir
+      let attachmentFailures = 0;
       for (const att of attachments) {
-        await fetch(`/api/contracts/${contract.id}/attachments`, {
+        const attRes = await fetch(`/api/contracts/${contract.id}/attachments`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -203,9 +204,14 @@ export default function NewContractPage() {
             category: att.category || "EK_DOKUMAN",
           }),
         });
+        if (!attRes.ok) attachmentFailures++;
       }
 
-      toast.success("Sözleşme oluşturuldu");
+      if (attachmentFailures > 0) {
+        toast.warning(`Sözleşme oluşturuldu, ${attachmentFailures} ek yüklenemedi`);
+      } else {
+        toast.success("Sözleşme oluşturuldu");
+      }
       router.push(`/contracts/${contract.id}`);
     } catch {
       setError("Bağlantı hatası");

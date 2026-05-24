@@ -244,11 +244,16 @@ export default function NewPropertyPage() {
 
     // Upload images/videos
     if (media.length > 0) {
-      await fetch(`/api/properties/${data.id}/images`, {
+      const imgRes = await fetch(`/api/properties/${data.id}/images`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ urls: media.map((m) => m.url) }),
       });
+      if (!imgRes.ok) {
+        toast.error("İlan kaydedildi ama görseller yüklenemedi");
+        router.push(`/properties/${data.id}`);
+        return;
+      }
     }
 
     toast.success("İlan eklendi");

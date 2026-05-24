@@ -338,13 +338,17 @@ export default function EditPropertyPage() {
     }
 
     // Replace all images with current media list
-    await fetch(`/api/properties/${params.id}/images`, {
+    const imgRes = await fetch(`/api/properties/${params.id}/images`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ urls: media.map((m) => m.url) }),
     });
 
     setSaving(false);
+    if (!imgRes.ok) {
+      toast.error("İlan güncellendi ama görseller yüklenemedi");
+      return;
+    }
     setSuccess(true);
     toast.success("İlan güncellendi");
     setTimeout(() => router.push(`/properties/${params.id}`), 1000);

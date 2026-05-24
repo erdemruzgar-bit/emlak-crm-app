@@ -491,10 +491,11 @@ function CustomersPageInner() {
                 ) : (
                   customers.map((c) => {
                     const lastContact = relativeDate(c.lastContactDate);
-                    const prefSummary = [
-                      ...(c.preferredTypes || []).slice(0, 1).map((t) => propertyTypeLabels[t] || t),
-                      ...(c.preferredCities || []).slice(0, 1),
-                    ].join(", ") || "-";
+                    const prefTypes = (c.preferredTypes || []).map((t) => propertyTypeLabels[t] || t);
+                    const prefCity = (c.preferredCities || [])[0];
+                    const typesText = prefTypes.length <= 2 ? prefTypes.join(", ")
+                      : `${prefTypes.slice(0, 2).join(", ")} +${prefTypes.length - 2}`;
+                    const prefSummary = [typesText, prefCity].filter(Boolean).join(" · ") || "-";
                     return (
                       <tr key={c.id} className="border-t border-outline-variant/10 hover:bg-surface-container-low/50 transition-all group">
                         <td className="px-6 py-4">
@@ -513,7 +514,7 @@ function CustomersPageInner() {
                         <td className="px-5 py-4">
                           {c.urgency ? <span className="flex items-center gap-1.5"><span className={cn("w-2 h-2 rounded-full", urgencyDots[c.urgency])} /><span className="text-xs text-on-surface-variant">{c.urgency === "LOW" ? "Düşük" : c.urgency === "MEDIUM" ? "Orta" : c.urgency === "HIGH" ? "Yüksek" : "Acil"}</span></span> : <span className="text-xs text-on-surface-variant">-</span>}
                         </td>
-                        <td className="px-5 py-4 text-xs text-on-surface-variant max-w-[120px] truncate">{prefSummary}</td>
+                        <td className="px-5 py-4 text-xs text-on-surface-variant max-w-[180px] truncate" title={[prefTypes.join(", "), prefCity].filter(Boolean).join(" · ") || ""}>{prefSummary}</td>
                         <td className="px-5 py-4"><span className={cn("text-xs font-medium", lastContact.color)}>{lastContact.text}</span></td>
                         <td className="px-5 py-4 text-xs text-on-surface-variant">{c.assignedAgent?.name || "-"}</td>
                         <td className="px-5 py-4">
@@ -569,10 +570,10 @@ function CustomersPageInner() {
               {kanbanCustomers.map((c) => {
                 const isOverdue = c.nextFollowUpDate && new Date(c.nextFollowUpDate) < new Date();
                 const lastContact = relativeDate(c.lastContactDate);
-                const prefSummary = [
-                  ...(c.preferredTypes || []).slice(0, 2).map((t) => propertyTypeLabels[t] || t),
-                  ...(c.preferredCities || []).slice(0, 1),
-                ].filter(Boolean).join(" · ");
+                const kanbanPrefTypes = (c.preferredTypes || []).map((t) => propertyTypeLabels[t] || t);
+                const kanbanTypesText = kanbanPrefTypes.length <= 3 ? kanbanPrefTypes.join(", ")
+                  : `${kanbanPrefTypes.slice(0, 3).join(", ")} +${kanbanPrefTypes.length - 3}`;
+                const prefSummary = [kanbanTypesText, (c.preferredCities || [])[0]].filter(Boolean).join(" · ");
                 const avatarColors = [
                   "from-blue-400 to-blue-600",
                   "from-violet-400 to-violet-600",

@@ -13,6 +13,7 @@ const projectCreateSchema = z.object({
   address: z.string().optional(),
   developer: z.string().optional(),
   description: z.string().optional(),
+  branchId: z.string().nullable().optional(),  // Bağlı şube (RBAC için: o şubenin tüm AGENT'ları bu projedeki ilanları görür)
   blocks: z
     .array(
       z.object({
@@ -45,6 +46,7 @@ export async function GET(req: NextRequest) {
       where,
       include: {
         blocks: { orderBy: { name: "asc" } },
+        branch: { select: { id: true, name: true } },
         _count: { select: { properties: true } },
       },
       orderBy: { name: "asc" },

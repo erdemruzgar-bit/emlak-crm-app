@@ -25,9 +25,13 @@ interface Project {
   address: string | null;
   developer: string | null;
   description: string | null;
+  branchId: string | null;
+  branch: { id: string; name: string } | null;
   blocks: Block[];
   _count: { properties: number };
 }
+
+interface BranchOption { id: string; name: string }
 
 export default function ProjectsSettingsPage() {
   const confirm = useConfirm();
@@ -42,14 +46,20 @@ export default function ProjectsSettingsPage() {
   const [newCity, setNewCity] = useState("");
   const [newDistrict, setNewDistrict] = useState("");
   const [newDeveloper, setNewDeveloper] = useState("");
+  const [newBranchId, setNewBranchId] = useState("");
   const [newBlocks, setNewBlocks] = useState<{ name: string; totalUnits: string }[]>([
     { name: "", totalUnits: "" },
   ]);
   const [saving, setSaving] = useState(false);
+  const [branches, setBranches] = useState<BranchOption[]>([]);
 
   useEffect(() => {
-     
+
     load();
+    fetch("/api/branches")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => { if (Array.isArray(data)) setBranches(data); })
+      .catch(() => {});
   }, []);
 
   async function load() {
@@ -79,6 +89,7 @@ export default function ProjectsSettingsPage() {
       city: newCity.trim() || undefined,
       district: newDistrict.trim() || undefined,
       developer: newDeveloper.trim() || undefined,
+      branchId: newBranchId || undefined,
       blocks: newBlocks
         .filter((b) => b.name.trim())
         .map((b) => ({
@@ -97,6 +108,7 @@ export default function ProjectsSettingsPage() {
       setNewCity("");
       setNewDistrict("");
       setNewDeveloper("");
+      setNewBranchId("");
       setNewBlocks([{ name: "", totalUnits: "" }]);
       setCreating(false);
       await load();
@@ -127,7 +139,7 @@ export default function ProjectsSettingsPage() {
 
   async function saveProjectInfo(
     id: string,
-    patch: { name?: string; developer?: string | null; city?: string | null; district?: string | null },
+    patch: { name?: string; developer?: string | null; city?: string | null; district?: string | null; branchId?: string | null },
   ) {
     const res = await fetch(`/api/projects/${id}`, {
       method: "PUT",
@@ -277,6 +289,19 @@ export default function ProjectsSettingsPage() {
                   <option key={d} value={d}>{d}</option>
                 ))}
               </select>
+              {branches.length > 0 && (
+                <select
+                  value={newBranchId}
+                  onChange={(e) => setNewBranchId(e.target.value)}
+                  className="px-4 py-3 bg-surface-container-low rounded-xl text-sm border-none outline-none focus:ring-2 focus:ring-primary/20"
+                  title="Bu projeyi takip eden şube — o şubedeki danışmanlar projedeki tüm ilanları görebilir"
+                >
+                  <option value="">Bağlı Şube (opsiyonel)</option>
+                  {branches.map((b) => (
+                    <option key={b.id} value={b.id}>{b.name}</option>
+                  ))}
+                </select>
+              )}
             </div>
 
             <div>
@@ -430,7 +455,7 @@ export default function ProjectsSettingsPage() {
 
                 {isOpen && (
                   <div className="border-t border-outline-variant/10 p-5 pt-4 bg-surface-container-low/40 space-y-5">
-                    <ProjectInfoEditor project={p} onSave={saveProjectInfo} />
+                    <ProjectInfoEditor project={p} branches={branches} onSave={saveProjectInfo} />
                     {p.blocks.length === 0 ? (
                       <p className="text-xs text-on-surface-variant text-center py-4">
                         Bu projede blok yok. "+ Blok" ile ekleyebilirsin.
@@ -474,17 +499,19 @@ export default function ProjectsSettingsPage() {
 
 interface ProjectInfoEditorProps {
   project: Project;
+  branches: BranchOption[];
   onSave: (
     id: string,
-    patch: { name?: string; developer?: string | null; city?: string | null; district?: string | null },
+    patch: { name?: string; developer?: string | null; city?: string | null; district?: string | null; branchId?: string | null },
   ) => Promise<void>;
 }
 
-function ProjectInfoEditor({ project, onSave }: ProjectInfoEditorProps) {
+function ProjectInfoEditor({ project, branches, onSave }: ProjectInfoEditorProps) {
   const [name, setName] = useState(project.name);
   const [developer, setDeveloper] = useState(project.developer ?? "");
   const [city, setCity] = useState(project.city ?? "");
   const [district, setDistrict] = useState(project.district ?? "");
+  const [branchId, setBranchId] = useState(project.branchId ?? "");
   const [saving, setSaving] = useState(false);
 
   // Proje listesinde güncelleme olduğunda local state'i senkronla
@@ -494,13 +521,15 @@ function ProjectInfoEditor({ project, onSave }: ProjectInfoEditorProps) {
     setDeveloper(project.developer ?? "");
     setCity(project.city ?? "");
     setDistrict(project.district ?? "");
-  }, [project.id, project.name, project.developer, project.city, project.district]);
+    setBranchId(project.branchId ?? "");
+  }, [project.id, project.name, project.developer, project.city, project.district, project.branchId]);
 
   const dirty =
     name !== project.name ||
     (developer || null) !== (project.developer || null) ||
     (city || null) !== (project.city || null) ||
-    (district || null) !== (project.district || null);
+    (district || null) !== (project.district || null) ||
+    (branchId || null) !== (project.branchId || null);
 
   async function handleSave() {
     if (!dirty) return;
@@ -510,6 +539,7 @@ function ProjectInfoEditor({ project, onSave }: ProjectInfoEditorProps) {
       developer: developer.trim() || null,
       city: city || null,
       district: district || null,
+      branchId: branchId || null,
     });
     setSaving(false);
   }
@@ -570,6 +600,19 @@ function ProjectInfoEditor({ project, onSave }: ProjectInfoEditorProps) {
               </option>
             ))}
         </select>
+        {branches.length > 0 && (
+          <select
+            value={branchId}
+            onChange={(e) => setBranchId(e.target.value)}
+            className="px-3 py-2 bg-surface-container-low rounded-lg text-sm border-none outline-none focus:ring-2 focus:ring-primary/20 md:col-span-2"
+            title="Bu projeyi takip eden şube — o şubedeki danışmanlar projedeki tüm ilanları görebilir"
+          >
+            <option value="">Bağlı Şube yok</option>
+            {branches.map((b) => (
+              <option key={b.id} value={b.id}>{b.name}</option>
+            ))}
+          </select>
+        )}
       </div>
     </div>
   );

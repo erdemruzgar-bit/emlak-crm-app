@@ -174,6 +174,7 @@ model Branch {
   authorizedUsers  User[]   @relation("UserAuthorizedBranches")  // Yetkili olduğu ek şubeler (M:M)
   customers        Customer[]
   properties       Property[]
+  projects         Project[]                                     // Bu şubenin sorumlu olduğu projeler (1:N)
   contracts        Contract[]
   commissionPolicy CommissionPolicy?
 }
@@ -514,15 +515,21 @@ model Project {
   viewTypes   String[] @default([])
   // Vaziyet planı / kat planı / şematik görsel URL'leri (PDF import sırasında doldurulur).
   sitePlanImageUrls String[] @default([])
+  // Bu projeyi takip eden ana şube. RBAC için: o şubedeki AGENT'lar bu projedeki
+  // tüm ilanları görebilir (kendi şubelerinde olmasa bile). Null ise sadece
+  // property.branchId üzerinden eski RBAC çalışır.
+  branchId    String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  branch     Branch?  @relation(fields: [branchId], references: [id], onDelete: SetNull)
   blocks     Block[]
   properties Property[]
   interestedCustomers CustomerInterestedProject[]
 
   @@index([name])
   @@index([city, district])
+  @@index([branchId])
 }
 
 model Block {

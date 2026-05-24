@@ -86,28 +86,35 @@ export function canEditCustomer(
 
 // -------- İlan --------
 
-// Görüntüleme: ADMIN ve MANAGER tüm şubeleri; AGENT yetkili olduğu şubeleri
+// Görüntüleme: ADMIN ve MANAGER tüm şubeleri; AGENT yetkili olduğu şubeleri.
+// AGENT için ek erişim: kendi şubesine bağlı projedeki tüm ilanlar görünür
+// (property.branchId farklı olsa bile), çünkü şube projenin sorumlusudur.
 export function canViewProperty(
   actor: SessionActor | null,
-  property: { branchId: string | null }
+  property: { branchId: string | null; project?: { branchId: string | null } | null }
 ): boolean {
   if (!actor) return false;
   if (actor.role === "ADMIN" || actor.role === "MANAGER") return true;
-  if (!property.branchId) return false;
-  return actor.branchIds.includes(property.branchId);
+  if (!actor.branchIds.length) return false;
+  const propBranchOK = property.branchId !== null && actor.branchIds.includes(property.branchId);
+  const projBranchOK = property.project?.branchId != null && actor.branchIds.includes(property.project.branchId);
+  return propBranchOK || projBranchOK;
 }
 
-// Düzenleme: atanmış danışman, yetkili olduğu şubedeki MANAGER, ADMIN
-// (MANAGER görüntülemeyi tüm şubelerde yapar ama düzenleme yalnızca yetkili olduğu şubelerde)
+// Düzenleme: atanmış danışman, yetkili olduğu şubedeki MANAGER, ADMIN.
+// Ek: AGENT kendi şubesine bağlı projedeki ilana atanmamışsa düzenleyemez —
+// view ile edit farklı; view geniş, edit dar.
 export function canEditProperty(
   actor: SessionActor | null,
-  property: { assignedAgentId: string | null; branchId: string | null }
+  property: { assignedAgentId: string | null; branchId: string | null; project?: { branchId: string | null } | null }
 ): boolean {
   if (!actor) return false;
   if (actor.role === "ADMIN") return true;
   if (actor.role === "MANAGER") {
-    if (!property.branchId) return false;
-    return actor.branchIds.includes(property.branchId);
+    if (!actor.branchIds.length) return false;
+    const propBranchOK = property.branchId !== null && actor.branchIds.includes(property.branchId);
+    const projBranchOK = property.project?.branchId != null && actor.branchIds.includes(property.project.branchId);
+    return propBranchOK || projBranchOK;
   }
   // AGENT
   return property.assignedAgentId === actor.id;
@@ -115,13 +122,18 @@ export function canEditProperty(
 
 // Prisma where filtresi — liste endpointlerinde kullanılır
 // MANAGER artık tüm şubelerin ilanlarını listede görür (görsel listede izolasyon yok);
-// edit/delete RBAC üzerinden korunuyor. AGENT yetkili olduğu şubeler.
+// edit/delete RBAC üzerinden korunuyor. AGENT yetkili olduğu şubeler VEYA bağlı projeler.
 export function propertyListFilter(actor: SessionActor | null): Record<string, unknown> {
   if (!actor) return { branchId: "__no_branch__" };
   if (actor.role === "ADMIN" || actor.role === "MANAGER") return {};
-  // AGENT — yetkili olduğu şubeler (ana + ek)
+  // AGENT — yetkili olduğu şubeler (ana + ek) VEYA o şubelere bağlı projeler
   if (actor.branchIds.length === 0) return { branchId: "__no_branch__" };
-  return { branchId: { in: actor.branchIds } };
+  return {
+    OR: [
+      { branchId: { in: actor.branchIds } },
+      { project: { branchId: { in: actor.branchIds } } },
+    ],
+  };
 }
 
 // -------- Randevu / Görev --------
@@ -163,7 +175,12 @@ export const taskListFilter = appointmentListFilter;
 export async function loadPropertyForRbac(propertyId: string) {
   return prisma.property.findUnique({
     where: { id: propertyId },
-    select: { id: true, assignedAgentId: true, branchId: true },
+    select: {
+      id: true,
+      assignedAgentId: true,
+      branchId: true,
+      project: { select: { branchId: true } },
+    },
   });
 }
 

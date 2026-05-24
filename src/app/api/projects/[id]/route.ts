@@ -13,6 +13,7 @@ const projectUpdateSchema = z.object({
   address: z.string().nullable().optional(),
   developer: z.string().nullable().optional(),
   description: z.string().nullable().optional(),
+  branchId: z.string().nullable().optional(),  // RBAC: bağlı şube — o şubenin AGENT'ları projedeki tüm ilanları görür
 });
 
 export async function GET(
@@ -28,6 +29,7 @@ export async function GET(
     where: { id },
     include: {
       blocks: { orderBy: { name: "asc" } },
+      branch: { select: { id: true, name: true } },
       _count: { select: { properties: true } },
     },
   });

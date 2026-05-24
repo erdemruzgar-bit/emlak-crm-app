@@ -37,7 +37,7 @@ export async function GET(
           },
         },
         branch: { select: { name: true } },
-        project: { select: { id: true, name: true } },
+        project: { select: { id: true, name: true, branchId: true } },
         block: { select: { id: true, name: true } },
         matches: {
           include: { customer: { select: { id: true, firstName: true, lastName: true } } },
@@ -94,7 +94,10 @@ export async function PUT(
       return NextResponse.json({ error: parsed.error.issues }, { status: 400 });
     }
 
-    const old = await prisma.property.findUnique({ where: { id } });
+    const old = await prisma.property.findUnique({
+      where: { id },
+      include: { project: { select: { branchId: true } } },
+    });
     if (!old) {
       return NextResponse.json({ error: "İlan bulunamadı" }, { status: 404 });
     }

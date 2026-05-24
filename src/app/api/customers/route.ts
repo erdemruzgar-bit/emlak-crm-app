@@ -27,6 +27,7 @@ export async function GET(req: NextRequest) {
   const preferredCity = searchParams.get("preferredCity") || "";
   const preferredDistrict = searchParams.get("preferredDistrict") || "";
   const preferredType = searchParams.get("preferredType") || "";
+  const preferredListingType = searchParams.get("preferredListingType") || "";
   const minArea = searchParams.get("minArea") || "";
   const maxArea = searchParams.get("maxArea") || "";
   const rooms = searchParams.get("rooms") || ""; // hedef oda sayısı (ör. "2+1")
@@ -67,6 +68,7 @@ export async function GET(req: NextRequest) {
   if (preferredCity) where.preferredCities = { has: preferredCity };
   if (preferredDistrict) where.preferredDistricts = { has: preferredDistrict };
   if (preferredType) where.preferredTypes = { has: preferredType };
+  if (preferredListingType) where.preferredListingTypes = { has: preferredListingType };
   // Müşterinin tercih aralığı verilen min/max ile kesişiyor mu?
   // Müşteri minArea-maxArea istiyor; biz "müşteri en az X m² istiyor" diye sorgularsak minArea filtresi
   if (minArea) where.minArea = { gte: parseFloat(minArea) };

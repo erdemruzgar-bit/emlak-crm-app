@@ -102,6 +102,7 @@ function CustomersPageInner() {
   const [urgencyFilter, setUrgencyFilter] = useState("");
   const [sourceFilter, setSourceFilter] = useState("");
   const [preferredTypeFilter, setPreferredTypeFilter] = useState("");
+  const [preferredListingTypeFilter, setPreferredListingTypeFilter] = useState("");
   const [preferredCityFilter, setPreferredCityFilter] = useState("");
   const [preferredDistrictFilter, setPreferredDistrictFilter] = useState("");
   const [roomsFilter, setRoomsFilter] = useState("");
@@ -163,7 +164,7 @@ function CustomersPageInner() {
 
   const activeFilterCount = [
     typeFilter, stageFilter, urgencyFilter, sourceFilter,
-    preferredTypeFilter, preferredCityFilter, preferredDistrictFilter, roomsFilter,
+    preferredTypeFilter, preferredListingTypeFilter, preferredCityFilter, preferredDistrictFilter, roomsFilter,
     minBudgetFilter, maxBudgetFilter, minAreaFilter, maxAreaFilter, tagsFilter,
     interestedProjectFilter,
     overdueFollowUpFilter ? "1" : "",
@@ -172,7 +173,7 @@ function CustomersPageInner() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { fetchCustomers(); }, [
     page, search, typeFilter, stageFilter, urgencyFilter, sourceFilter, sortBy, sortOrder,
-    preferredTypeFilter, preferredCityFilter, preferredDistrictFilter, roomsFilter,
+    preferredTypeFilter, preferredListingTypeFilter, preferredCityFilter, preferredDistrictFilter, roomsFilter,
     minBudgetFilter, maxBudgetFilter, minAreaFilter, maxAreaFilter, tagsFilter, overdueFollowUpFilter,
     interestedProjectFilter,
   ]);
@@ -190,6 +191,7 @@ function CustomersPageInner() {
       ...(urgencyFilter && { urgency: urgencyFilter }),
       ...(sourceFilter && { source: sourceFilter }),
       ...(preferredTypeFilter && { preferredType: preferredTypeFilter }),
+      ...(preferredListingTypeFilter && { preferredListingType: preferredListingTypeFilter }),
       ...(preferredCityFilter && { preferredCity: preferredCityFilter }),
       ...(preferredDistrictFilter && { preferredDistrict: preferredDistrictFilter }),
       ...(roomsFilter && { rooms: roomsFilter }),
@@ -229,7 +231,8 @@ function CustomersPageInner() {
 
   function clearFilters() {
     setTypeFilter(""); setStageFilter(""); setUrgencyFilter(""); setSourceFilter("");
-    setPreferredTypeFilter(""); setPreferredCityFilter(""); setPreferredDistrictFilter("");
+    setPreferredTypeFilter(""); setPreferredListingTypeFilter("");
+    setPreferredCityFilter(""); setPreferredDistrictFilter("");
     setRoomsFilter(""); setMinBudgetFilter(""); setMaxBudgetFilter("");
     setMinAreaFilter(""); setMaxAreaFilter(""); setTagsFilter(""); setOverdueFollowUpFilter(false);
     setPage(1);
@@ -376,6 +379,12 @@ function CustomersPageInner() {
                     <option value="ARSA">Arsa</option>
                     <option value="ISYERI">İşyeri</option>
                     <option value="MUSTAKILEV">Müstakil Ev</option>
+                  </select>
+                  <select value={preferredListingTypeFilter} onChange={(e) => { setPreferredListingTypeFilter(e.target.value); setPage(1); }}
+                    className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm">
+                    <option value="">Aradığı İlan Tipi</option>
+                    <option value="SATILIK">Satılık</option>
+                    <option value="KIRALIK">Kiralık</option>
                   </select>
                   <select value={roomsFilter} onChange={(e) => { setRoomsFilter(e.target.value); setPage(1); }}
                     className="px-3 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm">

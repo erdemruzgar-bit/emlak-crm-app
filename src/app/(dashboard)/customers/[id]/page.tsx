@@ -72,6 +72,7 @@ interface Customer {
   urgency: string | null;
   desiredMoveDate: string | null;
   preferredTypes: string[];
+  preferredListingTypes: string[];
   preferredCities: string[];
   preferredDistricts: string[];
   minArea: number | null;
@@ -235,6 +236,7 @@ export default function CustomerDetailPage() {
   const [newNote, setNewNote] = useState("");
   const [noteSaving, setNoteSaving] = useState(false);
   const [customerTypeOptions, setCustomerTypeOptions] = useState<{ code: string; label: string }[]>([]);
+  const [listingTypeOptions, setListingTypeOptions] = useState<{ code: string; label: string }[]>([]);
   const [roomTypeOptions, setRoomTypeOptions] = useState<{ id: string; name: string }[]>([]);
   const [projectOptions, setProjectOptions] = useState<{ id: string; name: string; code?: string | null; city?: string | null; district?: string | null }[]>([]);
   const [projectSearch, setProjectSearch] = useState("");
@@ -323,6 +325,13 @@ export default function CustomerDetailPage() {
       .then((r) => (r.ok ? r.json() : []))
       .then((data) => {
         if (Array.isArray(data)) setCustomerTypeOptions(data);
+      })
+      .catch(() => {});
+
+    fetch("/api/listing-types")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => {
+        if (Array.isArray(data)) setListingTypeOptions(data.filter((t: { code: string }) => t.code !== "ARSIV"));
       })
       .catch(() => {});
 
@@ -774,6 +783,22 @@ export default function CustomerDetailPage() {
             {/* Mülk Tercihleri */}
             <div className="bg-surface-container-lowest rounded-3xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] p-8 space-y-5 border border-outline-variant/10">
               <h3 className="text-sm font-bold text-on-surface">Mülk Tercihleri</h3>
+              {listingTypeOptions.length > 0 && (
+                <div>
+                  <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3">Aradığı İlan Tipi (çoklu seçilebilir)</label>
+                  <div className="flex flex-wrap gap-2">
+                    {listingTypeOptions.map((lt) => (
+                      <button key={lt.code} type="button" onClick={() => {
+                        const types = customer.preferredListingTypes || [];
+                        setCustomer({ ...customer, preferredListingTypes: types.includes(lt.code) ? types.filter((t) => t !== lt.code) : [...types, lt.code] });
+                      }} className={cn("px-4 py-2 rounded-xl text-xs font-bold transition-all",
+                        (customer.preferredListingTypes || []).includes(lt.code) ? "primary-gradient text-white shadow-sm" : "bg-surface-container-low text-on-surface-variant hover:bg-surface-container"
+                      )}>{lt.label}</button>
+                    ))}
+                  </div>
+                  <p className="text-[11px] text-on-surface-variant mt-2">Hem kira hem satılık arayanlar için ikisini de seç.</p>
+                </div>
+              )}
               <div>
                 <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3">Mülk Tipi</label>
                 <div className="flex flex-wrap gap-2">
@@ -787,15 +812,39 @@ export default function CustomerDetailPage() {
                   ))}
                 </div>
               </div>
+              <div>
+                <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3">M² Aralığı (hızlı seçim)</label>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { label: "50-100", min: 50, max: 100 },
+                    { label: "100-200", min: 100, max: 200 },
+                    { label: "200-500", min: 200, max: 500 },
+                    { label: "500+", min: 500, max: null as number | null },
+                  ].map((preset) => {
+                    const active = customer.minArea === preset.min && customer.maxArea === preset.max;
+                    return (
+                      <button key={preset.label} type="button"
+                        onClick={() => setCustomer({ ...customer, minArea: preset.min, maxArea: preset.max })}
+                        className={cn("px-4 py-2 rounded-xl text-xs font-bold transition-all",
+                          active ? "primary-gradient text-white shadow-sm" : "bg-surface-container-low text-on-surface-variant hover:bg-surface-container"
+                        )}>{preset.label} m²</button>
+                    );
+                  })}
+                  {(customer.minArea !== null || customer.maxArea !== null) && (
+                    <button type="button" onClick={() => setCustomer({ ...customer, minArea: null, maxArea: null })}
+                      className="px-3 py-2 rounded-xl text-xs font-bold bg-error-container text-on-error-container hover:opacity-90">Temizle</button>
+                  )}
+                </div>
+              </div>
               <div className={cn("grid gap-4", showRoomFields ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-2")}>
                 <div>
                   <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Min m²</label>
-                  <input type="number" value={customer.minArea || ""} onChange={(e) => setCustomer({ ...customer, minArea: e.target.value ? parseFloat(e.target.value) : null })}
+                  <input type="number" value={customer.minArea ?? ""} onChange={(e) => setCustomer({ ...customer, minArea: e.target.value ? parseFloat(e.target.value) : null })}
                     className="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/20 outline-none text-sm" />
                 </div>
                 <div>
                   <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Max m²</label>
-                  <input type="number" value={customer.maxArea || ""} onChange={(e) => setCustomer({ ...customer, maxArea: e.target.value ? parseFloat(e.target.value) : null })}
+                  <input type="number" value={customer.maxArea ?? ""} onChange={(e) => setCustomer({ ...customer, maxArea: e.target.value ? parseFloat(e.target.value) : null })}
                     className="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/20 outline-none text-sm" />
                 </div>
                 {showRoomFields && (
@@ -975,6 +1024,7 @@ export default function CustomerDetailPage() {
                         urgency: customer.urgency,
                         desiredMoveDate: customer.desiredMoveDate,
                         preferredTypes: customer.preferredTypes,
+                        preferredListingTypes: customer.preferredListingTypes,
                         preferredCities: customer.preferredCities,
                         preferredDistricts: customer.preferredDistricts,
                         minArea: customer.minArea,

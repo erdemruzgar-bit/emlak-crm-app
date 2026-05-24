@@ -8,7 +8,8 @@ interface Property {
   district: string | null;
   area: number | null;
   rooms: string | null;
-  listingType: string;
+  listingType: string;       // legacy birincil
+  listingTypes: string[];    // çoklu (KIRALIK+SATILIK olabilir)
 }
 
 interface Customer {
@@ -17,6 +18,7 @@ interface Customer {
   minBudget: number | null;
   maxBudget: number | null;
   preferredTypes: string[];
+  preferredListingTypes: string[];  // ["SATILIK", "KIRALIK"] — boş ise filtreleme yok
   preferredCities: string[];
   preferredDistricts: string[];
   minArea: number | null;
@@ -40,6 +42,16 @@ function computeScore(property: Property, customer: Customer): number {
   if (customer.isAnonymized) return 0;
 
   let score = 0;
+
+  // Listing type match — hard blocker; müşteri "SATILIK" istiyorsa kira ilanı önerilmez.
+  // Property çoklu listing type kabul ediyor (listingTypes); kesişim varsa eşleşir.
+  if (customer.preferredListingTypes && customer.preferredListingTypes.length > 0) {
+    const propertyListings = (property.listingTypes && property.listingTypes.length > 0)
+      ? property.listingTypes
+      : [property.listingType];
+    const intersect = propertyListings.some((lt) => customer.preferredListingTypes.includes(lt));
+    if (!intersect) return 0;
+  }
 
   // Budget match (40 pts)
   if (customer.minBudget || customer.maxBudget) {
@@ -110,7 +122,7 @@ function computeScore(property: Property, customer: Customer): number {
 export async function runPropertyMatching(propertyId: string): Promise<void> {
   const property = await prisma.property.findUnique({
     where: { id: propertyId },
-    select: { id: true, price: true, propertyType: true, city: true, district: true, area: true, rooms: true, listingType: true, status: true },
+    select: { id: true, price: true, propertyType: true, city: true, district: true, area: true, rooms: true, listingType: true, listingTypes: true, status: true },
   });
 
   if (!property || property.status !== "ACTIVE") return;
@@ -126,6 +138,7 @@ export async function runPropertyMatching(propertyId: string): Promise<void> {
       minBudget: true,
       maxBudget: true,
       preferredTypes: true,
+      preferredListingTypes: true,
       preferredCities: true,
       preferredDistricts: true,
       minArea: true,
@@ -159,6 +172,7 @@ export async function runCustomerMatching(customerId: string): Promise<void> {
       minBudget: true,
       maxBudget: true,
       preferredTypes: true,
+      preferredListingTypes: true,
       preferredCities: true,
       preferredDistricts: true,
       minArea: true,
@@ -173,7 +187,7 @@ export async function runCustomerMatching(customerId: string): Promise<void> {
 
   const properties = await prisma.property.findMany({
     where: { status: "ACTIVE" },
-    select: { id: true, price: true, propertyType: true, city: true, district: true, area: true, rooms: true, listingType: true, status: true },
+    select: { id: true, price: true, propertyType: true, city: true, district: true, area: true, rooms: true, listingType: true, listingTypes: true, status: true },
   });
 
   const MIN_SCORE = 30;

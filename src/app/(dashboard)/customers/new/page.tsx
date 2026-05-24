@@ -21,11 +21,15 @@ export default function NewCustomerPage() {
   const [error, setError] = useState("");
   const [urgency, setUrgency] = useState("MEDIUM");
   const [preferredTypes, setPreferredTypes] = useState<string[]>([]);
+  const [preferredListingTypes, setPreferredListingTypes] = useState<string[]>([]);
   const [preferredFeatures, setPreferredFeatures] = useState<string[]>([]);
   const [customerTypeOptions, setCustomerTypeOptions] = useState<{ code: string; label: string }[]>([]);
+  const [listingTypeOptions, setListingTypeOptions] = useState<{ code: string; label: string }[]>([]);
   const [roomTypeOptions, setRoomTypeOptions] = useState<{ id: string; name: string }[]>([]);
   const [minRooms, setMinRooms] = useState("");
   const [maxRooms, setMaxRooms] = useState("");
+  const [minArea, setMinArea] = useState("");
+  const [maxArea, setMaxArea] = useState("");
   const [projectOptions, setProjectOptions] = useState<ProjectOption[]>([]);
   const [interestedProjects, setInterestedProjects] = useState<ProjectOption[]>([]);
   const [projectSearch, setProjectSearch] = useState("");
@@ -45,6 +49,13 @@ export default function NewCustomerPage() {
         if (Array.isArray(data)) setRoomTypeOptions(data);
       })
       .catch(() => setRoomTypeOptions([]));
+
+    fetch("/api/listing-types")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => {
+        if (Array.isArray(data)) setListingTypeOptions(data.filter((t: { code: string }) => t.code !== "ARSIV"));
+      })
+      .catch(() => setListingTypeOptions([]));
 
     fetch("/api/projects")
       .then((r) => (r.ok ? r.json() : []))
@@ -109,7 +120,10 @@ export default function NewCustomerPage() {
       urgency,
       minBudget: formData.get("minBudget") ? parseFloat(formData.get("minBudget") as string) : undefined,
       maxBudget: formData.get("maxBudget") ? parseFloat(formData.get("maxBudget") as string) : undefined,
+      minArea: minArea ? parseFloat(minArea) : undefined,
+      maxArea: maxArea ? parseFloat(maxArea) : undefined,
       preferredTypes: preferredTypes.length > 0 ? preferredTypes : undefined,
+      preferredListingTypes: preferredListingTypes.length > 0 ? preferredListingTypes : undefined,
       preferredCities: formData.get("preferredCities") ? (formData.get("preferredCities") as string).split(",").map((s) => s.trim()).filter(Boolean) : undefined,
       preferredFeatures: preferredFeatures.length > 0 ? preferredFeatures : undefined,
       minRooms: showRoomFields && minRooms ? minRooms : undefined,
@@ -259,6 +273,21 @@ export default function NewCustomerPage() {
               <input name="maxBudget" type="number" className={inputClass} />
             </div>
           </div>
+          {listingTypeOptions.length > 0 && (
+            <div>
+              <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3">Aradığı İlan Tipi (çoklu seçilebilir)</label>
+              <div className="flex flex-wrap gap-2">
+                {listingTypeOptions.map((lt) => (
+                  <button key={lt.code} type="button"
+                    onClick={() => setPreferredListingTypes((prev) => prev.includes(lt.code) ? prev.filter((t) => t !== lt.code) : [...prev, lt.code])}
+                    className={cn("px-4 py-2 rounded-xl text-xs font-bold transition-all",
+                      preferredListingTypes.includes(lt.code) ? "primary-gradient text-white shadow-sm" : "bg-surface-container-low text-on-surface-variant hover:bg-surface-container"
+                    )}>{lt.label}</button>
+                ))}
+              </div>
+              <p className="text-[11px] text-on-surface-variant mt-2">Müşteri hem kira hem satılık arıyorsa ikisini de işaretleyin.</p>
+            </div>
+          )}
           <div>
             <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3">Tercih Edilen Mülk Tipi</label>
             <div className="flex flex-wrap gap-2">
@@ -268,6 +297,40 @@ export default function NewCustomerPage() {
                     preferredTypes.includes(pt.key) ? "primary-gradient text-white shadow-sm" : "bg-surface-container-low text-on-surface-variant hover:bg-surface-container"
                   )}>{pt.label}</button>
               ))}
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3">M² Aralığı</label>
+            <div className="flex flex-wrap gap-2 mb-3">
+              {[
+                { label: "50-100", min: "50", max: "100" },
+                { label: "100-200", min: "100", max: "200" },
+                { label: "200-500", min: "200", max: "500" },
+                { label: "500+", min: "500", max: "" },
+              ].map((preset) => {
+                const active = minArea === preset.min && maxArea === preset.max;
+                return (
+                  <button key={preset.label} type="button"
+                    onClick={() => { setMinArea(preset.min); setMaxArea(preset.max); }}
+                    className={cn("px-4 py-2 rounded-xl text-xs font-bold transition-all",
+                      active ? "primary-gradient text-white shadow-sm" : "bg-surface-container-low text-on-surface-variant hover:bg-surface-container"
+                    )}>{preset.label} m²</button>
+                );
+              })}
+              {(minArea || maxArea) && (
+                <button type="button" onClick={() => { setMinArea(""); setMaxArea(""); }}
+                  className="px-3 py-2 rounded-xl text-xs font-bold bg-error-container text-on-error-container hover:opacity-90">Temizle</button>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1">Min m²</label>
+                <input type="number" value={minArea} onChange={(e) => setMinArea(e.target.value)} placeholder="örn. 80" className={inputClass} />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1">Max m²</label>
+                <input type="number" value={maxArea} onChange={(e) => setMaxArea(e.target.value)} placeholder="örn. 150" className={inputClass} />
+              </div>
             </div>
           </div>
           {showRoomFields && (

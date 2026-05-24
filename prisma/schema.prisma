@@ -264,14 +264,15 @@ model Customer {
   desiredMoveDate    DateTime?
 
   // === MÜLK TERCİHLERİ ===
-  preferredTypes     String[]  // ["DAIRE", "VILLA"]
-  preferredCities    String[]  // ["İstanbul"]
-  preferredDistricts String[]  // ["Kadıköy", "Beşiktaş"]
-  minArea            Float?
-  maxArea            Float?
-  minRooms           String?   // "2+1"
-  maxRooms           String?   // "4+1"
-  preferredFeatures  String[]  // ["Otopark", "Havuz", "Asansör"]
+  preferredTypes        String[]  // ["DAIRE", "VILLA"]
+  preferredListingTypes String[]  // ["SATILIK", "KIRALIK"] — müşteri kira mı satılık mı arıyor; çoklu
+  preferredCities       String[]  // ["İstanbul"]
+  preferredDistricts    String[]  // ["Kadıköy", "Beşiktaş"]
+  minArea               Float?
+  maxArea               Float?
+  minRooms              String?   // "2+1"
+  maxRooms              String?   // "4+1"
+  preferredFeatures     String[]  // ["Otopark", "Havuz", "Asansör"]
 
   // === FİNANSMAN ===
   financingMethod    String?   // NAKIT, KREDI, TAKAS

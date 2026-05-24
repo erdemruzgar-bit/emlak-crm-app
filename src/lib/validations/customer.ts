@@ -26,6 +26,7 @@ const demandProfileFields = {
   urgency: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]).nullable().optional(),
   desiredMoveDate: optionalString, // ISO date string
   preferredTypes: z.array(z.string()).optional(),
+  preferredListingTypes: z.array(z.string()).optional(), // ["SATILIK", "KIRALIK"] — ListingTypeCatalog.code
   preferredCities: z.array(z.string()).optional(),
   preferredDistricts: z.array(z.string()).optional(),
   minArea: z.number().min(0).nullable().optional(),

@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-05-24T14:28:23.031Z",
-  "totalFiles": 13,
-  "totalWarnings": 18,
+  "generatedAt": "2026-05-24T15:57:00.842Z",
+  "totalFiles": 8,
+  "totalWarnings": 13,
   "totalErrors": 0,
   "note": "Bu dosya, mevcut kod tabanındaki kabul edilmiş ESLint warning'lerinin snapshot'ıdır. Yeni warning eklenirse `lint:baseline:check` script'i fail eder. Güncellemek için: npm run lint:baseline:update",
   "warnings": {
@@ -26,21 +26,6 @@
     "src/app/(dashboard)/properties/page.tsx": [
       "141:react-hooks/set-state-in-effect",
       "64:react-hooks/set-state-in-effect"
-    ],
-    "src/app/(dashboard)/settings/customer-types/page.tsx": [
-      "34:unknown"
-    ],
-    "src/app/(dashboard)/settings/listing-types/page.tsx": [
-      "30:unknown"
-    ],
-    "src/app/(dashboard)/settings/occupancy-types/page.tsx": [
-      "30:unknown"
-    ],
-    "src/app/(dashboard)/settings/projects/page.tsx": [
-      "51:unknown"
-    ],
-    "src/app/(dashboard)/settings/room-types/page.tsx": [
-      "27:unknown"
     ],
     "src/app/(dashboard)/tools/citizenship-calculator/page.tsx": [
       "56:react-hooks/set-state-in-effect"

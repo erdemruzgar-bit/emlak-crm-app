@@ -31,7 +31,7 @@ export default function CustomerTypesSettingsPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/immutability
+     
     load();
   }, []);
 

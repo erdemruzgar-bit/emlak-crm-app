@@ -48,7 +48,7 @@ export default function ProjectsSettingsPage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/immutability
+     
     load();
   }, []);
 

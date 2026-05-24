@@ -95,21 +95,41 @@ export default function RemindersPage() {
 
   async function createReminder(e: React.FormEvent) {
     e.preventDefault();
-    if (!title.trim() || !dueDate) return;
+    if (!title.trim() || !dueDate) {
+      toast.error("Başlık ve zaman zorunlu");
+      return;
+    }
     setSaving(true);
-    const payload: Record<string, unknown> = {
-      title: title.trim(),
-      dueDate: new Date(dueDate).toISOString(),
-      priority,
-    };
-    if (description.trim()) payload.description = description.trim();
-    if (assignUserId) payload.userId = assignUserId;
-    const res = await fetch("/api/reminders", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    if (res.ok) {
+    try {
+      const due = new Date(dueDate);
+      if (isNaN(due.getTime())) {
+        toast.error("Geçersiz tarih/saat");
+        return;
+      }
+      const payload: Record<string, unknown> = {
+        title: title.trim(),
+        dueDate: due.toISOString(),
+        priority,
+      };
+      if (description.trim()) payload.description = description.trim();
+      if (assignUserId) payload.userId = assignUserId;
+
+      const res = await fetch("/api/reminders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        const msg = typeof body.error === "string" ? body.error
+          : Array.isArray(body.error) ? (body.error[0]?.message || "Doğrulama hatası")
+          : `Hatırlatma eklenemedi (${res.status})`;
+        console.error("Reminder POST failed:", res.status, body);
+        toast.error(msg);
+        return;
+      }
+
       setTitle("");
       setDescription("");
       setDueDate("");
@@ -118,10 +138,12 @@ export default function RemindersPage() {
       setShowForm(false);
       toast.success("Hatırlatma eklendi");
       await load();
-    } else {
-      toast.error("Hatırlatma eklenemedi");
+    } catch (err) {
+      console.error("Reminder create failed:", err);
+      toast.error("Bağlantı hatası — hatırlatma eklenemedi");
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   }
 
   async function toggleDone(r: Reminder) {

@@ -166,8 +166,8 @@ export default function TasksPage() {
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Son Tarih</label>
-                <input type="date" value={formDue} onChange={(e) => setFormDue(e.target.value)}
+                <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Son Tarih & Saat</label>
+                <input type="datetime-local" value={formDue} onChange={(e) => setFormDue(e.target.value)}
                   className="px-4 py-2.5 bg-surface-container-low border-none rounded-xl outline-none text-sm" />
               </div>
               {users.length > 0 && (
@@ -228,7 +228,7 @@ export default function TasksPage() {
                             {task.dueDate && (
                               <span className={cn("text-[10px] flex items-center gap-1 font-medium", isOverdue ? "text-error" : "text-on-surface-variant")}>
                                 {isOverdue && <AlertTriangle className="w-3 h-3" />}
-                                {new Date(task.dueDate).toLocaleDateString("tr-TR")}
+                                {new Date(task.dueDate).toLocaleString("tr-TR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                               </span>
                             )}
                           </div>

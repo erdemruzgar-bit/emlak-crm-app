@@ -634,26 +634,42 @@ export default function CustomerDetailPage() {
               {editingInfo && (
                 <button onClick={async () => {
                   setInfoSaving(true);
-                  await fetch(`/api/customers/${customer.id}`, {
-                    method: "PUT",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                      firstName: customer.firstName,
-                      lastName: customer.lastName,
-                      email: customer.email,
-                      phone: customer.phone,
-                      address: customer.address,
-                      customerType: customer.customerType,
-                      source: customer.source,
-                      photoUrl: customer.photoUrl,
-                      ...(canReassign ? { assignedAgentId: customer.assignedAgent?.id || null } : {}),
-                    }),
-                  });
-                  setInfoSaving(false);
-                  setInfoSaved(true);
-                  setEditingInfo(false);
-                  toast.success("Bilgiler kaydedildi");
-                  setTimeout(() => setInfoSaved(false), 2000);
+                  try {
+                    const res = await fetch(`/api/customers/${customer.id}`, {
+                      method: "PUT",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        firstName: customer.firstName,
+                        lastName: customer.lastName,
+                        email: customer.email,
+                        phone: customer.phone,
+                        address: customer.address,
+                        customerType: customer.customerType,
+                        source: customer.source,
+                        photoUrl: customer.photoUrl,
+                        ...(canReassign ? { assignedAgentId: customer.assignedAgent?.id || null } : {}),
+                      }),
+                    });
+                    if (!res.ok) {
+                      const body = await res.json().catch(() => ({}));
+                      const msg = typeof body.error === "string" ? body.error
+                        : Array.isArray(body.error) ? (body.error[0]?.message || "Doğrulama hatası")
+                        : `Sunucu hatası (${res.status})`;
+                      toast.error(msg);
+                      return;
+                    }
+                    const updated = await res.json();
+                    setCustomer((prev) => prev ? { ...prev, ...updated } : updated);
+                    setInfoSaved(true);
+                    setEditingInfo(false);
+                    toast.success("Bilgiler kaydedildi");
+                    setTimeout(() => setInfoSaved(false), 2000);
+                  } catch (err) {
+                    console.error("Customer info save failed:", err);
+                    toast.error("Bağlantı hatası — kaydedilemedi");
+                  } finally {
+                    setInfoSaving(false);
+                  }
                 }} disabled={infoSaving}
                   className={cn("px-8 py-3 rounded-xl text-sm font-bold flex items-center gap-2 transition-all",
                     infoSaved ? "bg-green-100 text-green-700" : "primary-gradient text-white shadow-lg shadow-primary/10"
@@ -948,36 +964,52 @@ export default function CustomerDetailPage() {
               {canEdit && <button
                 onClick={async () => {
                   setDemandSaving(true);
-                  await fetch(`/api/customers/${customer.id}`, {
-                    method: "PUT",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                      stage: customer.stage,
-                      minBudget: customer.minBudget,
-                      maxBudget: customer.maxBudget,
-                      urgency: customer.urgency,
-                      desiredMoveDate: customer.desiredMoveDate,
-                      preferredTypes: customer.preferredTypes,
-                      preferredCities: customer.preferredCities,
-                      preferredDistricts: customer.preferredDistricts,
-                      minArea: customer.minArea,
-                      maxArea: customer.maxArea,
-                      minRooms: customer.minRooms,
-                      maxRooms: customer.maxRooms,
-                      preferredFeatures: customer.preferredFeatures,
-                      financingMethod: customer.financingMethod,
-                      preApprovalStatus: customer.preApprovalStatus,
-                      downPaymentPercent: customer.downPaymentPercent,
-                      tags: customer.tags,
-                      notesSummary: customer.notesSummary,
-                      nextFollowUpDate: customer.nextFollowUpDate,
-                      interestedProjectIds: (customer.interestedProjects || []).map((p) => p.project.id),
-                    }),
-                  });
-                  setDemandSaving(false);
-                  setDemandSaved(true);
-                  toast.success("Talep profili kaydedildi");
-                  setTimeout(() => setDemandSaved(false), 2000);
+                  try {
+                    const res = await fetch(`/api/customers/${customer.id}`, {
+                      method: "PUT",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        stage: customer.stage,
+                        minBudget: customer.minBudget,
+                        maxBudget: customer.maxBudget,
+                        urgency: customer.urgency,
+                        desiredMoveDate: customer.desiredMoveDate,
+                        preferredTypes: customer.preferredTypes,
+                        preferredCities: customer.preferredCities,
+                        preferredDistricts: customer.preferredDistricts,
+                        minArea: customer.minArea,
+                        maxArea: customer.maxArea,
+                        minRooms: customer.minRooms,
+                        maxRooms: customer.maxRooms,
+                        preferredFeatures: customer.preferredFeatures,
+                        financingMethod: customer.financingMethod,
+                        preApprovalStatus: customer.preApprovalStatus,
+                        downPaymentPercent: customer.downPaymentPercent,
+                        tags: customer.tags,
+                        notesSummary: customer.notesSummary,
+                        nextFollowUpDate: customer.nextFollowUpDate,
+                        interestedProjectIds: (customer.interestedProjects || []).map((p) => p.project.id),
+                      }),
+                    });
+                    if (!res.ok) {
+                      const body = await res.json().catch(() => ({}));
+                      const msg = typeof body.error === "string" ? body.error
+                        : Array.isArray(body.error) ? (body.error[0]?.message || "Doğrulama hatası")
+                        : `Sunucu hatası (${res.status})`;
+                      toast.error(msg);
+                      return;
+                    }
+                    const updated = await res.json();
+                    setCustomer((prev) => prev ? { ...prev, ...updated } : updated);
+                    setDemandSaved(true);
+                    toast.success("Talep profili kaydedildi");
+                    setTimeout(() => setDemandSaved(false), 2000);
+                  } catch (err) {
+                    console.error("Demand profile save failed:", err);
+                    toast.error("Bağlantı hatası — kaydedilemedi");
+                  } finally {
+                    setDemandSaving(false);
+                  }
                 }}
                 disabled={demandSaving}
                 className={cn(
@@ -1052,19 +1084,32 @@ export default function CustomerDetailPage() {
             {/* Add Interaction Form */}
             <form onSubmit={async (e) => {
               e.preventDefault();
+              if (!interactionSummary.trim()) return;
               setInteractionSaving(true);
-              const res = await fetch(`/api/customers/${customer.id}/interactions`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ type: interactionType, summary: interactionSummary }),
-              });
-              if (res.ok) {
+              try {
+                const res = await fetch(`/api/customers/${customer.id}/interactions`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ type: interactionType, summary: interactionSummary.trim() }),
+                });
+                if (!res.ok) {
+                  const body = await res.json().catch(() => ({}));
+                  const msg = typeof body.error === "string" ? body.error
+                    : Array.isArray(body.error) ? (body.error[0]?.message || "Doğrulama hatası")
+                    : `Sunucu hatası (${res.status})`;
+                  toast.error(msg);
+                  return;
+                }
                 const interaction = await res.json();
-                customer.interactions = [interaction, ...customer.interactions];
+                setCustomer((prev) => prev ? { ...prev, interactions: [interaction, ...prev.interactions] } : prev);
                 setInteractionSummary("");
-                setCustomer({ ...customer });
+                toast.success("İletişim kaydedildi");
+              } catch (err) {
+                console.error("Interaction save failed:", err);
+                toast.error("Bağlantı hatası — kaydedilemedi");
+              } finally {
+                setInteractionSaving(false);
               }
-              setInteractionSaving(false);
             }} className="flex flex-col sm:flex-row gap-3">
               <select
                 value={interactionType}

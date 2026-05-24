@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
-import { buildExcel, excelResponse, type ColumnDef } from "@/lib/excel";
+import { buildExcelMultiSheet, excelResponse, type ColumnDef, type SheetSpec } from "@/lib/excel";
 import { canExportData, extractActor } from "@/lib/rbac";
-import * as XLSX from "xlsx";
 
 const monthNames = ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"];
 
@@ -96,31 +95,14 @@ export async function GET(_req: NextRequest) {
     { key: "count", header: "Değer", width: 10 },
   ];
 
-  // Build multi-sheet manually to preserve filename
-  const wb = XLSX.utils.book_new();
-  const addSheet = <T,>(rows: T[], cols: ColumnDef<T>[], name: string) => {
-    const headers = cols.map((c) => c.header);
-    const data = rows.map((row) =>
-      cols.map((c) => {
-        const raw = (row as Record<string, unknown>)[c.key as string];
-        if (c.transform) return c.transform(raw, row);
-        if (raw == null) return "";
-        if (raw instanceof Date) return raw.toLocaleString("tr-TR");
-        return raw as string | number;
-      })
-    );
-    const ws = XLSX.utils.aoa_to_sheet([headers, ...data]);
-    ws["!cols"] = cols.map((c) => ({ wch: c.width ?? 18 }));
-    XLSX.utils.book_append_sheet(wb, ws, name);
-  };
+  const sheets: SheetSpec<unknown>[] = [
+    { name: "Aylık Satış-Kira", data: monthlySales, columns: monthlyCols as ColumnDef<unknown>[] },
+    { name: "Danışman Performansı", data: agentPerformance, columns: agentCols as ColumnDef<unknown>[] },
+    { name: "Şube Karşılaştırma", data: branchComparison, columns: branchCols as ColumnDef<unknown>[] },
+    { name: "KVKK Metrikleri", data: kvkkRows, columns: kvkkCols as ColumnDef<unknown>[] },
+  ];
 
-  addSheet(monthlySales, monthlyCols, "Aylık Satış-Kira");
-  addSheet(agentPerformance, agentCols, "Danışman Performansı");
-  addSheet(branchComparison, branchCols, "Şube Karşılaştırma");
-  addSheet(kvkkRows, kvkkCols, "KVKK Metrikleri");
-
-  const buf = XLSX.write(wb, { type: "buffer", bookType: "xlsx" }) as Buffer;
-  void buildExcel; // referansı koru (lint susutma)
+  const buf = await buildExcelMultiSheet(sheets);
 
   const timestamp = new Date().toISOString().slice(0, 10);
   return excelResponse(buf, `rapor-${timestamp}.xlsx`);

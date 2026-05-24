@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
   const buffer = Buffer.from(await file.arrayBuffer());
   let rawRows: Record<string, unknown>[];
   try {
-    rawRows = parseExcel(buffer);
+    rawRows = await parseExcel(buffer);
   } catch {
     return NextResponse.json({ error: "Dosya okunamadı. .xlsx veya .csv formatında olmalı." }, { status: 400 });
   }

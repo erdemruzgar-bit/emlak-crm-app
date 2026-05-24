@@ -176,7 +176,7 @@ export async function GET(
     { key: "GÖRÜŞME NOTU", header: "GÖRÜŞME NOTU", width: 80 },
   ];
 
-  const buf = buildExcel(rows, columns, "Daireler");
+  const buf = await buildExcel(rows, columns, "Daireler");
   const filename = `proje-${project.name.replace(/[^a-zA-Z0-9-_]/g, "_")}-${new Date().toISOString().slice(0, 10)}.xlsx`;
   return excelResponse(buf, filename) as unknown as Response;
 }

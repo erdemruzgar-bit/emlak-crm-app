@@ -50,7 +50,7 @@ export async function GET(_req: NextRequest) {
     orderBy: { startDate: "desc" },
   });
 
-  const buffer = buildExcel<AppointmentRow>(appointments as unknown as AppointmentRow[], columns, "Randevular");
+  const buffer = await buildExcel<AppointmentRow>(appointments as unknown as AppointmentRow[], columns, "Randevular");
 
   const timestamp = new Date().toISOString().slice(0, 10);
   return excelResponse(buffer, `randevular-${timestamp}.xlsx`);

@@ -77,7 +77,7 @@ export async function GET(req: NextRequest) {
     ...Object.fromEntries(listingCatalog.map((t) => [t.code, t.label])),
   };
 
-  const buffer = buildExcel<PropertyRow>(properties as unknown as PropertyRow[], buildColumns(listingLabels), "Portföy");
+  const buffer = await buildExcel<PropertyRow>(properties as unknown as PropertyRow[], buildColumns(listingLabels), "Portföy");
 
   await createAuditLog({
     userId: actor.id,

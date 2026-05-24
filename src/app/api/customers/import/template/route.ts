@@ -123,7 +123,7 @@ export async function GET() {
 
   // Örnek satırların altına "(Kılavuz satırlarını silip kendi verinizi yazın)" notu ekleyemeyiz
   // (tek shell sayfa zor), ama ikinci sheet'e açıklama eklenebilir. Şimdilik sadece örnek.
-  const buffer = buildExcel<TemplateRow>(examples, columns, "Müşteri Şablonu");
+  const buffer = await buildExcel<TemplateRow>(examples, columns, "Müşteri Şablonu");
 
   const resp = excelResponse(buffer, "musteri-sablonu.xlsx");
   resp.headers.set("X-Accepted-Types", tipOrnekleri);

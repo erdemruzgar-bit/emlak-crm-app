@@ -96,6 +96,6 @@ export async function GET() {
     },
   ];
 
-  const buffer = buildExcel<TemplateRow>(examples, columns, "İlan Şablonu");
+  const buffer = await buildExcel<TemplateRow>(examples, columns, "İlan Şablonu");
   return excelResponse(buffer, "ilan-sablonu.xlsx");
 }

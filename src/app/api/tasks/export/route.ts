@@ -43,7 +43,7 @@ export async function GET(_req: NextRequest) {
     orderBy: [{ status: "asc" }, { dueDate: "asc" }],
   });
 
-  const buffer = buildExcel<TaskRow>(tasks as unknown as TaskRow[], columns, "Görevler");
+  const buffer = await buildExcel<TaskRow>(tasks as unknown as TaskRow[], columns, "Görevler");
 
   const timestamp = new Date().toISOString().slice(0, 10);
   return excelResponse(buffer, `gorevler-${timestamp}.xlsx`);

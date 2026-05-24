@@ -71,6 +71,6 @@ export async function GET() {
     },
   ];
 
-  const buf = buildExcel(examples, columns, "Daireler");
+  const buf = await buildExcel(examples, columns, "Daireler");
   return excelResponse(buf, "proje-import-sablonu.xlsx") as unknown as Response;
 }

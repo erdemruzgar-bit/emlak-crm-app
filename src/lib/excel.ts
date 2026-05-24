@@ -1,5 +1,7 @@
-// Excel export/import yardımcıları — xlsx (SheetJS) üzerinden
-import * as XLSX from "xlsx";
+// Excel export/import yardımcıları — exceljs üzerinden (xlsx/SheetJS yerine,
+// 2026-05-24 high-severity ReDoS + prototype pollution zafiyetlerinden ötürü).
+// Önemli: tüm fonksiyonlar Promise döndürür; caller'lar `await` ile çağırmalı.
+import ExcelJS from "exceljs";
 
 // Her sütun başlığı + genişlik tanımı
 export interface ColumnDef<T> {
@@ -9,49 +11,127 @@ export interface ColumnDef<T> {
   transform?: (value: unknown, row: T) => string | number | null;
 }
 
+// Hücreye yazılabilir değere normalize et (Date/Array/object güvenle string'e çevrilir)
+function normalizeCell(value: unknown): string | number | null {
+  if (value == null) return null;
+  if (value instanceof Date) return value.toLocaleString("tr-TR");
+  if (Array.isArray(value)) return value.join(", ");
+  if (typeof value === "object") return JSON.stringify(value);
+  if (typeof value === "number") return value;
+  return String(value);
+}
+
 // Veriyi .xlsx buffer'ına çevir
-export function buildExcel<T>(
+export async function buildExcel<T>(
   data: T[],
   columns: ColumnDef<T>[],
   sheetName = "Sheet1"
-): Buffer {
-  const wb = XLSX.utils.book_new();
+): Promise<Buffer> {
+  const workbook = new ExcelJS.Workbook();
+  const sheet = workbook.addWorksheet(sheetName);
 
-  const headers = columns.map((c) => c.header);
-  const rows = data.map((row) =>
-    columns.map((c) => {
+  sheet.columns = columns.map((c) => ({
+    header: c.header,
+    key: String(c.key),
+    width: c.width ?? 18,
+  }));
+
+  for (const row of data) {
+    const rowObj: Record<string, string | number | null> = {};
+    for (const c of columns) {
       const raw = (row as Record<string, unknown>)[c.key as string];
-      if (c.transform) return c.transform(raw, row);
-      if (raw == null) return "";
-      if (raw instanceof Date) return raw.toLocaleString("tr-TR");
-      if (Array.isArray(raw)) return raw.join(", ");
-      if (typeof raw === "object") return JSON.stringify(raw);
-      return raw as string | number;
-    })
-  );
+      const transformed = c.transform ? c.transform(raw, row) : normalizeCell(raw);
+      rowObj[String(c.key)] = transformed ?? null;
+    }
+    sheet.addRow(rowObj);
+  }
 
-  const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+  // Başlık satırını kalın yap (görsel ipucu)
+  sheet.getRow(1).font = { bold: true };
 
-  // Sütun genişlikleri
-  ws["!cols"] = columns.map((c) => ({ wch: c.width ?? 18 }));
-
-  // Başlık satırı biçimlendirme (xlsx open-source, cell styling kısıtlı)
-  XLSX.utils.book_append_sheet(wb, ws, sheetName);
-
-  const buf = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
-  return buf as Buffer;
+  const ab = await workbook.xlsx.writeBuffer();
+  return Buffer.from(ab as ArrayBuffer);
 }
 
-// İçe aktarma: .xlsx veya .csv ArrayBuffer -> satır array'i
-export function parseExcel(buffer: ArrayBuffer | Buffer): Record<string, unknown>[] {
-  const wb = XLSX.read(buffer, { type: "buffer" });
-  const firstSheetName = wb.SheetNames[0];
-  if (!firstSheetName) return [];
-  const ws = wb.Sheets[firstSheetName];
-  const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws, {
-    defval: null,
-    raw: false, // tarihleri string olarak al; custom parser'da Date'e çeviririz
+// Birden fazla sheet ile workbook üret (reports/export gibi durumlar için)
+export interface SheetSpec<T> {
+  name: string;
+  data: T[];
+  columns: ColumnDef<T>[];
+}
+
+export async function buildExcelMultiSheet(sheets: SheetSpec<unknown>[]): Promise<Buffer> {
+  const workbook = new ExcelJS.Workbook();
+  for (const spec of sheets) {
+    const sheet = workbook.addWorksheet(spec.name);
+    sheet.columns = spec.columns.map((c) => ({
+      header: c.header,
+      key: String(c.key),
+      width: c.width ?? 18,
+    }));
+    for (const row of spec.data) {
+      const rowObj: Record<string, string | number | null> = {};
+      for (const c of spec.columns) {
+        const raw = (row as Record<string, unknown>)[c.key as string];
+        const transformed = c.transform ? c.transform(raw, row) : normalizeCell(raw);
+        rowObj[String(c.key)] = transformed ?? null;
+      }
+      sheet.addRow(rowObj);
+    }
+    sheet.getRow(1).font = { bold: true };
+  }
+  const ab = await workbook.xlsx.writeBuffer();
+  return Buffer.from(ab as ArrayBuffer);
+}
+
+// İçe aktarma: .xlsx veya .csv ArrayBuffer -> satır array'i (ilk sheet, başlık satırı = key'ler)
+export async function parseExcel(buffer: ArrayBuffer | Buffer): Promise<Record<string, unknown>[]> {
+  const workbook = new ExcelJS.Workbook();
+  // exceljs load: Buffer ya da ArrayBuffer/Uint8Array kabul ediyor; ts tip uyumu için ArrayBuffer kullan
+  const ab: ArrayBuffer = buffer instanceof Buffer
+    ? buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength) as ArrayBuffer
+    : (buffer as ArrayBuffer);
+  await workbook.xlsx.load(ab);
+
+  const sheet = workbook.worksheets[0];
+  if (!sheet) return [];
+
+  // İlk satır = başlıklar
+  const headers: string[] = [];
+  sheet.getRow(1).eachCell({ includeEmpty: true }, (cell, colNumber) => {
+    headers[colNumber - 1] = String(cell.value ?? "").trim();
   });
+
+  const rows: Record<string, unknown>[] = [];
+  // 2. satırdan itibaren veri
+  for (let i = 2; i <= sheet.actualRowCount; i++) {
+    const row = sheet.getRow(i);
+    if (!row.hasValues) continue;
+    const obj: Record<string, unknown> = {};
+    let hasAny = false;
+    for (let j = 0; j < headers.length; j++) {
+      const header = headers[j];
+      if (!header) continue;
+      const cell = row.getCell(j + 1);
+      const v = cell.value;
+      // exceljs date'leri Date objesi olarak döner; raw:false'a eşdeğer için string'e çeviriyoruz.
+      // Ama bazı caller'lar (parseTrDate) hem Date hem string kabul ediyor — Date'i olduğu gibi bırakıyoruz.
+      let value: unknown = v;
+      if (v && typeof v === "object" && "richText" in v) {
+        // Rich text → düz metin birleştir
+        value = (v as { richText: { text: string }[] }).richText.map((r) => r.text).join("");
+      } else if (v && typeof v === "object" && "text" in v) {
+        // Hyperlink veya formula sonucu
+        value = (v as { text: unknown }).text;
+      } else if (v && typeof v === "object" && "result" in v) {
+        // Formula sonucu
+        value = (v as { result: unknown }).result;
+      }
+      if (value != null && value !== "") hasAny = true;
+      obj[header] = value ?? null;
+    }
+    if (hasAny) rows.push(obj);
+  }
   return rows;
 }
 
@@ -66,7 +146,7 @@ export function excelResponse(buffer: Buffer, filename: string): Response {
   });
 }
 
-// Türkçe tarih string → Date (DD.MM.YYYY veya ISO)
+// Türkçe tarih string → Date (DD.MM.YYYY veya ISO). Date objesi gelirse aynısı döner.
 export function parseTrDate(value: unknown): Date | null {
   if (!value) return null;
   if (value instanceof Date) return value;

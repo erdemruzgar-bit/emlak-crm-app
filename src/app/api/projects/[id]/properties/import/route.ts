@@ -74,7 +74,7 @@ export async function POST(
   const buffer = Buffer.from(await file.arrayBuffer());
   let rawRows: Record<string, unknown>[];
   try {
-    rawRows = parseExcel(buffer);
+    rawRows = await parseExcel(buffer);
   } catch {
     return NextResponse.json({ error: "Dosya okunamadı" }, { status: 400 });
   }

@@ -9,39 +9,44 @@ const trPhoneSchema = z
     (val) => val === "" || trPhoneRegex.test(val),
     { message: "Geçersiz telefon formatı. 10 haneli numara girin (örn. 0532 123 45 67 veya 0212 555 12 34)" },
   )
+  .nullable()
   .optional()
   .or(z.literal(""));
 
+// Frontend'den `null` gelen DB-nullable alanlar için (boş/silinmiş alan = null).
+// `.optional()` undefined'ı, `.nullable()` null'ı kabul eder; ikisi de gerek.
+const optionalString = z.string().nullable().optional();
+
 // Talep profili alanları
 const demandProfileFields = {
-  stage: z.enum(["LEAD", "QUALIFIED", "ACTIVE", "SHOWING", "OFFER", "CONTRACT", "CLOSED", "LOST"]).optional(),
-  minBudget: z.number().min(0).optional(),
-  maxBudget: z.number().min(0).optional(),
-  budgetCurrency: z.string().optional(),
-  urgency: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]).optional(),
-  desiredMoveDate: z.string().optional(), // ISO date string
+  stage: z.enum(["LEAD", "QUALIFIED", "ACTIVE", "SHOWING", "OFFER", "CONTRACT", "CLOSED", "LOST"]).nullable().optional(),
+  minBudget: z.number().min(0).nullable().optional(),
+  maxBudget: z.number().min(0).nullable().optional(),
+  budgetCurrency: optionalString,
+  urgency: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]).nullable().optional(),
+  desiredMoveDate: optionalString, // ISO date string
   preferredTypes: z.array(z.string()).optional(),
   preferredCities: z.array(z.string()).optional(),
   preferredDistricts: z.array(z.string()).optional(),
-  minArea: z.number().min(0).optional(),
-  maxArea: z.number().min(0).optional(),
-  minRooms: z.string().optional(),
-  maxRooms: z.string().optional(),
+  minArea: z.number().min(0).nullable().optional(),
+  maxArea: z.number().min(0).nullable().optional(),
+  minRooms: optionalString,
+  maxRooms: optionalString,
   preferredFeatures: z.array(z.string()).optional(),
-  financingMethod: z.enum(["NAKIT", "KREDI", "TAKAS"]).optional(),
-  preApprovalStatus: z.enum(["NONE", "PENDING", "APPROVED", "REJECTED"]).optional(),
-  downPaymentPercent: z.number().min(0).max(100).optional(),
+  financingMethod: z.enum(["NAKIT", "KREDI", "TAKAS"]).nullable().optional(),
+  preApprovalStatus: z.enum(["NONE", "PENDING", "APPROVED", "REJECTED"]).nullable().optional(),
+  downPaymentPercent: z.number().min(0).max(100).nullable().optional(),
   tags: z.array(z.string()).optional(),
-  notesSummary: z.string().optional(),
-  lastContactDate: z.string().optional(),
-  nextFollowUpDate: z.string().optional(),
+  notesSummary: optionalString,
+  lastContactDate: optionalString,
+  nextFollowUpDate: optionalString,
   // Müşterinin ilgilendiği projeler/siteler (Project.id'ler)
   interestedProjectIds: z.array(z.string()).optional(),
 };
 
 // Min > Max ilişkilerini doğrulayan ortak superRefine
 const refineBudgetAndArea = (
-  data: { minBudget?: number; maxBudget?: number; minArea?: number; maxArea?: number },
+  data: { minBudget?: number | null; maxBudget?: number | null; minArea?: number | null; maxArea?: number | null },
   ctx: z.RefinementCtx,
 ) => {
   if (data.minBudget != null && data.maxBudget != null && data.minBudget > data.maxBudget) {
@@ -82,13 +87,13 @@ export const customerCreateSchema = z.object({
 export const customerUpdateSchema = z.object({
   firstName: z.string().min(2).optional(),
   lastName: z.string().min(2).optional(),
-  email: z.email().optional().or(z.literal("")),
+  email: z.email().nullable().optional().or(z.literal("")),
   phone: trPhoneSchema,
-  address: z.string().optional(),
+  address: optionalString,
   customerType: z.string().min(1).optional(),
-  source: z.string().optional(),
+  source: optionalString,
   assignedAgentId: z.string().nullable().optional(),
-  branchId: z.string().optional(),
+  branchId: z.string().nullable().optional(),
   photoUrl: z.string().nullable().optional(),
   ...demandProfileFields,
 }).superRefine(refineBudgetAndArea);

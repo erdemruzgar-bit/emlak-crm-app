@@ -85,6 +85,11 @@ const urgencyColors: Record<string, string> = {
   LOW: "text-on-surface-variant",
 };
 
+function daysSinceISO(iso: string | null): number {
+  if (!iso) return 0;
+  return Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+}
+
 export default function DashboardPage() {
   const { data: session } = useSession();
   const isAdmin = (session?.user as unknown as { role?: string } | undefined)?.role === "ADMIN";
@@ -202,9 +207,7 @@ export default function DashboardPage() {
           ) : (
             <div className="space-y-2">
               {stats.overdueFollowUps.map((c) => {
-                const daysAgo = c.nextFollowUpDate
-                  ? Math.floor((Date.now() - new Date(c.nextFollowUpDate).getTime()) / 86400000)
-                  : 0;
+                const daysAgo = daysSinceISO(c.nextFollowUpDate);
                 return (
                   <Link key={c.id} href={`/customers/${c.id}`}
                     className="flex items-center justify-between p-3 bg-surface-container-low hover:bg-surface-container rounded-2xl transition-all group">

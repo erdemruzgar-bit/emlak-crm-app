@@ -50,7 +50,8 @@ export function ExcelToolbar({ exportUrl, importUrl, templateUrl, label = "veri"
   if (!canExport && !canImport) return null;
 
   async function handleExport() {
-    await downloadFile(exportUrl, `${label}-${Date.now()}.xlsx`);
+    const filename = makeExportFilename(label);
+    await downloadFile(exportUrl, filename);
   }
 
   async function handleTemplate() {
@@ -412,6 +413,10 @@ function StatTile({ label, value, color }: { label: string; value: number; color
       <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest mt-1">{label}</p>
     </div>
   );
+}
+
+function makeExportFilename(label: string): string {
+  return `${label}-${Date.now()}.xlsx`;
 }
 
 function previewRowSummary(row: ImportRow): string {

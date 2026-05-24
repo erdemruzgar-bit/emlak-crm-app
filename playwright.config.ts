@@ -3,9 +3,13 @@ import { defineConfig, devices } from "@playwright/test";
 /**
  * Emlak CRM E2E test konfigürasyonu.
  *
- * Çalıştırmak için canlı servisin (http://127.0.0.1:3000) ayakta olması gerekir.
- *  - Geliştirme: `npm run dev` ardından `npm run e2e`
- *  - Prod: `sudo systemctl restart emlak-crm` ardından `npm run e2e`
+ * Default baseURL: https://crm.artinvertsment.com (canlı prod) — next-auth session
+ * cookie'leri `__Secure-` prefix'li olduğu için HTTPS zorunlu; HTTP localhost'ta
+ * cookie set/send edilmez ve testler login ekranında kalır.
+ *
+ *  - Prod test: E2E_BASE_URL boş bırak (default)
+ *  - Local dev: `E2E_BASE_URL=http://127.0.0.1:3000` ve geliştirme modunda HTTP cookie
+ *    için `NEXTAUTH_URL=http://localhost:3000` set'lenmiş olmalı.
  *
  * Sadece chromium (headless) — multi-browser overkill, sunucu kaynak tüketir.
  * Çoklu testleri paralel çalıştırma kapatıldı (canlı DB'ye eşzamanlı yazımdan
@@ -26,7 +30,7 @@ export default defineConfig({
   reporter: process.env.CI ? "github" : "list",
 
   use: {
-    baseURL: process.env.E2E_BASE_URL || "http://127.0.0.1:3000",
+    baseURL: process.env.E2E_BASE_URL || "https://crm.artinvertsment.com",
     headless: true,
     trace: "retain-on-failure",
     screenshot: "only-on-failure",

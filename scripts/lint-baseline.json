@@ -1,8 +1,53 @@
 {
-  "generatedAt": "2026-05-12T20:56:06.733Z",
-  "totalFiles": 0,
-  "totalWarnings": 0,
+  "generatedAt": "2026-05-24T12:29:52.556Z",
+  "totalFiles": 13,
+  "totalWarnings": 18,
   "totalErrors": 0,
   "note": "Bu dosya, mevcut kod tabanındaki kabul edilmiş ESLint warning'lerinin snapshot'ıdır. Yeni warning eklenirse `lint:baseline:check` script'i fail eder. Güncellemek için: npm run lint:baseline:update",
-  "warnings": {}
+  "warnings": {
+    "src/app/(dashboard)/contracts/new/page.tsx": [
+      "117:react-hooks/set-state-in-effect",
+      "125:react-hooks/set-state-in-effect"
+    ],
+    "src/app/(dashboard)/contracts/page.tsx": [
+      "68:react-hooks/immutability"
+    ],
+    "src/app/(dashboard)/customers/[id]/page.tsx": [
+      "1042:react-hooks/immutability",
+      "279:react-hooks/set-state-in-effect",
+      "340:react-hooks/set-state-in-effect"
+    ],
+    "src/app/(dashboard)/customers/page.tsx": [
+      "97:react-hooks/set-state-in-effect"
+    ],
+    "src/app/(dashboard)/properties/bulk-paste/page.tsx": [
+      "114:react-hooks/set-state-in-effect"
+    ],
+    "src/app/(dashboard)/properties/page.tsx": [
+      "141:react-hooks/set-state-in-effect",
+      "64:react-hooks/set-state-in-effect"
+    ],
+    "src/app/(dashboard)/settings/customer-types/page.tsx": [
+      "34:unknown"
+    ],
+    "src/app/(dashboard)/settings/listing-types/page.tsx": [
+      "30:unknown"
+    ],
+    "src/app/(dashboard)/settings/occupancy-types/page.tsx": [
+      "30:unknown"
+    ],
+    "src/app/(dashboard)/settings/projects/page.tsx": [
+      "51:unknown"
+    ],
+    "src/app/(dashboard)/settings/room-types/page.tsx": [
+      "27:unknown"
+    ],
+    "src/app/(dashboard)/tools/citizenship-calculator/page.tsx": [
+      "56:react-hooks/set-state-in-effect"
+    ],
+    "src/app/(dashboard)/tools/commission-calculator/page.tsx": [
+      "404:react-hooks/set-state-in-effect",
+      "420:react-hooks/set-state-in-effect"
+    ]
+  }
 }

@@ -49,6 +49,12 @@ const propertyTypeLabels: Record<string, string> = { DAIRE: "Daire", VILLA: "Vil
 
 
 type SortField = "createdAt" | "firstName" | "lastName" | "customerType" | "stage";
+type SortOrder = "asc" | "desc";
+
+function SortIcon({ field, sortBy, sortOrder }: { field: SortField; sortBy: SortField; sortOrder: SortOrder }) {
+  if (sortBy !== field) return <ArrowUpDown className="w-3 h-3 opacity-30" />;
+  return sortOrder === "asc" ? <ArrowUp className="w-3 h-3 text-primary" /> : <ArrowDown className="w-3 h-3 text-primary" />;
+}
 type ViewMode = "list" | "kanban";
 
 function formatBudget(min: number | null, max: number | null): string {
@@ -109,7 +115,7 @@ function CustomersPageInner() {
   const [projectOptions, setProjectOptions] = useState<{ id: string; name: string; code?: string | null }[]>([]);
   const [roomTypes, setRoomTypes] = useState<{ id: string; name: string }[]>([]);
   const [sortBy, setSortBy] = useState<SortField>("createdAt");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
   const [showFilters, setShowFilters] = useState(false);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -219,11 +225,6 @@ function CustomersPageInner() {
     if (sortBy === field) { setSortOrder(sortOrder === "asc" ? "desc" : "asc"); }
     else { setSortBy(field); setSortOrder("asc"); }
     setPage(1);
-  }
-
-  function SortIcon({ field }: { field: SortField }) {
-    if (sortBy !== field) return <ArrowUpDown className="w-3 h-3 opacity-30" />;
-    return sortOrder === "asc" ? <ArrowUp className="w-3 h-3 text-primary" /> : <ArrowDown className="w-3 h-3 text-primary" />;
   }
 
   function clearFilters() {
@@ -462,13 +463,13 @@ function CustomersPageInner() {
               <thead className="bg-surface-container-low">
                 <tr>
                   <th onClick={() => handleSort("firstName")} className="text-left px-6 py-4 text-xs font-black text-on-surface-variant uppercase tracking-widest cursor-pointer hover:text-primary transition-colors select-none">
-                    <span className="flex items-center gap-1">Ad Soyad <SortIcon field="firstName" /></span>
+                    <span className="flex items-center gap-1">Ad Soyad <SortIcon field="firstName" sortBy={sortBy} sortOrder={sortOrder} /></span>
                   </th>
                   <th onClick={() => handleSort("stage")} className="text-left px-5 py-4 text-xs font-black text-on-surface-variant uppercase tracking-widest cursor-pointer hover:text-primary transition-colors select-none">
-                    <span className="flex items-center gap-1">Aşama <SortIcon field="stage" /></span>
+                    <span className="flex items-center gap-1">Aşama <SortIcon field="stage" sortBy={sortBy} sortOrder={sortOrder} /></span>
                   </th>
                   <th onClick={() => handleSort("customerType")} className="text-left px-5 py-4 text-xs font-black text-on-surface-variant uppercase tracking-widest cursor-pointer hover:text-primary transition-colors select-none">
-                    <span className="flex items-center gap-1">Tip <SortIcon field="customerType" /></span>
+                    <span className="flex items-center gap-1">Tip <SortIcon field="customerType" sortBy={sortBy} sortOrder={sortOrder} /></span>
                   </th>
                   <th className="text-left px-5 py-4 text-xs font-black text-on-surface-variant uppercase tracking-widest">Bütçe</th>
                   <th className="text-left px-5 py-4 text-xs font-black text-on-surface-variant uppercase tracking-widest">Aciliyet</th>

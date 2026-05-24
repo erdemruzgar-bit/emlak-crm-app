@@ -10,6 +10,7 @@ import { TableSkeleton } from "@/components/ui/skeleton";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { HelpButton } from "@/components/ui/help-button";
 import { SafeImage } from "@/components/ui/safe-image";
+import { MODULES } from "@/lib/modules";
 
 interface User {
   id: string;
@@ -20,6 +21,7 @@ interface User {
   photoUrl: string | null;
   canExport: boolean;
   canImport: boolean;
+  disabledModules: string[];
   branchId: string | null;
   branch: { id: string; name: string } | null;
   authorizedBranches?: { id: string; name: string }[];
@@ -71,7 +73,7 @@ export default function UsersSettingsPage() {
   const [formError, setFormError] = useState("");
   const [saving, setSaving] = useState(false);
   const [photoUploading, setPhotoUploading] = useState(false);
-  const [form, setForm] = useState({ name: "", email: "", password: "", role: "AGENT", branchId: "", authorizedBranchIds: [] as string[], phone: "", photoUrl: "", canExport: false, canImport: false });
+  const [form, setForm] = useState({ name: "", email: "", password: "", role: "AGENT", branchId: "", authorizedBranchIds: [] as string[], phone: "", photoUrl: "", canExport: false, canImport: false, disabledModules: [] as string[] });
 
   useEffect(() => {
     Promise.all([
@@ -100,14 +102,14 @@ export default function UsersSettingsPage() {
 
   function openCreate() {
     setEditUser(null);
-    setForm({ name: "", email: "", password: "", role: "AGENT", branchId: "", authorizedBranchIds: [], phone: "", photoUrl: "", canExport: false, canImport: false });
+    setForm({ name: "", email: "", password: "", role: "AGENT", branchId: "", authorizedBranchIds: [], phone: "", photoUrl: "", canExport: false, canImport: false, disabledModules: [] });
     setFormError("");
     setShowModal(true);
   }
 
   function openEdit(u: User) {
     setEditUser(u);
-    setForm({ name: u.name, email: u.email, password: "", role: u.role, branchId: u.branchId || "", authorizedBranchIds: (u.authorizedBranches ?? []).map((b) => b.id), phone: "", photoUrl: u.photoUrl || "", canExport: u.canExport, canImport: u.canImport });
+    setForm({ name: u.name, email: u.email, password: "", role: u.role, branchId: u.branchId || "", authorizedBranchIds: (u.authorizedBranches ?? []).map((b) => b.id), phone: "", photoUrl: u.photoUrl || "", canExport: u.canExport, canImport: u.canImport, disabledModules: u.disabledModules ?? [] });
     setFormError("");
     setShowModal(true);
   }
@@ -128,6 +130,7 @@ export default function UsersSettingsPage() {
     if (sessionRole === "ADMIN") {
       body.canExport = form.canExport;
       body.canImport = form.canImport;
+      body.disabledModules = form.disabledModules;
     }
 
     const res = await fetch(editUser ? `/api/users/${editUser.id}` : "/api/users", {
@@ -505,7 +508,61 @@ export default function UsersSettingsPage() {
                 )}
                 {sessionRole === "ADMIN" && form.role === "ADMIN" && (
                   <div className="bg-primary-fixed/60 rounded-xl p-3 text-xs text-on-surface-variant">
-                    <strong className="text-primary">Yöneticiler</strong> Excel dışa/içe aktarma yetkilerine otomatik sahiptir.
+                    <strong className="text-primary">Yöneticiler</strong> Excel dışa/içe aktarma yetkilerine ve tüm modüllere otomatik sahiptir.
+                  </div>
+                )}
+
+                {/* Modül-bazlı yetkilendirme — sadece ADMIN düzenleyebilir, ADMIN role olan kullanıcılar her zaman tam erişim */}
+                {sessionRole === "ADMIN" && form.role !== "ADMIN" && (
+                  <div className="bg-surface-container-low rounded-xl p-4 space-y-3">
+                    <div className="flex items-center justify-between gap-3 flex-wrap">
+                      <div>
+                        <p className="text-xs font-black text-on-surface-variant uppercase tracking-widest">Modül Erişimleri</p>
+                        <p className="text-[11px] text-on-surface-variant mt-1">İşaretli modüller bu kullanıcıya görünmez. Boş bırakırsanız tüm modüller açıktır.</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <button type="button"
+                          onClick={() => setForm({ ...form, disabledModules: [] })}
+                          className="px-3 py-1.5 text-[11px] font-bold bg-surface-container hover:bg-surface-container-high rounded-lg">
+                          Tümünü Aç
+                        </button>
+                        <button type="button"
+                          onClick={() => setForm({ ...form, disabledModules: MODULES.filter((m) => !m.required).map((m) => m.key) })}
+                          className="px-3 py-1.5 text-[11px] font-bold bg-surface-container hover:bg-surface-container-high rounded-lg">
+                          Tümünü Kapat
+                        </button>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {MODULES.map((mod) => {
+                        const isDisabled = form.disabledModules.includes(mod.key);
+                        const required = !!mod.required;
+                        return (
+                          <label key={mod.key}
+                            className={cn(
+                              "flex items-start gap-2 p-2 rounded-lg transition-all",
+                              required ? "bg-surface-container/40 cursor-not-allowed opacity-60" : "bg-surface-container-lowest hover:bg-surface-container cursor-pointer"
+                            )}>
+                            <input
+                              type="checkbox"
+                              checked={!isDisabled}
+                              disabled={required}
+                              onChange={(e) => {
+                                if (required) return;
+                                const next = e.target.checked
+                                  ? form.disabledModules.filter((k) => k !== mod.key)
+                                  : [...form.disabledModules, mod.key];
+                                setForm({ ...form, disabledModules: next });
+                              }}
+                              className="mt-0.5 w-4 h-4 accent-primary rounded shrink-0" />
+                            <div className="min-w-0">
+                              <p className="text-xs font-bold text-on-surface">{mod.label}{required && <span className="ml-1 text-[10px] text-on-surface-variant">(zorunlu)</span>}</p>
+                              <p className="text-[10px] text-on-surface-variant leading-tight">{mod.description}</p>
+                            </div>
+                          </label>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
                 </div>

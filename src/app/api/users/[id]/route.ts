@@ -18,6 +18,7 @@ const userUpdateSchema = z.object({
   photoUrl: z.string().nullable().optional(),
   canExport: z.boolean().optional(),
   canImport: z.boolean().optional(),
+  disabledModules: z.array(z.string()).optional(),  // src/lib/modules.ts ModuleKey listesi
 });
 
 export async function PUT(
@@ -95,14 +96,15 @@ export async function PUT(
       }
     }
 
-    const { password, canExport, canImport, authorizedBranchIds, ...rest } = parsed.data;
+    const { password, canExport, canImport, disabledModules, authorizedBranchIds, ...rest } = parsed.data;
     const updateData: Record<string, unknown> = { ...rest };
     if (password) updateData.passwordHash = await hash(password, 10);
 
-    // Excel izinleri sadece ADMIN tarafından değiştirilebilir
+    // Excel izinleri ve modül yetkileri sadece ADMIN tarafından değiştirilebilir
     if (sessionRole === "ADMIN") {
       if (canExport !== undefined) updateData.canExport = canExport;
       if (canImport !== undefined) updateData.canImport = canImport;
+      if (disabledModules !== undefined) updateData.disabledModules = disabledModules;
     }
 
     // Yetkili olduğu ek şubeler (M:M)
@@ -122,7 +124,7 @@ export async function PUT(
       where: { id },
       data: updateData,
       select: {
-        id: true, name: true, email: true, role: true, isActive: true, photoUrl: true, canExport: true, canImport: true,
+        id: true, name: true, email: true, role: true, isActive: true, photoUrl: true, canExport: true, canImport: true, disabledModules: true,
         branchId: true,
         branch: { select: { id: true, name: true } },
         authorizedBranches: { select: { id: true, name: true } },

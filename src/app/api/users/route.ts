@@ -15,6 +15,9 @@ const userCreateSchema = z.object({
   authorizedBranchIds: z.array(z.string()).optional(),
   phone: z.string().optional(),
   photoUrl: z.string().nullable().optional(),
+  canExport: z.boolean().optional(),
+  canImport: z.boolean().optional(),
+  disabledModules: z.array(z.string()).optional(),  // src/lib/modules.ts ModuleKey listesi
 });
 
 export async function GET() {
@@ -46,6 +49,7 @@ export async function GET() {
       photoUrl: true,
       canExport: true,
       canImport: true,
+      disabledModules: true,
       branchId: true,
       branch: { select: { id: true, name: true } },
       authorizedBranches: { select: { id: true, name: true } },
@@ -114,7 +118,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Bu e-posta adresi zaten kullanılıyor" }, { status: 409 });
     }
 
-    const { password, authorizedBranchIds, ...rest } = parsed.data;
+    const { password, authorizedBranchIds, canExport, canImport, disabledModules, ...rest } = parsed.data;
     const passwordHash = await hash(password, 10);
 
     // MANAGER yalnızca kendi şubesini ek yetki olarak verebilir
@@ -128,9 +132,19 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Sadece ADMIN canExport/canImport/disabledModules ayarlayabilir.
+    // MANAGER bu alanları gönderse de yok sayılır (varsayılan değerler kullanılır).
+    const adminOnlyFields: Record<string, unknown> = {};
+    if (sessionRole === "ADMIN") {
+      if (canExport !== undefined) adminOnlyFields.canExport = canExport;
+      if (canImport !== undefined) adminOnlyFields.canImport = canImport;
+      if (disabledModules !== undefined) adminOnlyFields.disabledModules = disabledModules;
+    }
+
     const newUser = await prisma.user.create({
       data: {
         ...rest,
+        ...adminOnlyFields,
         passwordHash,
         authorizedBranches: authorizedIds.length > 0
           ? { connect: authorizedIds.map((id) => ({ id })) }

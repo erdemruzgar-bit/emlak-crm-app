@@ -190,6 +190,10 @@ model User {
   isActive     Boolean  @default(true)
   canExport    Boolean  @default(false)  // Excel dışa aktarma yetkisi (ADMIN her zaman yapabilir)
   canImport    Boolean  @default(false)  // Excel içe aktarma yetkisi
+  // Modül-bazlı yetkilendirme (negative): bu listede yer alan modül key'leri
+  // kullanıcıya KAPALIDIR. Boş array (default) = tüm modüller açık. ADMIN için
+  // hiç kontrol edilmez. Bkz. src/lib/modules.ts (MODULES listesi).
+  disabledModules String[] @default([])
   branchId     String?  // Ana şube — kullanıcının "ait olduğu" şube (RBAC için)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt

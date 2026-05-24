@@ -76,6 +76,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           photoUrl: user.photoUrl,
           canExport: user.canExport,
           canImport: user.canImport,
+          disabledModules: user.disabledModules ?? [],
         };
       },
     }),

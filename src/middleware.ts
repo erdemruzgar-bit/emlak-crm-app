@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import { NextResponse } from "next/server";
 import { authConfig } from "@/lib/auth.config";
+import { moduleForPath } from "@/lib/modules";
 
 const { auth } = NextAuth(authConfig);
 
@@ -41,7 +42,8 @@ export default auth((req) => {
     return NextResponse.redirect(loginUrl);
   }
 
-  const role = (token.user as { role?: string } | undefined)?.role;
+  const user = token.user as { role?: string; disabledModules?: string[] } | undefined;
+  const role = user?.role;
 
   if (pathname.startsWith("/settings/audit-log")) {
     if (role !== "ADMIN") {
@@ -50,6 +52,19 @@ export default auth((req) => {
   } else if (pathname.startsWith("/settings")) {
     if (role === "AGENT") {
       return NextResponse.redirect(new URL("/dashboard", req.url));
+    }
+  }
+
+  // Modül-bazlı yetkilendirme — sayfa rotaları için (API'ler hariç).
+  // ADMIN her zaman geçer; diğer roller için pathname'in eşleştiği modül
+  // disabledModules'da varsa /dashboard'a yönlendir.
+  if (role !== "ADMIN" && !pathname.startsWith("/api/") && !pathname.startsWith("/_next")) {
+    const matched = moduleForPath(pathname);
+    if (matched && !matched.required) {
+      const disabled = user?.disabledModules ?? [];
+      if (disabled.includes(matched.key)) {
+        return NextResponse.redirect(new URL("/dashboard", req.url));
+      }
     }
   }
 

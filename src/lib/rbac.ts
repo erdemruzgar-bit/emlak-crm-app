@@ -16,6 +16,7 @@ export interface SessionActor {
   branchIds: string[];            // Yetkili olduğu tüm şubeler (ana + ek). RBAC kontrollerinde bu kullanılır.
   canExport?: boolean;
   canImport?: boolean;
+  disabledModules?: string[];     // Bkz. src/lib/modules.ts — bu modül key'leri kullanıcıya kapalı
 }
 
 export function extractActor(session: unknown): SessionActor | null {
@@ -31,6 +32,10 @@ export function extractActor(session: unknown): SessionActor | null {
     : [];
   const branchIds = Array.from(new Set([...(branchId ? [branchId] : []), ...additional]));
 
+  const disabledModules = Array.isArray(user.disabledModules)
+    ? (user.disabledModules as unknown[]).filter((x): x is string => typeof x === "string")
+    : [];
+
   return {
     id: user.id,
     role,
@@ -38,7 +43,17 @@ export function extractActor(session: unknown): SessionActor | null {
     branchIds,
     canExport: user.canExport === true,
     canImport: user.canImport === true,
+    disabledModules,
   };
+}
+
+// Modül-bazlı yetkilendirme: ADMIN her zaman geçer; diğer roller için disabledModules listesinde
+// yer alıyorsa kapalı. Boş array (default) = tüm modüller açık. Bkz. src/lib/modules.ts
+export function hasModuleAccess(actor: SessionActor | null, moduleKey: string): boolean {
+  if (!actor) return false;
+  if (actor.role === "ADMIN") return true;
+  const disabled = actor.disabledModules ?? [];
+  return !disabled.includes(moduleKey);
 }
 
 // Kullanıcının verilen şubeye yetkili olup olmadığını kontrol eder.

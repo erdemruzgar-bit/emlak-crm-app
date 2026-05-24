@@ -33,6 +33,7 @@ interface NavItem {
   icon: React.ComponentType<{ className?: string }>;
   badge?: string;
   roles?: readonly string[];
+  moduleKey?: string;  // src/lib/modules.ts ModuleKey — User.disabledModules listesindeyse gizlenir
 }
 
 interface NavGroup {
@@ -44,37 +45,37 @@ const navigationGroups: NavGroup[] = [
   {
     label: "Temel",
     items: [
-      { name: "Panel", href: "/dashboard", icon: LayoutDashboard },
-      { name: "Müşteriler", href: "/customers", icon: Users },
-      { name: "Portföy", href: "/properties", icon: Home },
-      { name: "Projeler", href: "/projects", icon: Building2 },
+      { name: "Panel", href: "/dashboard", icon: LayoutDashboard, moduleKey: "DASHBOARD" },
+      { name: "Müşteriler", href: "/customers", icon: Users, moduleKey: "CUSTOMERS" },
+      { name: "Portföy", href: "/properties", icon: Home, moduleKey: "PROPERTIES" },
+      { name: "Projeler", href: "/projects", icon: Building2, moduleKey: "PROJECTS" },
     ],
   },
   {
     label: "İşletme",
     items: [
-      { name: "İletişim", href: "/messages", icon: MessageSquare, badge: "Yeni" },
-      { name: "Sözleşmeler", href: "/contracts", icon: FileSignature },
-      { name: "Finans", href: "/finance", icon: Wallet },
-      { name: "Takvim", href: "/calendar", icon: CalendarIcon },
-      { name: "Görevler", href: "/tasks", icon: CheckSquare },
+      { name: "İletişim", href: "/messages", icon: MessageSquare, badge: "Yeni", moduleKey: "MESSAGES" },
+      { name: "Sözleşmeler", href: "/contracts", icon: FileSignature, moduleKey: "CONTRACTS" },
+      { name: "Finans", href: "/finance", icon: Wallet, moduleKey: "FINANCE" },
+      { name: "Takvim", href: "/calendar", icon: CalendarIcon, moduleKey: "CALENDAR" },
+      { name: "Görevler", href: "/tasks", icon: CheckSquare, moduleKey: "TASKS" },
     ],
   },
   {
     label: "İzleme",
     items: [
-      { name: "Hatırlatmalar", href: "/reminders", icon: Bell },
-      { name: "Otomasyon", href: "/automation", icon: Zap, badge: "Yeni" },
-      { name: "Raporlar", href: "/reports", icon: BarChart3 },
-      { name: "Komisyon Hesapla", href: "/tools/commission-calculator", icon: Calculator },
-      { name: "Vatandaşlık Hesapla", href: "/tools/citizenship-calculator", icon: Globe },
+      { name: "Hatırlatmalar", href: "/reminders", icon: Bell, moduleKey: "REMINDERS" },
+      { name: "Otomasyon", href: "/automation", icon: Zap, badge: "Yeni", moduleKey: "AUTOMATION" },
+      { name: "Raporlar", href: "/reports", icon: BarChart3, moduleKey: "REPORTS" },
+      { name: "Komisyon Hesapla", href: "/tools/commission-calculator", icon: Calculator, moduleKey: "TOOLS" },
+      { name: "Vatandaşlık Hesapla", href: "/tools/citizenship-calculator", icon: Globe, moduleKey: "TOOLS" },
     ],
   },
   {
     label: "Yönetim",
     items: [
-      { name: "Erişim Logları", href: "/access-logs", icon: ShieldCheck, roles: ["ADMIN", "MANAGER"] },
-      { name: "Ayarlar", href: "/settings/users", icon: Settings },
+      { name: "Erişim Logları", href: "/access-logs", icon: ShieldCheck, roles: ["ADMIN", "MANAGER"], moduleKey: "ACCESS_LOGS" },
+      { name: "Ayarlar", href: "/settings/users", icon: Settings, moduleKey: "SETTINGS" },
     ],
   },
 ];
@@ -82,7 +83,9 @@ const navigationGroups: NavGroup[] = [
 export default function Sidebar() {
   const pathname = usePathname();
   const { data: session } = useSession();
-  const role = (session?.user as unknown as { role?: string } | undefined)?.role;
+  const sessionUser = session?.user as unknown as { role?: string; disabledModules?: string[] } | undefined;
+  const role = sessionUser?.role;
+  const disabledModules = sessionUser?.disabledModules ?? [];
   const [mobileOpen, setMobileOpen] = useState(false);
 
   // Header'daki hamburger butonu → "toggle-sidebar" event emit eder
@@ -101,8 +104,11 @@ export default function Sidebar() {
     .map((g) => ({
       ...g,
       items: g.items.filter((item) => {
-        if (!item.roles) return true;
-        return role ? item.roles.includes(role) : false;
+        // Rol kısıtlaması
+        if (item.roles && !(role ? item.roles.includes(role) : false)) return false;
+        // Modül-bazlı yetki (ADMIN her zaman görür)
+        if (role !== "ADMIN" && item.moduleKey && disabledModules.includes(item.moduleKey)) return false;
+        return true;
       }),
     }))
     .filter((g) => g.items.length > 0);

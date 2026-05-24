@@ -13,6 +13,7 @@ export const authConfig = {
           photoUrl: string | null;
           canExport: boolean;
           canImport: boolean;
+          disabledModules?: string[];
         };
         token.role = u.role;
         token.branchId = u.branchId;
@@ -21,6 +22,7 @@ export const authConfig = {
         token.photoUrl = u.photoUrl;
         token.canExport = u.canExport ?? false;
         token.canImport = u.canImport ?? false;
+        token.disabledModules = u.disabledModules ?? [];
       }
       return token;
     },
@@ -36,6 +38,7 @@ export const authConfig = {
         u.photoUrl = token.photoUrl;
         u.canExport = token.canExport;
         u.canImport = token.canImport;
+        u.disabledModules = (token.disabledModules as string[]) ?? [];
       }
       return session;
     },

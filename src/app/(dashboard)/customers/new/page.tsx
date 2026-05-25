@@ -106,7 +106,7 @@ export default function NewCustomerPage() {
       firstName: formData.get("firstName"),
       lastName: formData.get("lastName"),
       email: formData.get("email") || "",
-      phone: formData.get("phone") || "",
+      phone: ((formData.get("phone") as string) || "").trim(),
       tcKimlikNo: formData.get("tcKimlikNo") || "",
       address: formData.get("address") || "",
       customerType: formData.get("customerType"),

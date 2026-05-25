@@ -2,9 +2,11 @@ import { z } from "zod/v4";
 
 // TR telefon format kontrolü — boşluk/tire/parantez toleranslı, 10 haneli numara
 // (cep 5XX veya sabit hat 2XX/3XX/4XX). +90 / 90 / 0 prefix opsiyonel.
+// Trim öncesi yapılır — leading/trailing space kullanıcı hatasını affeder.
 const trPhoneRegex = /^(?:\+?90)?[\s\-()]*0?[2-5]\d{2}[\s\-()]*\d{3}[\s\-()]*\d{2}[\s\-()]*\d{2}$/;
 const trPhoneSchema = z
   .string()
+  .transform((val) => val.trim())
   .refine(
     (val) => val === "" || trPhoneRegex.test(val),
     { message: "Geçersiz telefon formatı. 10 haneli numara girin (örn. 0532 123 45 67 veya 0212 555 12 34)" },

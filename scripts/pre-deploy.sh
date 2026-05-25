@@ -45,6 +45,15 @@ else
   fail "TypeScript hataları var — yukarıya bak"
 fi
 
+step "[1.5] Schema validation regression testleri"
+if npx tsx scripts/healthcheck/validation-check.ts > /tmp/validation-check.log 2>&1; then
+  PASS_COUNT=$(grep -c "^✓" /tmp/validation-check.log || echo "?")
+  ok "Validation testleri: ${PASS_COUNT} pass"
+else
+  cat /tmp/validation-check.log
+  fail "Validation regression testleri başarısız — geçmiş bir bug pattern'i tekrar tetiklendi"
+fi
+
 step "[2/6] Lint + Baseline (eslint)"
 # Önce baseline check — yeni warning eklenmişse uyarır
 if [[ -f scripts/lint-baseline.json ]]; then

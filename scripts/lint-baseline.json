@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-24T15:57:00.842Z",
+  "generatedAt": "2026-05-25T19:17:45.852Z",
   "totalFiles": 8,
   "totalWarnings": 13,
   "totalErrors": 0,
@@ -13,12 +13,12 @@
       "68:react-hooks/immutability"
     ],
     "src/app/(dashboard)/customers/[id]/page.tsx": [
-      "1092:react-hooks/immutability",
-      "281:react-hooks/set-state-in-effect",
-      "349:react-hooks/set-state-in-effect"
+      "1129:react-hooks/immutability",
+      "282:react-hooks/set-state-in-effect",
+      "350:react-hooks/set-state-in-effect"
     ],
     "src/app/(dashboard)/customers/page.tsx": [
-      "97:react-hooks/set-state-in-effect"
+      "98:react-hooks/set-state-in-effect"
     ],
     "src/app/(dashboard)/properties/bulk-paste/page.tsx": [
       "114:react-hooks/set-state-in-effect"

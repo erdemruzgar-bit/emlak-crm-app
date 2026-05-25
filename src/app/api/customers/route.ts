@@ -53,7 +53,9 @@ export async function GET(req: NextRequest) {
   }
 
   if (type) {
-    where.customerType = type;
+    // customerType (legacy single) VEYA customerTypes array'inde varsa eşleş.
+    // customerTypes[0] her zaman customerType ile senkron, ama ek tipler için array kontrolü gerekli.
+    where.customerTypes = { has: type };
   }
 
   if (source) where.source = source;
@@ -146,6 +148,15 @@ export async function POST(req: NextRequest) {
 
   const { consents, tcKimlikNo, interestedProjectIds, ...data } = parsed.data;
   const user = session.user as unknown as Record<string, unknown>;
+
+  // customerType ↔ customerTypes senkronizasyon:
+  // - customerTypes verilmemişse: [customerType] (single → array)
+  // - customerTypes verilmiş ama boşsa: [customerType]
+  // - customerTypes verilmiş ve doluysa: kullan, customerType = customerTypes[0]
+  const sourceTypes = data.customerTypes && data.customerTypes.length > 0 ? data.customerTypes : [data.customerType];
+  const primaryType = sourceTypes[0];
+  data.customerType = primaryType;
+  data.customerTypes = Array.from(new Set(sourceTypes));
 
   const customer = await prisma.customer.create({
     data: {

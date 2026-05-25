@@ -23,6 +23,7 @@ export default function NewCustomerPage() {
   const [preferredTypes, setPreferredTypes] = useState<string[]>([]);
   const [preferredListingTypes, setPreferredListingTypes] = useState<string[]>([]);
   const [preferredFeatures, setPreferredFeatures] = useState<string[]>([]);
+  const [customerTypes, setCustomerTypes] = useState<string[]>([]);  // çoklu seçim (en az 1 zorunlu)
   const [customerTypeOptions, setCustomerTypeOptions] = useState<{ code: string; label: string }[]>([]);
   const [listingTypeOptions, setListingTypeOptions] = useState<{ code: string; label: string }[]>([]);
   const [roomTypeOptions, setRoomTypeOptions] = useState<{ id: string; name: string }[]>([]);
@@ -97,6 +98,10 @@ export default function NewCustomerPage() {
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (customerTypes.length === 0) {
+      setError("En az bir müşteri tipi seçin");
+      return;
+    }
     setLoading(true);
     setError("");
 
@@ -109,7 +114,8 @@ export default function NewCustomerPage() {
       phone: ((formData.get("phone") as string) || "").trim(),
       tcKimlikNo: formData.get("tcKimlikNo") || "",
       address: formData.get("address") || "",
-      customerType: formData.get("customerType"),
+      customerType: customerTypes[0],          // birincil (legacy)
+      customerTypes: customerTypes,             // çoklu
       source: formData.get("source") || "",
       consents: {
         acikRiza: formData.get("acikRiza") === "on",
@@ -209,22 +215,29 @@ export default function NewCustomerPage() {
               <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">TC Kimlik No</label>
               <input name="tcKimlikNo" maxLength={11} className={inputClass} placeholder="Şifrelenecektir (KVKK)" />
             </div>
-            <div>
-              <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Müşteri Tipi <span className="text-error">*</span></label>
-              <select name="customerType" required className={inputClass} defaultValue="" disabled={customerTypeOptions.length === 0}>
-                <option value="" disabled>{customerTypeOptions.length === 0 ? "Önce müşteri tipi tanımlayın" : "Seçiniz"}</option>
-                {customerTypeOptions.map((t) => (
-                  <option key={t.code} value={t.code}>{t.label}</option>
-                ))}
-              </select>
-              {customerTypeOptions.length === 0 && (
-                <p className="text-[11px] text-error mt-1">
+            <div className="sm:col-span-2">
+              <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">
+                Müşteri Tipi <span className="text-error">*</span>
+                <span className="ml-1 font-normal normal-case text-on-surface-variant text-[11px]">(çoklu seçilebilir — örn. Alıcı + Kiracı Adayı)</span>
+              </label>
+              {customerTypeOptions.length === 0 ? (
+                <p className="text-[11px] text-error">
                   Hiç müşteri tipi tanımlı değil.{" "}
                   <Link href="/settings/customer-types" className="font-bold underline hover:no-underline">
                     Ayarlar → Müşteri Tipleri
                   </Link>
                   {" "}sayfasından ekleyin (örn. Alıcı, Satıcı).
                 </p>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {customerTypeOptions.map((t) => (
+                    <button key={t.code} type="button"
+                      onClick={() => setCustomerTypes((prev) => prev.includes(t.code) ? prev.filter((x) => x !== t.code) : [...prev, t.code])}
+                      className={cn("px-4 py-2 rounded-xl text-xs font-bold transition-all",
+                        customerTypes.includes(t.code) ? "primary-gradient text-white shadow-sm" : "bg-surface-container-low text-on-surface-variant hover:bg-surface-container"
+                      )}>{t.label}</button>
+                  ))}
+                </div>
               )}
             </div>
           </div>

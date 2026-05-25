@@ -162,6 +162,22 @@ export async function PUT(
   if (updateData.nextFollowUpDate) updateData.nextFollowUpDate = new Date(updateData.nextFollowUpDate as string);
   if (updateData.lastContactDate) updateData.lastContactDate = new Date(updateData.lastContactDate as string);
 
+  // customerType ↔ customerTypes senkronizasyon:
+  // - customerTypes gönderildiyse: dedupe, customerType = customerTypes[0]
+  // - sadece customerType gönderildiyse: customerTypes = [customerType]
+  // - hiçbiri gelmediyse: dokunma
+  if (Array.isArray(updateData.customerTypes)) {
+    const arr = Array.from(new Set(updateData.customerTypes as string[]));
+    if (arr.length > 0) {
+      updateData.customerTypes = arr;
+      updateData.customerType = arr[0];
+    } else {
+      delete updateData.customerTypes;
+    }
+  } else if (typeof updateData.customerType === "string") {
+    updateData.customerTypes = [updateData.customerType];
+  }
+
   // interestedProjectIds set-semantik: ana update'ten çıkarıp transaction içinde diff uygula
   const interestedProjectIds = (updateData.interestedProjectIds as string[] | undefined);
   delete updateData.interestedProjectIds;

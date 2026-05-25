@@ -21,6 +21,7 @@ interface Customer {
   phone: string | null;
   photoUrl: string | null;
   customerType: string;
+  customerTypes: string[];
   stage: string | null;
   urgency: string | null;
   minBudget: number | null;
@@ -517,7 +518,11 @@ function CustomersPageInner() {
                           {c.stage ? <span className={cn("text-[10px] px-2.5 py-1 rounded-lg font-bold uppercase", stageColors[c.stage])}>{stageLabels[c.stage] || c.stage}</span> : <span className="text-xs text-on-surface-variant">-</span>}
                         </td>
                         <td className="px-5 py-4">
-                          <span className={cn("text-[10px] px-2.5 py-1 rounded-lg font-bold uppercase tracking-wider", customerTypeBadgeClass(c.customerType))}>{typeLabels[c.customerType]}</span>
+                          <div className="flex flex-wrap gap-1">
+                            {((c.customerTypes && c.customerTypes.length > 0) ? c.customerTypes : [c.customerType]).map((code) => (
+                              <span key={code} className={cn("text-[10px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider", customerTypeBadgeClass(code))}>{typeLabels[code] || code}</span>
+                            ))}
+                          </div>
                         </td>
                         <td className="px-5 py-4 text-xs font-medium text-on-surface">{formatBudget(c.minBudget, c.maxBudget)}</td>
                         <td className="px-5 py-4">
@@ -611,11 +616,13 @@ function CustomersPageInner() {
                             {c.firstName.charAt(0)}{c.lastName.charAt(0)}
                           </span>
                         )}
-                        {/* Type badge top-left */}
-                        <div className="absolute top-3 left-3">
-                          <span className={cn("text-[9px] px-2.5 py-1 rounded-lg font-black uppercase tracking-wider backdrop-blur-sm bg-white/20 text-white border border-white/30")}>
-                            {typeLabels[c.customerType]}
-                          </span>
+                        {/* Type badge top-left (çoklu olabilir) */}
+                        <div className="absolute top-3 left-3 flex flex-wrap gap-1 max-w-[80%]">
+                          {((c.customerTypes && c.customerTypes.length > 0) ? c.customerTypes : [c.customerType]).map((code) => (
+                            <span key={code} className={cn("text-[9px] px-2 py-0.5 rounded-md font-black uppercase tracking-wider backdrop-blur-sm bg-white/20 text-white border border-white/30")}>
+                              {typeLabels[code] || code}
+                            </span>
+                          ))}
                         </div>
                         {/* Urgency dot top-right */}
                         {c.urgency && c.urgency !== "LOW" && (

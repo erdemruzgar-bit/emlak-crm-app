@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils";
 import { EditableText, EditableSelect, EditableTextarea } from "@/components/ui/editable-field";
 import { HelpButton } from "@/components/ui/help-button";
 import { SafeImage } from "@/components/ui/safe-image";
-import { DEFAULT_CUSTOMER_TYPE_LABELS } from "@/lib/customer-type-styles";
+import { DEFAULT_CUSTOMER_TYPE_LABELS, customerTypeBadgeClass } from "@/lib/customer-type-styles";
 
 interface ActiveAccessSession {
   id: string;
@@ -56,6 +56,7 @@ interface Customer {
   activeAccessSession?: ActiveAccessSession | null;
   address: string | null;
   customerType: string;
+  customerTypes: string[];
   source: string | null;
   photoUrl: string | null;
   assignedAgent: { id: string; name: string } | null;
@@ -595,12 +596,47 @@ export default function CustomerDetailPage() {
                   </>
                 );
               })()}
-              <EditableSelect icon={Tag} label="Müşteri Tipi" editing={editingInfo}
-                value={customer.customerType}
-                onChange={(v) => setCustomer({ ...customer, customerType: v })}
-                options={[
-                  ...customerTypeOptions.map((t) => ({ value: t.code, label: t.label })),
-                ]} />
+              {/* Müşteri Tipi — çoklu seçim (mevcut customerTypes array'i, boşsa customerType'a düş) */}
+              {editingInfo ? (
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-on-surface-variant uppercase tracking-wider flex items-center gap-2">
+                    <Tag className="w-3.5 h-3.5" />
+                    Müşteri Tipi
+                    <span className="ml-1 font-normal normal-case text-on-surface-variant text-[11px]">(çoklu seçilebilir)</span>
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {customerTypeOptions.map((t) => {
+                      const current = (customer.customerTypes && customer.customerTypes.length > 0) ? customer.customerTypes : [customer.customerType];
+                      const active = current.includes(t.code);
+                      return (
+                        <button key={t.code} type="button"
+                          onClick={() => {
+                            const arr = active
+                              ? current.filter((x) => x !== t.code)
+                              : [...current, t.code];
+                            const next = arr.length === 0 ? [customer.customerType] : arr;
+                            setCustomer({ ...customer, customerTypes: next, customerType: next[0] });
+                          }}
+                          className={cn("px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
+                            active ? "primary-gradient text-white shadow-sm" : "bg-surface-container-low text-on-surface-variant hover:bg-surface-container"
+                          )}>{t.label}</button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Tag className="w-3.5 h-3.5 text-on-surface-variant" />
+                  <span className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Müşteri Tipi:</span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {((customer.customerTypes && customer.customerTypes.length > 0) ? customer.customerTypes : [customer.customerType]).map((code) => (
+                      <span key={code} className={cn("text-[10px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider", customerTypeBadgeClass(code))}>
+                        {typeLabels[code] || code}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
               <EditableSelect icon={Globe} label="Kaynak" editing={editingInfo}
                 value={customer.source}
                 onChange={(v) => setCustomer({ ...customer, source: v || null })}
@@ -654,6 +690,7 @@ export default function CustomerDetailPage() {
                         phone: customer.phone?.trim() ?? null,
                         address: customer.address,
                         customerType: customer.customerType,
+                        customerTypes: customer.customerTypes && customer.customerTypes.length > 0 ? customer.customerTypes : [customer.customerType],
                         source: customer.source,
                         photoUrl: customer.photoUrl,
                         ...(canReassign ? { assignedAgentId: customer.assignedAgent?.id || null } : {}),

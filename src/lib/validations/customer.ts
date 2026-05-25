@@ -76,6 +76,7 @@ export const customerCreateSchema = z.object({
   tcKimlikNo: z.string().length(11, "TC Kimlik No 11 haneli olmalı").optional().or(z.literal("")),
   address: z.string().optional(),
   customerType: z.string().min(1, "Müşteri tipi gerekli"),
+  customerTypes: z.array(z.string()).optional(),  // Çoklu seçim (kira adayı + alıcı vb). Boşsa [customerType] otomatik.
   source: z.string().optional(),
   assignedAgentId: z.string().nullable().optional(),
   branchId: z.string().optional(),
@@ -94,6 +95,7 @@ export const customerUpdateSchema = z.object({
   phone: trPhoneSchema,
   address: optionalString,
   customerType: z.string().min(1).optional(),
+  customerTypes: z.array(z.string()).optional(),  // Çoklu seçim — gönderilirse customerType ile senkronize edilir
   source: optionalString,
   assignedAgentId: z.string().nullable().optional(),
   branchId: z.string().nullable().optional(),

@@ -134,6 +134,24 @@ const cases: Case[] = [
     expect: "pass",
   },
   {
+    name: "Müşteri create: customerTypes çoklu (BUYER + TENANT_CANDIDATE)",
+    schema: customerCreateSchema,
+    input: {
+      firstName: "Ali",
+      lastName: "Veli",
+      customerType: "BUYER",
+      customerTypes: ["BUYER", "TENANT_CANDIDATE"],
+      consents: { acikRiza: true, aydinlatma: true, pazarlama: false },
+    },
+    expect: "pass",
+  },
+  {
+    name: "Müşteri update: customerTypes (kira+satılık çoklu)",
+    schema: customerUpdateSchema,
+    input: { customerTypes: ["BUYER", "TENANT"] },
+    expect: "pass",
+  },
+  {
     name: "Müşteri create: kısa ad (min 2)",
     schema: customerCreateSchema,
     input: { ...validCustomer({}), firstName: "A" },

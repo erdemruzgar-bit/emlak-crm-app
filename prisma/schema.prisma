@@ -248,7 +248,8 @@ model Customer {
   altPhone       String?      // İkincil telefon (örn. Excel'de "Diğer: ...")
   tcKimlikNo     String?      // AES-256 encrypted
   address        String?
-  customerType   String       @default("BUYER") // CustomerTypeCatalog.code referansı
+  customerType   String       @default("BUYER") // CustomerTypeCatalog.code — ilk/birincil tip (legacy, customerTypes[0] ile senkron tutulur)
+  customerTypes  String[]     @default([])      // Çoklu müşteri tipi (bir müşteri hem Alıcı hem Kiracı Adayı olabilir)
   source         String?      // Referans, İnternet, vs.
   photoUrl       String?
   isAnonymized   Boolean      @default(false)

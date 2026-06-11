@@ -52,7 +52,8 @@ export async function PUT(
     const parsed = appointmentUpdateSchema.safeParse(body);
 
     if (!parsed.success) {
-      return NextResponse.json({ error: parsed.error.issues }, { status: 400 });
+      const msg = parsed.error.issues[0]?.message || "Geçersiz randevu bilgisi";
+      return NextResponse.json({ error: msg }, { status: 400 });
     }
 
     const { startDate, endDate, ...rest } = parsed.data;

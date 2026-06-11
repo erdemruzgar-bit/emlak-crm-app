@@ -53,7 +53,8 @@ export async function POST(req: NextRequest) {
   const parsed = appointmentCreateSchema.safeParse(body);
 
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.issues }, { status: 400 });
+    const msg = parsed.error.issues[0]?.message || "Geçersiz randevu bilgisi";
+    return NextResponse.json({ error: msg }, { status: 400 });
   }
 
   const user = session.user as unknown as Record<string, unknown>;

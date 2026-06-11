@@ -13,10 +13,11 @@
  */
 
 import { customerCreateSchema, customerUpdateSchema } from "../../src/lib/validations/customer";
+import { appointmentCreateSchema } from "../../src/lib/validations/appointment";
 
 interface Case {
   name: string;
-  schema: typeof customerCreateSchema | typeof customerUpdateSchema;
+  schema: typeof customerCreateSchema | typeof customerUpdateSchema | typeof appointmentCreateSchema;
   input: unknown;
   expect: "pass" | "fail";
   // Eğer "fail" beklendiyse, hata mesajının bu substring'i içermesi beklenir (opsiyonel).
@@ -168,6 +169,51 @@ const cases: Case[] = [
     },
     expect: "fail",
   },
+
+  // ─── Randevu (regresyon: 2026-06-10 — müşteri/ilan seçilmeyince null reddedildi) ───
+  {
+    name: "Randevu: müşteri ve ilan YOK (null) — REGRESYON 10 Haziran",
+    schema: appointmentCreateSchema,
+    input: validAppointment({ customerId: null, propertyId: null }),
+    expect: "pass", // form seçim yapılmadığında null gönderir; kabul edilmeli
+  },
+  {
+    name: "Randevu: sadece müşteri seçili, ilan null",
+    schema: appointmentCreateSchema,
+    input: validAppointment({ customerId: "clxcustomer123", propertyId: null }),
+    expect: "pass",
+  },
+  {
+    name: "Randevu: müşteri + ilan birlikte seçili",
+    schema: appointmentCreateSchema,
+    input: validAppointment({ customerId: "clxcustomer123", propertyId: "clxproperty456" }),
+    expect: "pass",
+  },
+  {
+    name: "Randevu: alanlar hiç gönderilmedi (undefined)",
+    schema: appointmentCreateSchema,
+    input: validAppointment({}),
+    expect: "pass",
+  },
+  {
+    name: "Randevu: kısa başlık (min 2)",
+    schema: appointmentCreateSchema,
+    input: { ...validAppointment({}), title: "A" },
+    expect: "fail",
+    expectErrorContains: "Başlık",
+  },
+  {
+    name: "Randevu: geçersiz tip",
+    schema: appointmentCreateSchema,
+    input: { ...validAppointment({}), type: "RANDOM" },
+    expect: "fail",
+  },
+  {
+    name: "Randevu: tarih ISO değil (datetime şart)",
+    schema: appointmentCreateSchema,
+    input: { ...validAppointment({}), startDate: "2026-06-12 14:30" },
+    expect: "fail",
+  },
 ];
 
 function validCustomer(overrides: Record<string, unknown>) {
@@ -176,6 +222,17 @@ function validCustomer(overrides: Record<string, unknown>) {
     lastName: "Veli",
     customerType: "BUYER",
     consents: { acikRiza: true, aydinlatma: true, pazarlama: false },
+    ...overrides,
+  };
+}
+
+function validAppointment(overrides: Record<string, unknown>) {
+  return {
+    title: "Marina Park gösterimi",
+    type: "GOSTERIM",
+    // Takvim formu Date->toISOString() ile gönderir (Z son ekli, .datetime() geçerli)
+    startDate: "2026-06-12T14:30:00.000Z",
+    endDate: "2026-06-12T15:30:00.000Z",
     ...overrides,
   };
 }

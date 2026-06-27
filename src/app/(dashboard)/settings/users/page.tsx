@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { UserPlus, Loader2, X, AlertCircle, Pencil, UserX, UserCheck, ShieldAlert, Camera } from "lucide-react";
+import { UserPlus, Loader2, X, AlertCircle, Pencil, UserX, UserCheck, ShieldAlert, Camera, ArrowLeftRight } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -75,6 +75,19 @@ export default function UsersSettingsPage() {
   const [photoUploading, setPhotoUploading] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", password: "", role: "AGENT", branchId: "", authorizedBranchIds: [] as string[], phone: "", photoUrl: "", canExport: false, canImport: false, disabledModules: [] as string[] });
 
+  // Devir (reassign) modalı durumu
+  const [reassignFor, setReassignFor] = useState<User | null>(null);   // kayıtları devredilecek kaynak kullanıcı
+  const [reassignTarget, setReassignTarget] = useState("");            // hedef danışman id
+  const [reassignWithDeactivate, setReassignWithDeactivate] = useState(false); // devir sonrası pasife al
+  const [reassigning, setReassigning] = useState(false);
+
+  function reloadUsers() {
+    return fetch("/api/users")
+      .then((r) => r.json())
+      .then((u) => setUsers(Array.isArray(u) ? u : []))
+      .catch(() => {});
+  }
+
   useEffect(() => {
     Promise.all([
       fetch("/api/users").then((r) => r.json()),
@@ -98,6 +111,18 @@ export default function UsersSettingsPage() {
     if (sessionRole !== "ADMIN") return false;
     if (target.id === sessionId) return false; // cannot deactivate yourself
     return true;
+  }
+
+  // Can the current session user reassign this user's records?
+  // ADMIN: anyone. MANAGER: only AGENT-role targets (server further restricts to own branch).
+  function canReassign(target: User) {
+    if (sessionRole === "ADMIN") return true;
+    if (sessionRole === "MANAGER") return target.role === "AGENT";
+    return false;
+  }
+
+  function assignedCount(u: User) {
+    return (u._count?.assignedCustomers ?? 0) + (u._count?.assignedProperties ?? 0);
   }
 
   function openCreate() {
@@ -161,25 +186,88 @@ export default function UsersSettingsPage() {
     const u = users.find((x) => x.id === id);
     const c = u?._count?.assignedCustomers ?? 0;
     const p = u?._count?.assignedProperties ?? 0;
-    let title = "Kullanıcıyı pasife al?";
-    let message = "Pasif kullanıcı sisteme giremez. Verileri korunur.";
-    if (c > 0 || p > 0) {
-      const parts: string[] = [];
-      if (c > 0) parts.push(`${c} müşteri`);
-      if (p > 0) parts.push(`${p} ilan`);
-      title = `${parts.join(" ve ")} atanmış — devam edilsin mi?`;
-      message = `Pasife alırsanız bu kayıtlar düzenlenemez ("yetkisiz danışmanda" görünür). Önce başka bir danışmana atamanız önerilir.`;
+    // Atanmış müşteri/ilan varsa: doğrudan pasife alma yerine devir modalını aç.
+    if (u && (c > 0 || p > 0)) {
+      setReassignFor(u);
+      setReassignTarget("");
+      setReassignWithDeactivate(true);
+      return;
     }
-    const ok = await confirm({ title, message, tone: "warning", confirmText: "Pasife Al" });
+    // Atanmış kayıt yoksa: basit onay + pasife al.
+    const ok = await confirm({
+      title: "Kullanıcıyı pasife al?",
+      message: "Pasif kullanıcı sisteme giremez. Verileri korunur.",
+      tone: "warning",
+      confirmText: "Pasife Al",
+    });
     if (!ok) return;
+    await doDeactivate(id);
+  }
+
+  // Devretmeden doğrudan pasife alma (DELETE).
+  async function doDeactivate(id: string) {
     const res = await fetch(`/api/users/${id}`, { method: "DELETE" });
     const data = await res.json();
     if (res.ok) {
-      setUsers(users.map((u) => u.id === id ? { ...u, isActive: false } : u));
+      setUsers((prev) => prev.map((x) => x.id === id ? { ...x, isActive: false } : x));
       toast.success("Kullanıcı pasife alındı");
     } else {
       toast.error(data.error || "İşlem başarısız");
     }
+  }
+
+  // Bağımsız "Devret" butonu — pasife almadan kayıtları aktarır (boşta kalan kayıtları da kurtarır).
+  function openReassign(u: User) {
+    setReassignFor(u);
+    setReassignTarget("");
+    setReassignWithDeactivate(false);
+  }
+
+  function closeReassign() {
+    setReassignFor(null);
+    setReassignTarget("");
+    setReassignWithDeactivate(false);
+  }
+
+  async function doReassign() {
+    if (!reassignFor || !reassignTarget) return;
+    setReassigning(true);
+    const res = await fetch(`/api/users/${reassignFor.id}/reassign`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ targetAgentId: reassignTarget, deactivate: reassignWithDeactivate }),
+    });
+    const data = await res.json();
+    setReassigning(false);
+    if (!res.ok) {
+      toast.error(typeof data.error === "string" ? data.error : "Devir başarısız");
+      return;
+    }
+    const target = users.find((x) => x.id === reassignTarget);
+    const parts: string[] = [];
+    if (data.customers > 0) parts.push(`${data.customers} müşteri`);
+    if (data.properties > 0) parts.push(`${data.properties} ilan`);
+    const what = parts.length ? parts.join(" ve ") : "Kayıt";
+    toast.success(
+      `${what} ${target?.name ?? "danışman"} kişisine devredildi${data.deactivated ? " ve kullanıcı pasife alındı" : ""}`
+    );
+    closeReassign();
+    await reloadUsers();
+  }
+
+  // "Devretmeden pasife al" — devir modalındaki ikincil aksiyon.
+  async function deactivateWithoutTransfer() {
+    if (!reassignFor) return;
+    const id = reassignFor.id;
+    closeReassign();
+    const ok = await confirm({
+      title: "Devretmeden pasife alınsın mı?",
+      message: 'Atanmış kayıtlar "yetkisiz danışmanda" kalır ve düzenlenemez. Daha sonra "Devret" ile aktarabilirsiniz.',
+      tone: "warning",
+      confirmText: "Yine de Pasife Al",
+    });
+    if (!ok) return;
+    await doDeactivate(id);
   }
 
   async function activate(id: string) {
@@ -316,6 +404,13 @@ export default function UsersSettingsPage() {
                         <span className="p-2 text-on-surface-variant/20 cursor-not-allowed" title="Bu kullanıcıyı düzenleme yetkiniz yok">
                           <Pencil className="w-4 h-4" />
                         </span>
+                      )}
+                      {canReassign(u) && assignedCount(u) > 0 && (
+                        <button onClick={() => openReassign(u)}
+                          className="p-2 hover:bg-primary-fixed rounded-lg transition-colors text-on-surface-variant hover:text-primary"
+                          title="Müşteri/portföyü başka danışmana devret">
+                          <ArrowLeftRight className="w-4 h-4" />
+                        </button>
                       )}
                       {u.isActive && canDeactivate(u) && (
                         <button onClick={() => deactivate(u.id)}
@@ -580,6 +675,94 @@ export default function UsersSettingsPage() {
             </motion.div>
           </motion.div>
         )}
+      </AnimatePresence>
+
+      {/* Kayıtları Devret modalı */}
+      <AnimatePresence>
+        {reassignFor && (() => {
+          const c = reassignFor._count?.assignedCustomers ?? 0;
+          const p = reassignFor._count?.assignedProperties ?? 0;
+          const countParts: string[] = [];
+          if (c > 0) countParts.push(`${c} müşteri`);
+          if (p > 0) countParts.push(`${p} ilan`);
+          const targets = users.filter((x) =>
+            x.isActive && x.id !== reassignFor.id && (sessionRole === "ADMIN" || x.role === "AGENT")
+          );
+          return (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4"
+              onClick={(e) => e.target === e.currentTarget && !reassigning && closeReassign()}>
+              <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+                className="bg-surface-container-lowest rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden">
+                <div className="flex items-center justify-between px-6 sm:px-8 py-5 border-b border-outline-variant/10">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-primary-fixed flex items-center justify-center shrink-0">
+                      <ArrowLeftRight className="w-5 h-5 text-primary" />
+                    </div>
+                    <h2 className="text-lg font-black text-on-surface">
+                      {reassignWithDeactivate ? "Kayıtları Devret ve Pasife Al" : "Kayıtları Devret"}
+                    </h2>
+                  </div>
+                  <button onClick={() => !reassigning && closeReassign()} className="p-2 hover:bg-surface-container rounded-xl text-on-surface-variant">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="px-6 sm:px-8 py-6 space-y-5">
+                  <p className="text-sm text-on-surface-variant">
+                    <strong className="text-on-surface">{reassignFor.name}</strong> üzerindeki{" "}
+                    <strong className="text-on-surface">{countParts.join(" ve ") || "kayıt"}</strong>{" "}
+                    seçeceğiniz danışmana aktarılacak. Kayıtların şubesi değişmez.
+                  </p>
+
+                  <div>
+                    <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Yeni Danışman *</label>
+                    {targets.length === 0 ? (
+                      <div className="flex items-center gap-2 text-sm text-on-surface-variant bg-surface-container-low px-4 py-3 rounded-xl">
+                        <AlertCircle className="w-4 h-4 text-error shrink-0" />
+                        Devredilebilecek aktif başka kullanıcı yok. Önce yeni bir danışman ekleyin.
+                      </div>
+                    ) : (
+                      <select value={reassignTarget} onChange={(e) => setReassignTarget(e.target.value)} className={inputClass} disabled={reassigning}>
+                        <option value="">Seçiniz</option>
+                        {targets.map((t) => (
+                          <option key={t.id} value={t.id}>
+                            {t.name} ({roleLabels[t.role] ?? t.role}{t.branch?.name ? ` · ${t.branch.name}` : ""})
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
+
+                  {reassignWithDeactivate && (
+                    <div className="flex items-start gap-2 text-xs text-on-surface-variant bg-surface-container-low px-4 py-3 rounded-xl">
+                      <ShieldAlert className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                      Devirden sonra <strong className="text-on-surface mx-1">{reassignFor.name}</strong> pasife alınır ve sisteme giremez.
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-3 px-6 sm:px-8 py-4 border-t border-outline-variant/10">
+                  <button type="button" onClick={() => !reassigning && closeReassign()}
+                    className="sm:flex-1 py-3 text-sm font-bold bg-surface-container-low hover:bg-surface-container rounded-xl transition-all">
+                    Vazgeç
+                  </button>
+                  {reassignWithDeactivate && (
+                    <button type="button" onClick={deactivateWithoutTransfer} disabled={reassigning}
+                      className="sm:flex-1 py-3 text-sm font-bold text-error bg-error-container/40 hover:bg-error-container rounded-xl transition-all disabled:opacity-50">
+                      Devretmeden Pasife Al
+                    </button>
+                  )}
+                  <button type="button" onClick={doReassign} disabled={reassigning || !reassignTarget}
+                    className="sm:flex-1 primary-gradient text-white py-3 rounded-xl text-sm font-bold disabled:opacity-50 flex items-center justify-center gap-2">
+                    {reassigning ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                    {reassignWithDeactivate ? "Devret ve Pasife Al" : "Devret"}
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          );
+        })()}
       </AnimatePresence>
     </motion.div>
   );

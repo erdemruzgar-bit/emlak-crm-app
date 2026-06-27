@@ -169,7 +169,16 @@ export default function UsersSettingsPage() {
     setSaving(false);
 
     if (!res.ok) {
-      setFormError(typeof data.error === "string" ? data.error : "Bir hata oluştu");
+      // Hata string olabilir veya zod issue dizisi (or. "Şifre en az 8 karakter olmalı").
+      // Diziyi gerçek mesajlara çevir ki kullanıcı sebebi görsün (önceden "Bir hata oluştu" gizliyordu).
+      let msg = "Bir hata oluştu";
+      if (typeof data.error === "string") {
+        msg = data.error;
+      } else if (Array.isArray(data.error)) {
+        const joined = data.error.map((i: { message?: string }) => i?.message).filter(Boolean).join(" • ");
+        if (joined) msg = joined;
+      }
+      setFormError(msg);
       return;
     }
 
@@ -512,11 +521,11 @@ export default function UsersSettingsPage() {
                 </div>
                 <div>
                   <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">
-                    {editUser ? "Yeni Şifre (boş bırakılırsa değişmez)" : "Şifre *"}
+                    {editUser ? "Yeni Şifre (boş bırakılırsa değişmez, en az 8 karakter)" : "Şifre * (en az 8 karakter)"}
                   </label>
                   <input type="password" value={form.password}
                     onChange={(e) => setForm({ ...form, password: e.target.value })}
-                    required={!editUser} minLength={6} className={inputClass} />
+                    required={!editUser} minLength={8} className={inputClass} />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>

@@ -55,6 +55,21 @@ export default auth((req) => {
     }
   }
 
+  // Modül-bazlı yetkilendirme — API rotaları için.
+  // ADMIN her zaman geçer; diğer rollerde "/api/<modül>" kapalı bir modüle düşüyorsa 403 JSON döner.
+  // (Sayfa kontrolü redirect ile; API kontrolü JSON ile yapılır ki frontend fetch doğru hata alsın.)
+  // "/api/customers" -> "/customers" eşlemesiyle modules.ts path'lerine bakılır. Eşleşmeyen
+  // (or. /api/users, /api/upload, /api/dashboard[required]) yollar bu kontrolden etkilenmez.
+  if (role !== "ADMIN" && pathname.startsWith("/api/")) {
+    const matched = moduleForPath(pathname.slice(4));
+    if (matched && !matched.required) {
+      const disabled = user?.disabledModules ?? [];
+      if (disabled.includes(matched.key)) {
+        return NextResponse.json({ error: "Bu modüle erişim yetkiniz yok" }, { status: 403 });
+      }
+    }
+  }
+
   // Modül-bazlı yetkilendirme — sayfa rotaları için (API'ler hariç).
   // ADMIN her zaman geçer; diğer roller için pathname'in eşleştiği modül
   // disabledModules'da varsa /dashboard'a yönlendir.

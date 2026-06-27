@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { extractActor } from "@/lib/rbac";
+import { createAuditLog } from "@/lib/audit";
 import { z } from "zod/v4";
 
 // Komisyon politikası API'si.
@@ -100,6 +101,14 @@ export async function PUT(req: NextRequest) {
         create: { branchId, ...parsed.data },
         update: parsed.data,
       });
+      await createAuditLog({
+        userId: actor.id,
+        action: "UPDATE",
+        entity: "CommissionPolicy",
+        entityId: policy.id,
+        newValue: { branchId, ...parsed.data },
+        ipAddress: req.headers.get("x-forwarded-for") || undefined,
+      });
       return NextResponse.json(policy);
     }
 
@@ -107,6 +116,14 @@ export async function PUT(req: NextRequest) {
     const updated = await prisma.commissionPolicy.update({
       where: { id: global.id },
       data: parsed.data,
+    });
+    await createAuditLog({
+      userId: actor.id,
+      action: "UPDATE",
+      entity: "CommissionPolicy",
+      entityId: updated.id,
+      newValue: { scope: "global", ...parsed.data },
+      ipAddress: req.headers.get("x-forwarded-for") || undefined,
     });
     return NextResponse.json(updated);
   } catch {
@@ -131,5 +148,13 @@ export async function DELETE(req: NextRequest) {
   }
 
   await prisma.commissionPolicy.deleteMany({ where: { branchId } });
+  await createAuditLog({
+    userId: actor.id,
+    action: "DELETE",
+    entity: "CommissionPolicy",
+    entityId: branchId,
+    oldValue: { branchId },
+    ipAddress: req.headers.get("x-forwarded-for") || undefined,
+  });
   return NextResponse.json({ message: "Şube politikası silindi (şirket genelini kullanır)" });
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { createAuditLog } from "@/lib/audit";
 import { hash } from "bcryptjs";
 import { z } from "zod/v4";
 
@@ -132,6 +133,16 @@ export async function PUT(
       },
     });
 
+    const { passwordHash, ...auditChanges } = updateData;
+    await createAuditLog({
+      userId: sessionId,
+      action: "UPDATE",
+      entity: "User",
+      entityId: id,
+      newValue: { ...auditChanges, passwordChanged: !!passwordHash },
+      ipAddress: req.headers.get("x-forwarded-for") || undefined,
+    });
+
     return NextResponse.json(user);
   } catch {
     return NextResponse.json({ error: "Sunucu hatası" }, { status: 500 });
@@ -139,7 +150,7 @@ export async function PUT(
 }
 
 export async function DELETE(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
@@ -174,6 +185,15 @@ export async function DELETE(
     await prisma.user.update({
       where: { id },
       data: { isActive: false },
+    });
+
+    await createAuditLog({
+      userId: sessionId,
+      action: "DELETE",
+      entity: "User",
+      entityId: id,
+      newValue: { isActive: false },
+      ipAddress: req.headers.get("x-forwarded-for") || undefined,
     });
 
     return NextResponse.json({ message: "Kullanıcı pasife alındı" });

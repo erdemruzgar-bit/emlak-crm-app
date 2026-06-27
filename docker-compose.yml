@@ -8,7 +8,9 @@ services:
       POSTGRES_PASSWORD: emlak123
       POSTGRES_DB: emlak_crm
     ports:
-      - "5432:5432"
+      # Yalnızca loopback'e bağla — Postgres dışarıya açık olmamalı (app aynı makinede,
+      # DATABASE_URL localhost üzerinden bağlanır). Güvenlik: dış brute-force yüzeyini kaldırır.
+      - "127.0.0.1:5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 

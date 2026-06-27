@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { createAuditLog } from "@/lib/audit";
 import { z } from "zod/v4";
 
 const branchUpdateSchema = z.object({
@@ -39,6 +40,15 @@ export async function PUT(
       include: { _count: { select: { users: true, customers: true, properties: true } } },
     });
 
+    await createAuditLog({
+      userId: sessionUser.id as string,
+      action: "UPDATE",
+      entity: "Branch",
+      entityId: id,
+      newValue: parsed.data,
+      ipAddress: req.headers.get("x-forwarded-for") || undefined,
+    });
+
     return NextResponse.json(branch);
   } catch {
     return NextResponse.json({ error: "Sunucu hatası" }, { status: 500 });
@@ -46,7 +56,7 @@ export async function PUT(
 }
 
 export async function DELETE(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
@@ -63,6 +73,13 @@ export async function DELETE(
 
   try {
     await prisma.branch.delete({ where: { id } });
+    await createAuditLog({
+      userId: sessionUser.id as string,
+      action: "DELETE",
+      entity: "Branch",
+      entityId: id,
+      ipAddress: req.headers.get("x-forwarded-for") || undefined,
+    });
     return NextResponse.json({ message: "Şube silindi" });
   } catch {
     return NextResponse.json({ error: "Şube silinemedi (bağlı kullanıcılar olabilir)" }, { status: 400 });

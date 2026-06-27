@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { createAuditLog } from "@/lib/audit";
 import { hash } from "bcryptjs";
 import { z } from "zod/v4";
 
@@ -157,6 +158,15 @@ export async function POST(req: NextRequest) {
         authorizedBranches: { select: { id: true, name: true } },
         createdAt: true,
       },
+    });
+
+    await createAuditLog({
+      userId: sessionUser.id as string,
+      action: "CREATE",
+      entity: "User",
+      entityId: newUser.id,
+      newValue: { email: newUser.email, role: newUser.role, branchId: newUser.branchId },
+      ipAddress: req.headers.get("x-forwarded-for") || undefined,
     });
 
     return NextResponse.json(newUser, { status: 201 });

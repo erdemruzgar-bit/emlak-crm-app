@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { createAuditLog } from "@/lib/audit";
 import { z } from "zod/v4";
 
 const branchSchema = z.object({
@@ -49,6 +50,15 @@ export async function POST(req: NextRequest) {
     const branch = await prisma.branch.create({
       data: parsed.data,
       include: { _count: { select: { users: true, customers: true, properties: true } } },
+    });
+
+    await createAuditLog({
+      userId: sessionUser.id as string,
+      action: "CREATE",
+      entity: "Branch",
+      entityId: branch.id,
+      newValue: { name: branch.name },
+      ipAddress: req.headers.get("x-forwarded-for") || undefined,
     });
 
     return NextResponse.json(branch, { status: 201 });

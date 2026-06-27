@@ -27,6 +27,7 @@ dev-server.log
 # env files
 .env
 .env*.local
+.env.bak*
 
 # vercel
 .vercel

@@ -475,7 +475,7 @@ export default function UsersSettingsPage() {
                     </div>
                   )}
                   <div className="flex flex-col gap-2">
-                    <label className="cursor-pointer px-4 py-2 bg-white rounded-xl text-sm font-bold hover:bg-surface-container transition-all flex items-center gap-2 shadow-sm">
+                    <label className="cursor-pointer px-4 py-2 bg-surface-container-lowest rounded-xl text-sm font-bold hover:bg-surface-container transition-all flex items-center gap-2 shadow-sm">
                       {photoUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
                       {photoUploading ? "Yükleniyor..." : "Fotoğraf Yükle"}
                       <input type="file" accept="image/*" className="hidden" disabled={photoUploading}

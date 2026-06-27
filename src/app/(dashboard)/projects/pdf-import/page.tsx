@@ -298,7 +298,7 @@ export default function PdfImportPage() {
       )}
 
       {/* JSON yapıştırma */}
-      <details className="rounded-lg border bg-gray-50 p-4">
+      <details className="rounded-lg border bg-surface-container-low p-4">
         <summary className="cursor-pointer text-sm font-medium">
           JSON yapıştır (extract.ts çıktısı)
         </summary>
@@ -318,7 +318,7 @@ export default function PdfImportPage() {
             Uygula
           </button>
           <p className="text-xs text-gray-600">
-            <code className="bg-white px-1 rounded">
+            <code className="bg-surface-container-lowest px-1 rounded">
               npx tsx scripts/pdf-import/extract.ts /path/to/file.pdf
             </code>{" "}
             çıktısını yapıştırın.
@@ -327,7 +327,7 @@ export default function PdfImportPage() {
       </details>
 
       {/* Proje formu */}
-      <div className="rounded-lg border bg-white p-4 space-y-3">
+      <div className="rounded-lg border bg-surface-container-lowest p-4 space-y-3">
         <h2 className="font-semibold">Proje bilgileri</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <Field label="Proje adı *">
@@ -377,7 +377,7 @@ export default function PdfImportPage() {
       </div>
 
       {/* Vaziyet planı yükleme */}
-      <div className="rounded-lg border bg-white p-4 space-y-3">
+      <div className="rounded-lg border bg-surface-container-lowest p-4 space-y-3">
         <h2 className="font-semibold flex items-center gap-2">
           <ImageIcon className="h-4 w-4" />
           Vaziyet planı görselleri
@@ -400,7 +400,7 @@ export default function PdfImportPage() {
               </button>
             </div>
           ))}
-          <label className="h-24 w-32 rounded border-2 border-dashed flex items-center justify-center cursor-pointer hover:bg-gray-50 text-sm text-gray-600">
+          <label className="h-24 w-32 rounded border-2 border-dashed flex items-center justify-center cursor-pointer hover:bg-surface-container-low text-sm text-gray-600">
             {uploadingPlan ? (
               <Loader2 className="h-5 w-5 animate-spin" />
             ) : (
@@ -425,7 +425,7 @@ export default function PdfImportPage() {
       </div>
 
       {/* Satırlar */}
-      <div className="rounded-lg border bg-white">
+      <div className="rounded-lg border bg-surface-container-lowest">
         <div className="p-4 border-b flex items-center justify-between flex-wrap gap-3">
           <div>
             <h2 className="font-semibold">Dükkan satırları</h2>
@@ -445,7 +445,7 @@ export default function PdfImportPage() {
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
-            <thead className="bg-gray-50 border-b text-gray-700">
+            <thead className="bg-surface-container-low border-b text-gray-700">
               <tr>
                 <th className="p-2 text-left font-medium">Parsel</th>
                 <th className="p-2 text-left font-medium">Blok *</th>
@@ -464,7 +464,7 @@ export default function PdfImportPage() {
             </thead>
             <tbody>
               {rows.map((r) => (
-                <tr key={r.id} className="border-b hover:bg-gray-50">
+                <tr key={r.id} className="border-b hover:bg-surface-container-low">
                   <td className="p-1">
                     <input
                       value={r.parsel}

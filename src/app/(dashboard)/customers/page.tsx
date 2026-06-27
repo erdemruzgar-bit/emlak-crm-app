@@ -286,11 +286,11 @@ function CustomersPageInner() {
           />
           <div className="flex items-center bg-surface-container-low rounded-xl p-1">
             <button onClick={() => setViewMode("list")} title="Liste Görünümü"
-              className={cn("p-2 rounded-lg transition-all", viewMode === "list" ? "bg-white shadow-sm text-primary" : "text-on-surface-variant hover:text-on-surface")}>
+              className={cn("p-2 rounded-lg transition-all", viewMode === "list" ? "bg-surface-container-lowest shadow-sm text-primary" : "text-on-surface-variant hover:text-on-surface")}>
               <List className="w-4 h-4" />
             </button>
             <button onClick={() => setViewMode("kanban")} title="Kart Görünümü"
-              className={cn("p-2 rounded-lg transition-all", viewMode === "kanban" ? "bg-white shadow-sm text-primary" : "text-on-surface-variant hover:text-on-surface")}>
+              className={cn("p-2 rounded-lg transition-all", viewMode === "kanban" ? "bg-surface-container-lowest shadow-sm text-primary" : "text-on-surface-variant hover:text-on-surface")}>
               <LayoutGrid className="w-4 h-4" />
             </button>
           </div>
@@ -559,9 +559,9 @@ function CustomersPageInner() {
             <div className="flex items-center justify-between px-6 py-4 bg-surface-container-low">
               <p className="text-sm text-on-surface-variant font-medium">Toplam {pagination.total} müşteri</p>
               <div className="flex items-center bg-surface-container-low rounded-xl p-1">
-                <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="p-1.5 hover:bg-white rounded-lg transition-all text-on-surface-variant disabled:opacity-30"><ChevronLeft className="w-4 h-4" /></button>
-                <span className="px-4 py-1.5 bg-white shadow-sm rounded-lg text-xs font-bold text-primary">{page} / {pagination.totalPages}</span>
-                <button onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))} disabled={page === pagination.totalPages} className="p-1.5 hover:bg-white rounded-lg transition-all text-on-surface-variant disabled:opacity-30"><ChevronRight className="w-4 h-4" /></button>
+                <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="p-1.5 hover:bg-surface-container-lowest rounded-lg transition-all text-on-surface-variant disabled:opacity-30"><ChevronLeft className="w-4 h-4" /></button>
+                <span className="px-4 py-1.5 bg-surface-container-lowest shadow-sm rounded-lg text-xs font-bold text-primary">{page} / {pagination.totalPages}</span>
+                <button onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))} disabled={page === pagination.totalPages} className="p-1.5 hover:bg-surface-container-lowest rounded-lg transition-all text-on-surface-variant disabled:opacity-30"><ChevronRight className="w-4 h-4" /></button>
               </div>
             </div>
           )}

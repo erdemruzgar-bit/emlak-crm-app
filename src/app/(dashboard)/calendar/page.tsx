@@ -424,13 +424,13 @@ export default function CalendarPage() {
           <div className="flex items-center gap-6">
             <h1 className="text-3xl font-black tracking-tighter text-on-surface capitalize">{monthName}</h1>
             <div className="flex items-center bg-surface-container-low rounded-xl p-1 shadow-inner">
-              <button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))} className="p-1.5 hover:bg-white rounded-lg transition-all text-on-surface-variant">
+              <button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))} className="p-1.5 hover:bg-surface-container-lowest rounded-lg transition-all text-on-surface-variant">
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <button onClick={() => setCurrentDate(new Date())} className="px-4 py-1.5 bg-white shadow-sm rounded-lg text-xs font-bold text-primary">
+              <button onClick={() => setCurrentDate(new Date())} className="px-4 py-1.5 bg-surface-container-lowest shadow-sm rounded-lg text-xs font-bold text-primary">
                 Bugün
               </button>
-              <button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))} className="p-1.5 hover:bg-white rounded-lg transition-all text-on-surface-variant">
+              <button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))} className="p-1.5 hover:bg-surface-container-lowest rounded-lg transition-all text-on-surface-variant">
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
@@ -472,7 +472,7 @@ export default function CalendarPage() {
                   "p-3 min-h-[80px] text-sm font-bold transition-colors cursor-pointer",
                   isToday
                     ? "bg-primary-container/10 text-primary ring-2 ring-inset ring-primary relative overflow-hidden"
-                    : "bg-white text-on-surface hover:bg-surface-container-low"
+                    : "bg-surface-container-lowest text-on-surface hover:bg-surface-container-low"
                 )}
               >
                 <span>{day}</span>

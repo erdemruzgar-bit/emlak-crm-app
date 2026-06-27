@@ -38,11 +38,11 @@ export function EditableText({
   return (
     <div className={cn(
       "p-4 bg-surface-container-low rounded-2xl border border-outline-variant/5 flex items-center gap-3 min-h-[76px] transition-colors",
-      editing && "bg-white ring-2 ring-primary/15",
+      editing && "bg-surface-container-lowest ring-2 ring-primary/15",
       className
     )}>
       {Icon && (
-        <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-primary shadow-sm shrink-0">
+        <div className="w-10 h-10 bg-surface-container-lowest rounded-xl flex items-center justify-center text-primary shadow-sm shrink-0">
           <Icon className="w-5 h-5" />
         </div>
       )}
@@ -89,11 +89,11 @@ export function EditableSelect({
   return (
     <div className={cn(
       "p-4 bg-surface-container-low rounded-2xl border border-outline-variant/5 flex items-center gap-3 min-h-[76px] transition-colors",
-      editing && "bg-white ring-2 ring-primary/15",
+      editing && "bg-surface-container-lowest ring-2 ring-primary/15",
       className
     )}>
       {Icon && (
-        <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-primary shadow-sm shrink-0">
+        <div className="w-10 h-10 bg-surface-container-lowest rounded-xl flex items-center justify-center text-primary shadow-sm shrink-0">
           <Icon className="w-5 h-5" />
         </div>
       )}
@@ -140,11 +140,11 @@ export function EditableTextarea({
   return (
     <div className={cn(
       "p-4 bg-surface-container-low rounded-2xl border border-outline-variant/5 flex items-start gap-3 transition-colors",
-      editing && "bg-white ring-2 ring-primary/15",
+      editing && "bg-surface-container-lowest ring-2 ring-primary/15",
       className
     )}>
       {Icon && (
-        <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-primary shadow-sm shrink-0 mt-0.5">
+        <div className="w-10 h-10 bg-surface-container-lowest rounded-xl flex items-center justify-center text-primary shadow-sm shrink-0 mt-0.5">
           <Icon className="w-5 h-5" />
         </div>
       )}

@@ -299,15 +299,15 @@ function PropertiesPageInner() {
             {/* View Mode */}
             <div className="flex bg-surface-container-low p-1 rounded-xl">
               <button onClick={() => setViewMode("grid")} title="Büyük Kart"
-                className={cn("px-3 py-2 rounded-lg transition-all", viewMode === "grid" ? "bg-white shadow-sm text-primary" : "text-on-surface-variant hover:text-on-surface")}>
+                className={cn("px-3 py-2 rounded-lg transition-all", viewMode === "grid" ? "bg-surface-container-lowest shadow-sm text-primary" : "text-on-surface-variant hover:text-on-surface")}>
                 <LayoutGrid className="w-4 h-4" />
               </button>
               <button onClick={() => setViewMode("compact")} title="Küçük Kart"
-                className={cn("px-3 py-2 rounded-lg transition-all", viewMode === "compact" ? "bg-white shadow-sm text-primary" : "text-on-surface-variant hover:text-on-surface")}>
+                className={cn("px-3 py-2 rounded-lg transition-all", viewMode === "compact" ? "bg-surface-container-lowest shadow-sm text-primary" : "text-on-surface-variant hover:text-on-surface")}>
                 <LayoutList className="w-4 h-4" />
               </button>
               <button onClick={() => setViewMode("list")} title="Liste"
-                className={cn("px-3 py-2 rounded-lg transition-all", viewMode === "list" ? "bg-white shadow-sm text-primary" : "text-on-surface-variant hover:text-on-surface")}>
+                className={cn("px-3 py-2 rounded-lg transition-all", viewMode === "list" ? "bg-surface-container-lowest shadow-sm text-primary" : "text-on-surface-variant hover:text-on-surface")}>
                 <List className="w-4 h-4" />
               </button>
             </div>
@@ -612,7 +612,7 @@ function PropertiesPageInner() {
               Toplam <span className="font-bold text-on-surface">{pagination.total}</span> ilan
               {" · "}Sayfa başına {pagination.limit}
             </p>
-            <div className="flex items-center bg-white rounded-xl p-1 shadow-sm">
+            <div className="flex items-center bg-surface-container-lowest rounded-xl p-1 shadow-sm">
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1 || loading}

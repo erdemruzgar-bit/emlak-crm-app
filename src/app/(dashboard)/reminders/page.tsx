@@ -325,7 +325,7 @@ export default function RemindersPage() {
             onClick={() => setScope("me")}
             className={cn(
               "px-4 py-2 rounded-lg text-sm font-bold transition-all",
-              scope === "me" ? "bg-white shadow-sm text-primary" : "text-on-surface-variant"
+              scope === "me" ? "bg-surface-container-lowest shadow-sm text-primary" : "text-on-surface-variant"
             )}
           >
             Benim
@@ -334,7 +334,7 @@ export default function RemindersPage() {
             onClick={() => setScope("team")}
             className={cn(
               "px-4 py-2 rounded-lg text-sm font-bold transition-all",
-              scope === "team" ? "bg-white shadow-sm text-primary" : "text-on-surface-variant"
+              scope === "team" ? "bg-surface-container-lowest shadow-sm text-primary" : "text-on-surface-variant"
             )}
           >
             Ekip
@@ -347,7 +347,7 @@ export default function RemindersPage() {
               onClick={() => setFilter(f)}
               className={cn(
                 "px-4 py-2 rounded-lg text-sm font-bold transition-all",
-                filter === f ? "bg-white shadow-sm text-primary" : "text-on-surface-variant"
+                filter === f ? "bg-surface-container-lowest shadow-sm text-primary" : "text-on-surface-variant"
               )}
             >
               {f === "pending" ? "Bekleyen" : f === "done" ? "Tamamlanan" : "Tümü"}

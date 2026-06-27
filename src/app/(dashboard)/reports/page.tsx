@@ -84,7 +84,7 @@ export default function ReportsPage() {
           return (
             <button key={r.key} onClick={() => setActiveReport(r.key)}
               className={cn("px-5 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center gap-2",
-                activeReport === r.key ? "bg-white shadow-sm text-primary" : "text-on-surface-variant hover:text-on-surface"
+                activeReport === r.key ? "bg-surface-container-lowest shadow-sm text-primary" : "text-on-surface-variant hover:text-on-surface"
               )}>
               <Icon className="w-4 h-4" />{r.label}
             </button>

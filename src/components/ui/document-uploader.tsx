@@ -163,7 +163,7 @@ export function DocumentUploader({
                 <select
                   value={item.category || categoryOptions[0].value}
                   onChange={(e) => updateCategory(i, e.target.value)}
-                  className="px-3 py-1.5 bg-white rounded-lg text-xs font-medium border-none outline-none focus:ring-2 focus:ring-primary/20"
+                  className="px-3 py-1.5 bg-surface-container-lowest rounded-lg text-xs font-medium border-none outline-none focus:ring-2 focus:ring-primary/20"
                 >
                   {categoryOptions.map((o) => (
                     <option key={o.value} value={o.value}>

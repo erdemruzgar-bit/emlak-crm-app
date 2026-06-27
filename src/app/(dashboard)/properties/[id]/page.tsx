@@ -551,7 +551,7 @@ export default function PropertyDetailPage() {
                   key={d.label}
                   className="bg-surface-container-low p-4 rounded-2xl flex flex-col items-center justify-center text-center group hover:bg-surface-container transition-all"
                 >
-                  <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-primary shadow-sm mb-2 group-hover:scale-110 transition-transform">
+                  <div className="w-10 h-10 bg-surface-container-lowest rounded-xl flex items-center justify-center text-primary shadow-sm mb-2 group-hover:scale-110 transition-transform">
                     <Icon className="w-5 h-5" />
                   </div>
                   <span className="text-lg font-bold text-on-surface">
@@ -749,14 +749,14 @@ export default function PropertyDetailPage() {
                       onChange={(e) => searchCustomers(e.target.value)}
                       placeholder="Müşteri ara (ad, telefon)..."
                       autoFocus
-                      className="w-full pl-9 pr-3 py-2 bg-white rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20"
+                      className="w-full pl-9 pr-3 py-2 bg-surface-container-lowest rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20"
                     />
                   </div>
                   {addResults.length > 0 && (
                     <div className="max-h-56 overflow-y-auto space-y-1">
                       {addResults.map((c) => (
                         <button key={c.id} onClick={() => addCustomerManually(c.id)}
-                          className="w-full text-left p-2 hover:bg-white rounded-lg text-xs font-medium transition-colors">
+                          className="w-full text-left p-2 hover:bg-surface-container-lowest rounded-lg text-xs font-medium transition-colors">
                           {c.firstName} {c.lastName}
                           {c.phone && <span className="text-on-surface-variant ml-2">· {c.phone}</span>}
                         </button>

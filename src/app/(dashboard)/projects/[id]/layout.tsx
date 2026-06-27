@@ -81,7 +81,7 @@ export default function ProjectDetailLayout({
               href={t.href}
               className={cn(
                 "px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2",
-                active ? "bg-white shadow-sm text-primary" : "text-on-surface-variant hover:text-on-surface"
+                active ? "bg-surface-container-lowest shadow-sm text-primary" : "text-on-surface-variant hover:text-on-surface"
               )}
             >
               <Icon className="w-4 h-4" />

@@ -625,7 +625,7 @@ export default function NewPropertyPage() {
                 </p>
               </div>
               {salePrice && parseFloat(salePrice) > 0 && (
-                <div className="bg-white/60 rounded-xl p-3">
+                <div className="bg-surface-container-lowest/60 rounded-xl p-3">
                   <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-1">
                     Vatandaşlığa Uygun Fiyatı (önizleme)
                   </p>

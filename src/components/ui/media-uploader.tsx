@@ -98,13 +98,13 @@ export function MediaUploader({ value, onChange, maxItems = 20 }: MediaUploaderP
       <div className="flex bg-surface-container-low p-1 rounded-xl w-fit">
         <button type="button" onClick={() => setTab("upload")}
           className={cn("px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2",
-            tab === "upload" ? "bg-white shadow-sm text-primary" : "text-on-surface-variant"
+            tab === "upload" ? "bg-surface-container-lowest shadow-sm text-primary" : "text-on-surface-variant"
           )}>
           <Upload className="w-4 h-4" />Bilgisayardan Yükle
         </button>
         <button type="button" onClick={() => setTab("url")}
           className={cn("px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2",
-            tab === "url" ? "bg-white shadow-sm text-primary" : "text-on-surface-variant"
+            tab === "url" ? "bg-surface-container-lowest shadow-sm text-primary" : "text-on-surface-variant"
           )}>
           <Link2 className="w-4 h-4" />URL ile Ekle
         </button>

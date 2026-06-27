@@ -85,7 +85,7 @@ export default function Header() {
             placeholder={searchType === "customers" ? "Müşteri ara (ad, telefon, e-posta)..." : "İlan ara (başlık, şehir, ilçe)..."}
             type="text"
           />
-          <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-1.5 bg-white px-2 py-1.5 rounded-lg shadow-sm border border-outline-variant/10">
+          <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-1.5 bg-surface-container-lowest px-2 py-1.5 rounded-lg shadow-sm border border-outline-variant/10">
             {searchType === "customers" ? (
               <Users className="w-3.5 h-3.5 text-primary shrink-0" />
             ) : (

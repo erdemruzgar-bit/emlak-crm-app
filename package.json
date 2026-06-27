@@ -16,6 +16,8 @@
     "db:migrate": "prisma migrate dev",
     "db:seed": "npx tsx prisma/seed.ts",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "healthcheck:db": "npx tsx scripts/healthcheck/db-check.ts",
     "healthcheck:http": "bash scripts/healthcheck/http-smoke.sh",
     "check": "bash scripts/pre-deploy.sh",
@@ -77,6 +79,7 @@
     "lint-staged": "^16.4.0",
     "postcss": "^8.5.8",
     "tailwindcss": "^4.2.2",
-    "typescript": "^6.0.2"
+    "typescript": "^6.0.2",
+    "vitest": "^4.1.9"
   }
 }

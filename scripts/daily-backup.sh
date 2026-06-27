@@ -59,6 +59,20 @@ if [ -d "$APP/public/uploads" ] && [ -n "$(ls -A "$APP/public/uploads" 2>/dev/nu
   echo "   uploads.tar.gz: $UP_SIZE"
 fi
 
+# ── Felaket kurtarma metadatası (best-effort; eksiği yedeği FAIL saymaz) ──
+# Sır ÇOĞALTMA YOK: .env/dotenv günlük yedeğe EKLENMEZ (zaten release yedeğinde var,
+# kullanıcı Drive'da şifreli sır istemiyor). Sadece sırsız yapılandırma dosyaları.
+echo "→ kurtarma metadatası (schema/compose/RESTORE/migrations)..."
+cp "$APP/prisma/schema.prisma" "$DIR/schema.prisma" 2>/dev/null || echo "   ⚠ schema.prisma kopyalanamadı"
+cp "$APP/docker-compose.yml" "$DIR/docker-compose.yml" 2>/dev/null || echo "   ⚠ docker-compose.yml kopyalanamadı"
+ls "$APP/prisma/migrations" > "$DIR/migrations.txt" 2>/dev/null || echo "   ⚠ migrations listesi alınamadı"
+if [ -f "$APP/scripts/RESTORE-TEMPLATE.md" ]; then
+  sed "s/__TAG__/daily-$TAG/g" "$APP/scripts/RESTORE-TEMPLATE.md" > "$DIR/RESTORE.md" \
+    || echo "   ⚠ RESTORE.md oluşturulamadı"
+else
+  echo "   • RESTORE-TEMPLATE.md yok, RESTORE.md atlandı"
+fi
+
 date -Iseconds > "$DIR/timestamp.txt"
 (cd "$APP" && echo "$(git rev-parse HEAD) ($(git rev-parse --abbrev-ref HEAD))") > "$DIR/git-sha.txt"
 

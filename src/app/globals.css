@@ -150,6 +150,18 @@ body {
   --color-on-background: #e3e2e6;
 }
 
+/* ─── Erişilebilirlik: klavye odağı görünür olsun ─── */
+/* Klavye ile gezinen kullanıcıda net odak halkası göster. */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+/* Fare tıklamasında çirkin outline gösterme (sadece klavye odağında görünür). */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
 /* Material Symbols */
 .material-symbols-outlined {
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;

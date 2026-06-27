@@ -15,6 +15,7 @@ import {
   Plus,
 } from "lucide-react";
 import { toast } from "sonner";
+import { HelpButton } from "@/components/ui/help-button";
 
 interface UIRow {
   id: string;
@@ -258,6 +259,7 @@ export default function PdfImportPage() {
           <h1 className="text-2xl font-semibold flex items-center gap-2">
             <FileText className="h-6 w-6 text-blue-600" />
             PDF'ten Toplu Dükkan İçe Aktarımı
+            <HelpButton page="projects-pdf-import" title="PDF'ten İçe Aktarım" />
           </h1>
           <p className="text-sm text-gray-600 mt-1">
             Meydan Başakşehir gibi büyük dükkan listelerini PDF/JSON ile yükleyin.

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { UserPlus, Loader2, X, AlertCircle, Pencil, UserX, UserCheck, ShieldAlert, Camera, ArrowLeftRight } from "lucide-react";
+import { UserPlus, Loader2, X, AlertCircle, Pencil, UserX, UserCheck, ShieldAlert, Camera, ArrowLeftRight, Users } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -10,6 +10,7 @@ import { TableSkeleton } from "@/components/ui/skeleton";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { HelpButton } from "@/components/ui/help-button";
 import { SafeImage } from "@/components/ui/safe-image";
+import { EmptyState } from "@/components/ui/empty-state";
 import { MODULES } from "@/lib/modules";
 
 interface User {
@@ -333,7 +334,11 @@ export default function UsersSettingsPage() {
             {loading ? (
               <TableSkeleton rows={5} cols={6} />
             ) : users.length === 0 ? (
-              <tr><td colSpan={6} className="text-center py-12 text-on-surface-variant">Kullanıcı bulunamadı</td></tr>
+              <tr>
+                <td colSpan={6} className="p-0">
+                  <EmptyState icon={Users} title="Kullanıcı bulunamadı" />
+                </td>
+              </tr>
             ) : (
               users.map((u) => (
                 <tr key={u.id} className="border-t border-outline-variant/10 hover:bg-surface-container-low/50 transition-colors">

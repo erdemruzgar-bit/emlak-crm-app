@@ -205,8 +205,3 @@ export async function loadCustomerForRbac(customerId: string) {
     select: { id: true, assignedAgentId: true },
   });
 }
-
-// Standart 403 cevabı + isteğe bağlı audit log
-export function forbidden(message = "Bu işlem için yetkiniz yok") {
-  return { error: message };
-}

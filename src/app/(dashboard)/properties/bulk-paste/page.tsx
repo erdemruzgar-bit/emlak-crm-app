@@ -360,6 +360,7 @@ function BulkPasteInner() {
           <h2 className="text-sm font-black uppercase tracking-widest text-on-surface-variant flex items-center gap-2">
             <CalendarRange className="w-4 h-4 text-primary" />
             Tek proje, ardışık numaralar
+            <HelpButton page="projects-bulk" title="Aralık ile Daire Üret" />
           </h2>
           <p className="text-xs text-on-surface-variant">
             Bir projedeki bir bloka ardışık birim numarası ile {propertyNoun} kayıtları oluşturun. Mevcut numaralar atlanır.

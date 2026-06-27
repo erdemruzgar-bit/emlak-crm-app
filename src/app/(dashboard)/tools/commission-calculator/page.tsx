@@ -8,6 +8,7 @@ import {
   Loader2, Trash2, Settings as SettingsIcon, Info,
 } from "lucide-react";
 import { motion } from "motion/react";
+import { HelpButton } from "@/components/ui/help-button";
 import { cn } from "@/lib/utils";
 
 // ============== TYPES ==============
@@ -535,7 +536,10 @@ export default function CommissionCalculatorPage() {
               <Calculator className="w-6 h-6" />
             </div>
             <div>
-              <h1 className="text-2xl font-black tracking-tight text-on-surface">Komisyon Hesaplayıcı</h1>
+              <h1 className="text-2xl font-black tracking-tight text-on-surface flex items-center gap-2">
+                Komisyon Hesaplayıcı
+                <HelpButton page="tools-commission-calculator" title="Komisyon Hesaplayıcı" />
+              </h1>
               <p className="text-sm text-on-surface-variant">Eşleştirme + paylaşım + sözleşmeye dönüştür</p>
             </div>
           </div>

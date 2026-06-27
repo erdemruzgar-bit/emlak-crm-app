@@ -1,14 +1,28 @@
 # Finans
 
-İmzalanmış sözleşmelerden hesaplanan ciro, tahsilat takibi ve aylık özet.
+## Bu sayfa ne işe yarar
 
-> Bu modül şu an temel görünümle yayında. Genişletilmiş özellikler (ödeme planları, tahsilat hatırlatmaları, gider takibi, banka entegrasyonu) Faz 2'de planlıdır — TESLIM-SONRASI.md'de detay var.
+Finans modülü, sözleşmelerden hesaplanan komisyonların takibini, ofis–danışman pay dağılımını, tahsilat ve faturalandırmayı tek yerde toplamak için planlanmıştır.
 
-## Şu an mevcut
-- Aktif sözleşmelerin toplam ciroyu
-- Şirket komisyon payı / danışman payı kırılımı (komisyon politikasına göre)
-- Aylık özet grafiği
+> **Bu ekran şu an "Yakında" (Faz 2) durumundadır.** Sayfada canlı veri, ciro tablosu veya grafik yoktur; yalnızca planlanan özelliklerin tanıtımı gösterilir. Komisyon hesaplaması bugün **sözleşmeler ve Komisyon Politikası** üzerinden yapılır; Finans modülü açıldığında bu verilerden **otomatik beslenecektir** — ayrıca elle giriş gerekmez.
 
-## İpuçları
-- Sözleşme detayında ödeme/tahsilat bilgisi girildiğinde finansa yansır
-- Komisyon hesaplaması **Ayarlar → Komisyon** politikasına göre yapılır
+## Bugün ne yapabilirsiniz
+
+- **Komisyon hesabı:** Üst menüdeki **Komisyon Hesaplayıcı** ile satış/kira komisyonunu hesaplayıp taslak sözleşmeye dönüştürün.
+- **Politika tanımı:** **Ayarlar → Komisyon** altında ofis payı, danışman payı ve ko-broker oranlarını belirleyin. Sözleşme detayında komisyon bu politikaya göre hesaplanır.
+- **Sözleşme kaydı:** İmzalanan sözleşmeler komisyon tutarıyla saklanır; Faz 2'de Finans bu kayıtlardan beslenecektir.
+
+## Faz 2'de gelecek (planlı)
+
+- Komisyon havuzu (ofis / danışman / referans payı, tarih filtresi)
+- Danışman performansı ve liderlik tablosu
+- Tahsilat takibi ve gecikme uyarıları
+- Ödeme planları ve hatırlatmalar
+- Fatura / makbuz (e-Arşiv, e-Fatura)
+- Gider takibi ve net kâr
+- Muhasebe ve banka (Open Banking) entegrasyonları
+
+## Sık sorulan
+
+- **Neden boş / "Yakında" görünüyor?** Modül henüz yayında değil; geliştirme Faz 2 kapsamında. Bu ekran planlanan özellikleri tanıtır.
+- **Komisyonu şu an nasıl takip ederim?** Komisyon Hesaplayıcı + sözleşme detayları üzerinden. Finans açıldığında geçmiş sözleşmeler de otomatik yansıyacaktır.

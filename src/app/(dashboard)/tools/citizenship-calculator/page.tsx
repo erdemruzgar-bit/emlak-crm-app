@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "motion/react";
 import { Calculator, Globe, RefreshCw, Info, ArrowDownToLine } from "lucide-react";
+import { HelpButton } from "@/components/ui/help-button";
 import { cn } from "@/lib/utils";
 
 /**
@@ -113,8 +114,9 @@ export default function CitizenshipCalculatorPage() {
           <Globe className="w-6 h-6" />
         </div>
         <div>
-          <h1 className="text-3xl font-black tracking-tighter text-on-surface">
+          <h1 className="text-3xl font-black tracking-tighter text-on-surface flex items-center gap-2">
             Vatandaşlık Fiyat Hesaplayıcısı
+            <HelpButton page="tools-citizenship-calculator" title="Vatandaşlık Hesaplayıcısı" />
           </h1>
           <p className="text-sm text-on-surface-variant mt-0.5">
             Yabancıya satışta TR vatandaşlığı için minimum eşik ve fiyat farkı hesabı

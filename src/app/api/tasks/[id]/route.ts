@@ -92,6 +92,13 @@ export async function DELETE(
     if ("response" in check) return check.response;
 
     await prisma.task.delete({ where: { id } });
+    await createAuditLog({
+      userId: extractActor(session)?.id,
+      action: "DELETE",
+      entity: "Task",
+      entityId: id,
+      ipAddress: req.headers.get("x-forwarded-for") || undefined,
+    });
     return NextResponse.json({ message: "Görev silindi" });
   } catch {
     return NextResponse.json({ error: "Sunucu hatası" }, { status: 500 });

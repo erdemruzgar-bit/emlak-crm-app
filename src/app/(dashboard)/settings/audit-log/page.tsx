@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Info, FileText, Filter, X } from "lucide-react";
+import { Info, FileText, Filter, X, Search, Trash2, AlertCircle, ShieldCheck, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { TableSkeleton } from "@/components/ui/skeleton";
@@ -33,6 +33,21 @@ const actionColors: Record<string, string> = {
   DELETE: "bg-error-container text-on-error-container",
   DENIED_EDIT: "bg-error-container text-on-error-container",
 };
+
+interface Analysis {
+  user: { id: string; name: string; email: string; role: string; isActive: boolean; createdAt: string };
+  total: number;
+  deleteCount: number;
+  byAction: { action: string; count: number }[];
+  byEntityAction: { entity: string; action: string; count: number }[];
+  deletes: { entity: string; entityId: string | null; timestamp: string; ipAddress: string | null; label: string }[];
+  firstActivity: string | null;
+  lastActivity: string | null;
+  dailyCounts: { date: string; count: number }[];
+  deactivatedAt: string | null;
+}
+
+const roleLabels: Record<string, string> = { ADMIN: "Yönetici", MANAGER: "Şube Müdürü", AGENT: "Danışman" };
 
 export default function AuditLogPage() {
   const [data, setData] = useState<AuditLogResponse | null>(null);
@@ -76,6 +91,31 @@ export default function AuditLogPage() {
     [filters]
   );
 
+  // ─── Kullanıcı Adli İncelemesi ───
+  const [forensicUser, setForensicUser] = useState("");
+  const [analysis, setAnalysis] = useState<Analysis | null>(null);
+  const [analyzing, setAnalyzing] = useState(false);
+
+  async function runAnalysis() {
+    if (!forensicUser) return;
+    setAnalyzing(true);
+    setAnalysis(null);
+    try {
+      const r = await fetch(`/api/audit-logs/analysis?userId=${encodeURIComponent(forensicUser)}`);
+      setAnalysis(r.ok ? await r.json() : null);
+    } catch {
+      setAnalysis(null);
+    } finally {
+      setAnalyzing(false);
+    }
+  }
+
+  const fmtDate = (s: string | null) => (s ? new Date(s).toLocaleString("tr-TR") : "—");
+  const topDays = useMemo(
+    () => (analysis ? [...analysis.dailyCounts].sort((a, b) => b.count - a.count).slice(0, 8) : []),
+    [analysis]
+  );
+
   const totalPages = data?.pagination.totalPages ?? 1;
 
   return (
@@ -91,6 +131,137 @@ export default function AuditLogPage() {
       <div className="bg-secondary-container/30 p-5 rounded-2xl flex items-center gap-3 text-sm text-on-surface-variant">
         <Info className="w-5 h-5 text-primary shrink-0" />
         Bu loglar KVKK uyumluluk denetimi için saklanmaktadır. Loglar değiştirilemez ve silinemez.
+      </div>
+
+      {/* Kullanıcı Adli İncelemesi (yalnızca ADMIN) */}
+      <div className="bg-surface-container-lowest rounded-3xl p-6 border border-outline-variant/10 space-y-4">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Search className="w-4 h-4 text-primary" />
+          <h3 className="text-sm font-bold text-on-surface">Kullanıcı Adli İncelemesi</h3>
+          <span className="text-xs text-on-surface-variant">— bir kullanıcının tüm işlemlerini, silmelerini ve etkinlik zaman çizelgesini özetler</span>
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <select
+            value={forensicUser}
+            onChange={(e) => { setForensicUser(e.target.value); setAnalysis(null); }}
+            className="px-4 py-2.5 bg-surface-container-low border-none rounded-xl text-sm outline-none min-w-[220px]"
+          >
+            <option value="">Kullanıcı seçin…</option>
+            {users.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
+          </select>
+          <button
+            onClick={runAnalysis}
+            disabled={!forensicUser || analyzing}
+            className="primary-gradient text-white px-5 py-2.5 rounded-xl text-sm font-bold disabled:opacity-50 flex items-center gap-2"
+          >
+            {analyzing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+            {analyzing ? "Analiz ediliyor…" : "Analiz Et"}
+          </button>
+        </div>
+
+        {!analysis && !analyzing && (
+          <p className="text-xs text-on-surface-variant">
+            Bir kullanıcı seçip “Analiz Et”e basın. (İşten ayrılan birinin veri sildiğinden şüpheleniyorsanız buradan saniyeler içinde kontrol edebilirsiniz.)
+          </p>
+        )}
+
+        {analysis && (
+          <div className="space-y-5 pt-2">
+            {/* Kullanıcı başlığı + pencere */}
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+              <span className="font-bold text-on-surface">{analysis.user.name}</span>
+              <span className="text-on-surface-variant text-xs">{analysis.user.email}</span>
+              <span className="text-[10px] px-2 py-0.5 rounded-lg font-bold uppercase bg-secondary-container text-on-secondary-container">{roleLabels[analysis.user.role] ?? analysis.user.role}</span>
+              <span className={cn("text-[10px] px-2 py-0.5 rounded-lg font-bold uppercase", analysis.user.isActive ? "bg-green-100 text-green-700" : "bg-surface-container text-on-surface-variant")}>{analysis.user.isActive ? "Aktif" : "Pasif"}</span>
+            </div>
+            <div className="text-xs text-on-surface-variant flex flex-wrap gap-x-6 gap-y-1">
+              <span>İlk işlem: <strong className="text-on-surface">{fmtDate(analysis.firstActivity)}</strong></span>
+              <span>Son işlem: <strong className="text-on-surface">{fmtDate(analysis.lastActivity)}</strong></span>
+              {analysis.deactivatedAt && <span>Pasife alınma: <strong className="text-on-surface">{fmtDate(analysis.deactivatedAt)}</strong></span>}
+            </div>
+
+            {/* Stat kartları */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="bg-surface-container-low rounded-2xl p-4">
+                <p className="text-xs text-on-surface-variant font-bold uppercase tracking-wider">Toplam İşlem</p>
+                <p className="text-2xl font-black text-on-surface mt-1">{analysis.total}</p>
+              </div>
+              <div className={cn("rounded-2xl p-4", analysis.deleteCount > 0 ? "bg-error-container" : "bg-surface-container-low")}>
+                <p className={cn("text-xs font-bold uppercase tracking-wider flex items-center gap-1", analysis.deleteCount > 0 ? "text-on-error-container" : "text-green-700")}>
+                  {analysis.deleteCount > 0 ? <Trash2 className="w-3 h-3" /> : <ShieldCheck className="w-3 h-3" />} Silme
+                </p>
+                <p className={cn("text-2xl font-black mt-1", analysis.deleteCount > 0 ? "text-on-error-container" : "text-green-700")}>{analysis.deleteCount}</p>
+              </div>
+              {["CREATE", "UPDATE"].map((act) => (
+                <div key={act} className="bg-surface-container-low rounded-2xl p-4">
+                  <p className="text-xs text-on-surface-variant font-bold uppercase tracking-wider">{act === "CREATE" ? "Ekleme" : "Güncelleme"}</p>
+                  <p className="text-2xl font-black text-on-surface mt-1">{analysis.byAction.find((a) => a.action === act)?.count ?? 0}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Silme detayları */}
+            {analysis.deleteCount > 0 ? (
+              <div className="border border-error/30 rounded-2xl overflow-hidden">
+                <div className="bg-error-container/50 px-4 py-2 text-xs font-bold text-on-error-container flex items-center gap-1">
+                  <AlertCircle className="w-3.5 h-3.5" /> Silme İşlemleri ({analysis.deletes.length})
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead className="bg-surface-container-low">
+                      <tr>
+                        <th className="text-left px-3 py-2 font-black text-on-surface-variant">Tarih</th>
+                        <th className="text-left px-3 py-2 font-black text-on-surface-variant">Varlık</th>
+                        <th className="text-left px-3 py-2 font-black text-on-surface-variant">Kayıt</th>
+                        <th className="text-left px-3 py-2 font-black text-on-surface-variant">IP</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {analysis.deletes.map((d, i) => (
+                        <tr key={i} className="border-t border-outline-variant/10">
+                          <td className="px-3 py-2 text-on-surface-variant whitespace-nowrap">{fmtDate(d.timestamp)}</td>
+                          <td className="px-3 py-2 text-on-surface">{d.entity}</td>
+                          <td className="px-3 py-2 text-on-surface-variant">{d.label || d.entityId?.slice(0, 8) || "—"}</td>
+                          <td className="px-3 py-2 text-on-surface-variant">{d.ipAddress || "—"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-green-100 text-green-700 rounded-2xl p-4 text-sm flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 shrink-0" /> Bu kullanıcı, loglanan kategorilerde (müşteri, ilan, görsel, randevu, görev, hatırlatma, eşleşme, blok, şube, kullanıcı, kataloglar) <strong>hiçbir kayıt silmemiş.</strong>
+              </div>
+            )}
+
+            {/* Varlık × işlem + en yoğun günler */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <p className="text-xs font-black text-on-surface-variant uppercase tracking-wider mb-2">Varlık × İşlem</p>
+                <div className="space-y-1 max-h-56 overflow-y-auto">
+                  {analysis.byEntityAction.map((r, i) => (
+                    <div key={i} className="flex items-center justify-between text-xs bg-surface-container-low rounded-lg px-3 py-1.5">
+                      <span className="text-on-surface">{r.entity} / {r.action}</span>
+                      <span className="font-bold text-on-surface-variant">{r.count}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p className="text-xs font-black text-on-surface-variant uppercase tracking-wider mb-2">En Yoğun Günler</p>
+                <div className="space-y-1">
+                  {topDays.map((d) => (
+                    <div key={d.date} className="flex items-center justify-between text-xs bg-surface-container-low rounded-lg px-3 py-1.5">
+                      <span className="text-on-surface">{d.date}</span>
+                      <span className="font-bold text-on-surface-variant">{d.count} işlem</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Filtreler */}

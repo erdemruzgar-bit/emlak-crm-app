@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { canEditProperty, extractActor } from "@/lib/rbac";
+import { createAuditLog } from "@/lib/audit";
 import { z } from "zod/v4";
 
 const statusSchema = z.object({
@@ -56,7 +57,7 @@ export async function PATCH(
 
 // DELETE — manuel eklemeyi tamamen kaldır
 export async function DELETE(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
@@ -69,6 +70,13 @@ export async function DELETE(
 
   try {
     await prisma.propertyMatch.delete({ where: { id } });
+    await createAuditLog({
+      userId: extractActor(session)?.id,
+      action: "DELETE",
+      entity: "PropertyMatch",
+      entityId: id,
+      ipAddress: req.headers.get("x-forwarded-for") || undefined,
+    });
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json({ error: "Eşleşme bulunamadı" }, { status: 404 });

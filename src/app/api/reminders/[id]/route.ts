@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { extractActor, type SessionActor } from "@/lib/rbac";
+import { createAuditLog } from "@/lib/audit";
 import { z } from "zod/v4";
 
 const reminderUpdateSchema = z.object({
@@ -80,6 +81,13 @@ export async function DELETE(
       return NextResponse.json({ error: "Yetki yok" }, { status: 403 });
     }
     await prisma.reminder.delete({ where: { id } });
+    await createAuditLog({
+      userId: actor?.id,
+      action: "DELETE",
+      entity: "Reminder",
+      entityId: id,
+      ipAddress: req.headers.get("x-forwarded-for") || undefined,
+    });
     return NextResponse.json({ message: "Silindi" });
   } catch {
     return NextResponse.json({ error: "Sunucu hatası" }, { status: 500 });

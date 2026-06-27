@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { extractActor } from "@/lib/rbac";
+import { createAuditLog } from "@/lib/audit";
 
 export async function DELETE(
   req: NextRequest,
@@ -31,6 +32,14 @@ export async function DELETE(
       );
     }
     await prisma.block.delete({ where: { id: blockId } });
+    await createAuditLog({
+      userId: actor?.id,
+      action: "DELETE",
+      entity: "Block",
+      entityId: blockId,
+      oldValue: { projectId: id },
+      ipAddress: req.headers.get("x-forwarded-for") || undefined,
+    });
     return NextResponse.json({ message: "Blok silindi" });
   } catch {
     return NextResponse.json({ error: "Sunucu hatası" }, { status: 500 });

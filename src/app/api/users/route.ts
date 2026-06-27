@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { createAuditLog } from "@/lib/audit";
+import { passwordSchema } from "@/lib/validations/password";
 import { hash } from "bcryptjs";
 import { z } from "zod/v4";
 
@@ -10,7 +11,7 @@ const ROLE_RANK: Record<string, number> = { ADMIN: 3, MANAGER: 2, AGENT: 1 };
 const userCreateSchema = z.object({
   name: z.string().min(2),
   email: z.email(),
-  password: z.string().min(8, "Şifre en az 8 karakter olmalı"),
+  password: passwordSchema,
   role: z.enum(["ADMIN", "MANAGER", "AGENT"]).default("AGENT"),
   branchId: z.string().optional(),
   authorizedBranchIds: z.array(z.string()).optional(),

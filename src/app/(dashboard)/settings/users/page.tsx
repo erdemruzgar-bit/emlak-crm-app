@@ -521,11 +521,17 @@ export default function UsersSettingsPage() {
                 </div>
                 <div>
                   <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">
-                    {editUser ? "Yeni Şifre (boş bırakılırsa değişmez, en az 8 karakter)" : "Şifre * (en az 8 karakter)"}
+                    {editUser ? "Yeni Şifre (boş bırakılırsa değişmez)" : "Şifre *"}
                   </label>
                   <input type="password" value={form.password}
                     onChange={(e) => setForm({ ...form, password: e.target.value })}
-                    required={!editUser} minLength={8} className={inputClass} />
+                    required={!editUser} minLength={8}
+                    pattern="(?=.*[A-Za-zçğıöşüÇĞİÖŞÜ])(?=.*[^A-Za-z0-9çğıöşüÇĞİÖŞÜ\s]).{8,}"
+                    title="En az 8 karakter, en az bir harf ve bir özel karakter (örn. !@#?*)"
+                    className={inputClass} />
+                  <p className="mt-1.5 text-[11px] text-on-surface-variant">
+                    En az 8 karakter, bir harf ve bir özel karakter (örn. <span className="font-mono">!@#?*</span>) içermeli.
+                  </p>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>

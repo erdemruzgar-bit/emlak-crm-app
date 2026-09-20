@@ -123,7 +123,9 @@ Kendinin eklemediği müşterinin **telefon/e-posta/TC** alanları maskelidir (`
 ## Yedek & Sürüm
 Her sürümde otomatik yedek `/home/crmadmin/backups/<TAG>/` klasörüne alınır (veritabanı, şema, yüklenen dosyalar, sistem dosyaları).
 
-> ⚠️ **Google Drive kopyası şu an ALINMIYOR.** Sunucuda `rclone` yapılandırılmadığı için sürüm betiği bu adımı atlıyor. Yedekler yalnızca bu sunucuda duruyor — sunucu kaybedilirse yedekler de kaybolur. Kurmak için: `rclone config` (ayrıntı: `scripts/RESTORE-TEMPLATE.md`).
+> ⚠️ **Google Drive kopyası şu an ALINMIYOR.** Sunucuda `rclone` kurulu olmadığı için sürüm betiği bu adımı atlıyor.
+> Kaynak kod her sürümde GitHub'a gönderiliyor, ancak **veritabanı yedeği ve yüklenen dosyalar yalnızca bu sunucuda** duruyor — sunucu kaybedilirse bu ikisi de kaybolur.
+> Kurmak için önce `sudo apt install rclone`, sonra `rclone config` (ayrıntı: `scripts/RESTORE-TEMPLATE.md`).
 **Geri al:** `~/emlak-crm-app/scripts/rollback.sh <TAG>`
 
 ---

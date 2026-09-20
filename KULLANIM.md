@@ -489,7 +489,7 @@ Sistem her release'de otomatik olarak `/home/crmadmin/backups/<TAG>/` altına ye
 | Şifremi unuttum | Yöneticiden sıfırlatın (Ayarlar → Kullanıcılar → Düzenle) |
 | Telefon numarası `***` görünüyor | Danışmansanız bu normal — "Göster" butonuna tıklayıp gerekçe verin |
 | "Geçersiz telefon formatı" hatası | Türkiye numarası 10 haneli olmalı (`0532 123 45 67`). Yurt dışı numarayı ülke koduyla yazın (`+7 916 074 41 63`); `+` koymazsanız numara en az 11 haneli olmalı |
-| Telefonla arama sonuç vermiyor | Arama, numarayı kayıttaki **yazımıyla** eşleştirir. `0532 123 45 67` diye kayıtlı numara `05321234567` aranınca bulunmaz — `123 45 67` gibi bir parça deneyin |
+| Telefonla arama sonuç vermiyor | Arama, numarayı kayıttaki **yazımıyla** eşleştirir. `0532 123 45 67` diye kayıtlı numara `05321234567` aranınca bulunmaz (tersi de geçerli). Numaranın **baştaki parçasıyla** arayın — `0532` veya `532`. Orta/son haneler kayıtların çoğunda boşlukla ayrıldığı için o parçalarla arama sonuç vermez |
 | "Aktife Al" butonu pasif kullanıcıda görünmüyor | Yetki kontrol edin — sadece ADMIN/MANAGER aktife alabilir |
 | Excel butonları görünmüyor | ADMIN'den `canExport` / `canImport` izni isteyin |
 | Müşteri liste ekranında yok | Filtre kontrol edin (durum, aşama, danışman) |

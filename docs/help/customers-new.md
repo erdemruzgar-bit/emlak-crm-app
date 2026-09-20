@@ -15,8 +15,8 @@ Yeni müşteri kaydı oluşturma formu. Doğru doldurulduğunda otomatik ilan e�
 ## Sık sorulan
 
 - **TC Kimlik girmek zorunda mıyım?** Hayır. Sözleşme aşamasına gelince gerekir; ön görüşmede boş bırakabilirsiniz.
-- **"Geçersiz telefon formatı" hatası alıyorum.** Numara eksik haneli veya tanınmayan bir biçimdedir. Türkiye numarası 10 hane olmalıdır — `532320859` (9 hane) reddedilir. Yurt dışı numarayı ülke koduyla yazın. `+90` ile başlayan numara **her zaman** Türkiye kuralına göre denetlenir; başına `+` koyarak eksik haneli bir numarayı kabul ettiremezsiniz.
-- **Aynı telefonla ikinci kayıt açılır mı?** Evet, açılır — sistem mükerrer telefonu engellemez ve bir uyarı göstermez. Kaydetmeden önce müşteri listesinin arama kutusuna numarayı yazıp kişinin zaten kayıtlı olup olmadığına bakın.
+- **"Geçersiz telefon formatı" hatası alıyorum.** Numara eksik haneli veya tanınmayan bir biçimdedir. Türkiye numarası 10 hane olmalıdır — `532320859` (9 hane) reddedilir. `+90` ile başlayan numara **her zaman** Türkiye kuralına göre denetlenir, yani `+90 532 320 85 9` gibi eksik haneli bir numara kabul edilmez. Yurt dışı numarayı ülke koduyla yazın; `+` koymazsanız numaranın en az 11 haneli olması gerekir.
+- **Aynı telefonla ikinci kayıt açılır mı?** Evet, açılır — sistem mükerrer telefonu engellemez ve bir uyarı göstermez. Kaydetmeden önce müşteri listesinden kontrol edin. Arama kutusu numarayı **yazdığınız gibi** arar; numaralar da kayıtta farklı biçimlerde durduğu için `0532 123 45 67` gibi boşluklu bir parça çoğu kaydı bulamaz. Numaranın **baştaki parçasıyla** (`0532`) veya ad-soyad ile aramak daha güvenilirdir.
 - **Müşteri kaydedildi ama hassas alanlar maskeli görünüyor.** **Sizin eklediğiniz** müşterilerde hassas alanlar açıktır. Maskeli görünüyorsa sayfayı tazeleyin; oturumunuzda gecikme olmuş olabilir.
 
 ## Klavye kısayolları

@@ -181,7 +181,7 @@ Bu belge, **Faz 1 teslim sonrası** müşteriye sunulacak ücretli ek geliştirm
 
 Her yeni sürümde:
 - Otomatik yedek: `/home/crmadmin/backups/<TAG>/`
-- Google Drive yedek — **şu an devre dışı**: sunucuda `rclone` yapılandırılmadığı için bu adım atlanıyor, yedekler yalnızca sunucuda tutuluyor (kurulum: `rclone config`)
+- Google Drive yedek — **şu an devre dışı**: sunucuda `rclone` kurulu olmadığı için bu adım atlanıyor. Kaynak kod GitHub'a gidiyor ama DB yedeği ve yüklenen dosyalar yalnızca sunucuda (kurulum: `sudo apt install rclone` → `rclone config`)
 - Geri al: `~/emlak-crm-app/scripts/rollback.sh <TAG>`
 
 ---

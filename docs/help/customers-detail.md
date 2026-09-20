@@ -45,7 +45,7 @@ Bu müşterinin hassas verilerine kim, ne zaman, hangi gerekçeyle bakmış. AGE
 
 **Sizin eklemediğiniz** bir müşterinin telefon/e-posta/TC alanları AGENT iseniz maskelidir (`5** *** ** 23`).
 
-> Maskede yalnızca **son 2 hane** gerçektir. Baştaki `5` sabit bir kalıptır, numaranın gerçek ilk hanesi değildir — sabit hat ve yurt dışı numaraları da aynı şekilde `5** *** ** __` görünür.
+> Maskede yalnızca **son 2 hane** gerçektir. Bu sayfada baştaki `5` sabit bir kalıptır, numaranın gerçek ilk hanesi değildir — sabit hat ve yurt dışı numaraları da `5** *** ** __` görünür. (Proje → **Daireler & Sahipleri** tablosundaki maske farklı çalışır ve ilk haneyi numaradan türetir.)
 
 1. **"Göster"** butonuna tıklayın
 2. Açılan modalda **gerekçe kategorisi** (Görüşme/Takip/Teklif/Sözleşme/Diğer) + kısa açıklama girin

@@ -4,7 +4,10 @@ Yeni müşteri kaydı oluşturma formu. Doğru doldurulduğunda otomatik ilan e�
 
 ## Doldurma sırası (önerilen)
 
-1. **Kimlik bilgileri:** Ad, soyad, telefon, e-posta. TC Kimlik No isteğe bağlıdır; girilirse **AES-256** ile şifreli saklanır.
+1. **Kimlik bilgileri:** Ad, soyad, telefon, e-posta. Telefon zorunlu değildir. TC Kimlik No isteğe bağlıdır; girilirse **AES-256** ile şifreli saklanır.
+   - **Telefon biçimi:** Türkiye numarasını 10 haneli yazın — `0532 123 45 67`, `0212 555 12 34` (`+90 532 123 45 67` da kabul edilir).
+   - **Yurt dışı müşteri:** Numarayı **ülke koduyla** yazın — `+7 916 074 41 63`, `+49 151 23456789`, `+971 50 123 4567`. `+` koymazsanız numaranın en az **11 haneli** olması gerekir (`7 916 074 41 63` kabul edilir).
+   - Numara **yazdığınız gibi** saklanır; sistem biçimini değiştirmez.
 2. **Müşteri tipi:** Alıcı / Satıcı / Kiracı / Ev Sahibi (Ayarlar → Müşteri Tipleri ile genişletilebilir).
 3. **KVKK rızaları:** **Açık Rıza** ve **Aydınlatma** zorunludur; pazarlama izni opsiyonel. Kaydedemiyorsanız bu kutucuklar boştur.
 4. **Talep profili (sonrası):** Kayıttan sonra detay sayfasında bütçe, mülk tipi, şehir, oda, etiketler doldurulur — eşleştirme motoru bunlara göre çalışır.
@@ -12,7 +15,8 @@ Yeni müşteri kaydı oluşturma formu. Doğru doldurulduğunda otomatik ilan e�
 ## Sık sorulan
 
 - **TC Kimlik girmek zorunda mıyım?** Hayır. Sözleşme aşamasına gelince gerekir; ön görüşmede boş bırakabilirsiniz.
-- **"Aynı telefonla başka müşteri var" uyarısı.** Sistem mükerrer kayıt riskini bildirir; mevcut kaydın detayına gitmek mantıklıdır.
+- **"Geçersiz telefon formatı" hatası alıyorum.** Numara eksik haneli veya tanınmayan bir biçimdedir. Türkiye numarası 10 hane olmalıdır — `532320859` (9 hane) reddedilir. Yurt dışı numarayı ülke koduyla yazın. `+90` ile başlayan numara **her zaman** Türkiye kuralına göre denetlenir; başına `+` koyarak eksik haneli bir numarayı kabul ettiremezsiniz.
+- **Aynı telefonla ikinci kayıt açılır mı?** Evet, açılır — sistem mükerrer telefonu engellemez ve bir uyarı göstermez. Kaydetmeden önce müşteri listesinin arama kutusuna numarayı yazıp kişinin zaten kayıtlı olup olmadığına bakın.
 - **Müşteri kaydedildi ama hassas alanlar maskeli görünüyor.** **Sizin eklediğiniz** müşterilerde hassas alanlar açıktır. Maskeli görünüyorsa sayfayı tazeleyin; oturumunuzda gecikme olmuş olabilir.
 
 ## Klavye kısayolları

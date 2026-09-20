@@ -3,7 +3,7 @@
 Sisteme erişebilen çalışanları (ADMIN / MANAGER / AGENT) ekleyin, düzenleyin, pasife alın.
 
 ## Yeni kullanıcı
-- **Ad-Soyad, e-posta, telefon** — temel bilgi
+- **Ad-Soyad, e-posta, telefon** — temel bilgi. Çalışan telefonu **serbest metindir**: müşteri kartındaki biçim denetimi burada çalışmaz, yurt dışı numarası dahil yazdığınız her şey olduğu gibi kaydedilir
 - **Şifre** — ilk şifre; kullanıcı sonra değiştirebilir
 - **Rol:**
   - **ADMIN** — her şeyi görür ve yönetir

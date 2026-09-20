@@ -29,6 +29,7 @@ title: "ART CRM — Hızlı Başlangıç"
 
 ### 1. Müşteri Ekle
 **Müşteriler → Yeni Müşteri** → Ad, Soyad, Tip, KVKK rızaları (Açık Rıza + Aydınlatma zorunlu).
+**Telefon** (isteğe bağlı): Türkiye numarası 10 haneli — `0532 123 45 67`. Yurt dışı numarayı ülke koduyla girin — `+7 916 074 41 63` (`+` olmadan `7 916 074 41 63` de kabul edilir). Numara yazdığınız gibi saklanır.
 Detayda **Talep Profili**: bütçe, mülk tipi, şehir, oda, etiketler, **ilgilendiği projeler** (çoklu seçim — sonra proje sayfasından "İlgili Müşteriler" sekmesiyle filtrelersin).
 
 ### 2. İlan Ekle
@@ -93,6 +94,7 @@ Kendinin eklemediği müşterinin **telefon/e-posta/TC** alanları maskelidir (`
 | Sorun | Çözüm |
 |-------|-------|
 | Telefon `***` görünüyor | AGENT iseniz normal — "Göster" → gerekçe verin |
+| "Geçersiz telefon formatı" | TR numarası 10 haneli olmalı (`0532 123 45 67`); yurt dışı numarayı ülke koduyla yazın (`+7 916 074 41 63`). Eksik haneli numara (`532320859`) kabul edilmez |
 | "Düzenle" yok | Müşteri/ilan size atanmamış. Müdür/yönetici düzenler |
 | Excel butonu yok | ADMIN'den `canExport`/`canImport` izni isteyin |
 | Sözleşme kaydedildi ama ilan değişmedi | Sözleşme **Taslak** kalmış olabilir; detayında **Aktif** yapın |
@@ -119,7 +121,9 @@ Kendinin eklemediği müşterinin **telefon/e-posta/TC** alanları maskelidir (`
 ---
 
 ## Yedek & Sürüm
-Her sürümde otomatik yedek `/home/crmadmin/backups/<TAG>/` ve Google Drive'a alınır.
+Her sürümde otomatik yedek `/home/crmadmin/backups/<TAG>/` klasörüne alınır (veritabanı, şema, yüklenen dosyalar, sistem dosyaları).
+
+> ⚠️ **Google Drive kopyası şu an ALINMIYOR.** Sunucuda `rclone` yapılandırılmadığı için sürüm betiği bu adımı atlıyor. Yedekler yalnızca bu sunucuda duruyor — sunucu kaybedilirse yedekler de kaybolur. Kurmak için: `rclone config` (ayrıntı: `scripts/RESTORE-TEMPLATE.md`).
 **Geri al:** `~/emlak-crm-app/scripts/rollback.sh <TAG>`
 
 ---

@@ -7,6 +7,7 @@ Müşteri portföyünüzün tamamını görüp aratabileceğiniz ekran. Buradan 
 1. **Yeni müşteri ekleme:** Sağ üstteki **Yeni Müşteri** butonu (veya `N` tuşu). Zorunlu alanlar: ad, soyad, müşteri tipi, KVKK rızaları (Açık Rıza + Aydınlatma).
 2. **Hızlı iletişim kaydı:** Liste satırındaki **Telefon / WhatsApp / E-posta** ikonlarına tıklayın → otomatik kayıt iletişim geçmişine düşer, ayrı form açmaya gerek yok.
 3. **Filtre ile arama:** Üstteki arama kutusu ad/soyad/telefon/e-posta'da gezinir; yan filtreler (aşama, aciliyet, tip, kaynak) ile daraltın.
+   > **Telefonla ararken:** eşleşme kayıttaki **yazımla birebir** yapılır. Numara `0532 123 45 67` biçiminde kaydedildiyse `05321234567` yazarak bulamazsınız. Emin değilseniz `123 45` gibi kısa bir parça deneyin.
 
 ## Sık sorulan
 

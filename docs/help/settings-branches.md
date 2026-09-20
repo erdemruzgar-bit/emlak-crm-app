@@ -4,7 +4,7 @@
 
 ## Yeni şube
 - **Şube Adı** (zorunlu)
-- **Adres**, **Telefon** (opsiyonel)
+- **Adres**, **Telefon** (opsiyonel) — şube telefonu **serbest metindir**; müşteri kartındaki telefon biçim denetimi burada uygulanmaz
 
 ## Düzenle / Sil
 - **Düzenle** — ad, adres, telefonu güncelleyin

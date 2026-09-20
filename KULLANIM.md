@@ -36,6 +36,11 @@ Giriş yaptığınızda karşınıza çıkan ekrandır. Özet bilgileri gösteri
 1. Sol menüden **Müşteriler** → sağ üstte **Yeni Müşteri** butonuna tıklayın.
 2. Zorunlu alanlar: **Ad, Soyad, Müşteri Tipi** (Alıcı/Satıcı/Kiracı/Ev Sahibi vb. — `Ayarlar → Müşteri Tipleri` üzerinden katalog yönetilir).
 3. İsteğe bağlı: Telefon, e-posta, TC Kimlik No (otomatik AES-256 ile şifrelenir), adres.
+
+> **Telefon biçimi.** Türkiye numarasını 10 haneli girin — `0532 123 45 67`, `0212 555 12 34` (`+90 532 123 45 67` da kabul edilir).
+> Yurt dışı numarayı **ülke koduyla** girin — `+7 916 074 41 63`, `+49 151 23456789`, `+971 50 123 4567`.
+> `+` koymazsanız numaranın en az **11 haneli** olması gerekir; bu sayede `7 916 074 41 63` kabul edilirken `532320859` gibi eksik haneli bir Türkiye numarası reddedilmeye devam eder.
+> `+90` ile başlayan numara **her zaman** Türkiye kuralına göre denetlenir. Numara **yazdığınız gibi** saklanır; sistem biçimini değiştirmez.
 4. **KVKK Rızaları** bölümünde en az "Açık Rıza" ve "Aydınlatma" seçili olmalıdır.
 5. **Kaydet** butonuna basın.
 
@@ -73,6 +78,7 @@ Müşteri detay sayfasında **Bilgiler** sekmesine girin → **Düzenle** → en
 
 - **Dışa Aktar:** Mevcut filtreye uyan müşterileri Excel olarak indirir.
 - **İçe Aktar:** Toplu kayıt için. Önce **Şablon İndir** ile boş şablon alın, doldurup yükleyin.
+  > Excel yolunda **telefon sütunu biçim denetiminden geçmez** — hücredeki değer olduğu gibi kaydedilir. Yurt dışı numaraları bu yoldan sorunsuz gelir, ancak eksik veya bozuk yazılmış numaralar da uyarı vermeden girer.
 - **Yetki:** Bu butonlar sadece `canExport` / `canImport` izni olan kullanıcıda görünür (Ayarlar → Kullanıcılar → Düzenle).
 
 ![Excel import/export](docs/screenshots/06-customer-excel.png)
@@ -482,6 +488,8 @@ Sistem her release'de otomatik olarak `/home/crmadmin/backups/<TAG>/` altına ye
 |-------|-----------|
 | Şifremi unuttum | Yöneticiden sıfırlatın (Ayarlar → Kullanıcılar → Düzenle) |
 | Telefon numarası `***` görünüyor | Danışmansanız bu normal — "Göster" butonuna tıklayıp gerekçe verin |
+| "Geçersiz telefon formatı" hatası | Türkiye numarası 10 haneli olmalı (`0532 123 45 67`). Yurt dışı numarayı ülke koduyla yazın (`+7 916 074 41 63`); `+` koymazsanız numara en az 11 haneli olmalı |
+| Telefonla arama sonuç vermiyor | Arama, numarayı kayıttaki **yazımıyla** eşleştirir. `0532 123 45 67` diye kayıtlı numara `05321234567` aranınca bulunmaz — `123 45 67` gibi bir parça deneyin |
 | "Aktife Al" butonu pasif kullanıcıda görünmüyor | Yetki kontrol edin — sadece ADMIN/MANAGER aktife alabilir |
 | Excel butonları görünmüyor | ADMIN'den `canExport` / `canImport` izni isteyin |
 | Müşteri liste ekranında yok | Filtre kontrol edin (durum, aşama, danışman) |

@@ -71,7 +71,7 @@ ART CRM, bu sorunların hepsini çözer.
 - Toplam müşteri / Aktif lead / Takibi gecikmiş / 30+ gün iletişimsiz
 
 ### Müşteri Detayı — 8 Sekme
-1. **Bilgiler** — Ad, telefon, e-posta, TC (AES-256 şifreli), adres, fotoğraf
+1. **Bilgiler** — Ad, telefon (Türkiye ve ülke kodlu yurt dışı numaraları), e-posta, TC (AES-256 şifreli), adres, fotoğraf
 2. **Talep Profili** — Aşama, aciliyet, bütçe, mülk tercihleri, **ilgilendiği projeler (çoklu)**, finansman, etiketler
 3. **Notlar** — Serbest metin
 4. **İletişim** — Telefon/e-posta/WhatsApp/Ziyaret kayıtları

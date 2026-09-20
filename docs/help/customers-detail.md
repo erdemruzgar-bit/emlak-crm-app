@@ -6,6 +6,7 @@ Tek bir müşterinin tüm bilgilerini, talep profilini, etkileşim geçmişini v
 
 ### Bilgiler
 - Ad, soyad, telefon, e-posta, TC Kimlik No (AES-256 ile şifreli), adres, fotoğraf
+- **Telefon** burada da hem Türkiye (`0532 123 45 67`) hem yurt dışı (`+7 916 074 41 63`) biçimini kabul eder; numara yazdığınız gibi saklanır
 - Müşteri tipi (Alıcı/Satıcı/Kiracı/Ev Sahibi vb.), kaynak (Referans/İnternet vb.)
 - **Atanan Danışman** ve **Şube** — yetki kontrolü için kritik
 - **Düzenle** butonu, müşteri size atanmışsa (veya yönetici iseniz) görünür
@@ -43,6 +44,8 @@ Bu müşterinin hassas verilerine kim, ne zaman, hangi gerekçeyle bakmış. AGE
 ## Hassas Veri Erişimi (KVKK kapısı)
 
 **Sizin eklemediğiniz** bir müşterinin telefon/e-posta/TC alanları AGENT iseniz maskelidir (`5** *** ** 23`).
+
+> Maskede yalnızca **son 2 hane** gerçektir. Baştaki `5` sabit bir kalıptır, numaranın gerçek ilk hanesi değildir — sabit hat ve yurt dışı numaraları da aynı şekilde `5** *** ** __` görünür.
 
 1. **"Göster"** butonuna tıklayın
 2. Açılan modalda **gerekçe kategorisi** (Görüşme/Takip/Teklif/Sözleşme/Diğer) + kısa açıklama girin

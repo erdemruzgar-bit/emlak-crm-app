@@ -7,6 +7,7 @@ import { ArrowLeft, AlertCircle, Loader2, User, X } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
+import { formatApiError } from "@/lib/api-error";
 import { MediaUploader, type MediaItem } from "@/components/ui/media-uploader";
 import { CollapsibleSection } from "@/components/ui/collapsible-section";
 import { HelpButton } from "@/components/ui/help-button";
@@ -238,7 +239,7 @@ export default function NewPropertyPage() {
     setLoading(false);
 
     if (!res.ok) {
-      setError(data.error ? JSON.stringify(data.error) : "Bir hata oluştu");
+      setError(formatApiError(data.error));
       return;
     }
 

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-27T14:30:26.914Z",
+  "generatedAt": "2026-09-20T21:39:41.856Z",
   "totalFiles": 8,
   "totalWarnings": 13,
   "totalErrors": 0,
@@ -31,8 +31,8 @@
       "57:react-hooks/set-state-in-effect"
     ],
     "src/app/(dashboard)/tools/commission-calculator/page.tsx": [
-      "405:react-hooks/set-state-in-effect",
-      "421:react-hooks/set-state-in-effect"
+      "406:react-hooks/set-state-in-effect",
+      "422:react-hooks/set-state-in-effect"
     ]
   }
 }

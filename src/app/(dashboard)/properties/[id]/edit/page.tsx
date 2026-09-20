@@ -8,6 +8,7 @@ import { ArrowLeft, Loader2, AlertCircle, CheckCircle, User, X } from "lucide-re
 import { toast } from "sonner";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
+import { readApiError } from "@/lib/api-error";
 import { MediaUploader, type MediaItem } from "@/components/ui/media-uploader";
 import { TURKEY_CITIES, getDistrictsOf } from "@/lib/turkey-locations";
 
@@ -331,8 +332,7 @@ export default function EditPropertyPage() {
     });
 
     if (!res.ok) {
-      const data = await res.json();
-      setError(data.error ? JSON.stringify(data.error) : "Bir hata oluştu");
+      setError(await readApiError(res));
       setSaving(false);
       return;
     }

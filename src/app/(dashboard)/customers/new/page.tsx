@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ArrowLeft, ShieldCheck, Info, AlertCircle, Loader2, Target, Building2, X } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { readApiError } from "@/lib/api-error";
 import { motion } from "motion/react";
 import { HelpButton } from "@/components/ui/help-button";
 
@@ -146,8 +147,7 @@ export default function NewCustomerPage() {
     setLoading(false);
 
     if (!res.ok) {
-      const data = await res.json();
-      setError(data.error ? JSON.stringify(data.error) : "Bir hata oluştu");
+      setError(await readApiError(res));
       return;
     }
 
@@ -209,7 +209,7 @@ export default function NewCustomerPage() {
             </div>
             <div>
               <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Telefon</label>
-              <input name="phone" className={inputClass} />
+              <input name="phone" type="tel" inputMode="tel" className={inputClass} placeholder="0532 123 45 67 — yurt dışı için +7 916 074 41 63" />
             </div>
             <div>
               <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">TC Kimlik No</label>

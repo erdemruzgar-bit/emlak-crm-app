@@ -88,6 +88,70 @@ const cases: Case[] = [
     expect: "fail",
   },
 
+  // ─── Telefon: yurt dışı desteği (20 Eyl 2026 — "yurt dışı numara giremiyorum") ───
+  {
+    name: "Telefon: Rusya, müşterinin bildirdiği ham girdi",
+    schema: customerCreateSchema,
+    input: validCustomer({ phone: "7 916 074 41 63" }),
+    expect: "pass",
+  },
+  {
+    name: "Telefon: Rusya, ülke kodu ile",
+    schema: customerCreateSchema,
+    input: validCustomer({ phone: "+7 916 074 41 63" }),
+    expect: "pass",
+  },
+  {
+    name: "Telefon: Almanya",
+    schema: customerCreateSchema,
+    input: validCustomer({ phone: "+49 151 23456789" }),
+    expect: "pass",
+  },
+  {
+    name: "Telefon: BAE",
+    schema: customerCreateSchema,
+    input: validCustomer({ phone: "+971 50 123 4567" }),
+    expect: "pass",
+  },
+  {
+    name: "Telefon: 00 çıkış öneki ile yurt dışı",
+    schema: customerCreateSchema,
+    input: validCustomer({ phone: "007 916 074 41 63" }),
+    expect: "pass",
+  },
+  {
+    name: "Telefon: 00 öneki TR numarasını yurt dışına kaydırmamalı",
+    schema: customerCreateSchema,
+    input: validCustomer({ phone: "00532 576 7230" }),
+    expect: "pass",
+  },
+  {
+    name: "Telefon: REGRESYON — +90 ile eksik hane yurt dışı dalından sızmamalı",
+    schema: customerCreateSchema,
+    input: validCustomer({ phone: "+90 532 320 85 9" }),
+    expect: "fail",
+    expectErrorContains: "telefon",
+  },
+  {
+    name: "Telefon: REGRESYON — +90 ile fazla hane",
+    schema: customerCreateSchema,
+    input: validCustomer({ phone: "+9053232085921" }),
+    expect: "fail",
+    expectErrorContains: "telefon",
+  },
+  {
+    name: "Telefon: E.164 üst sınırı aşan (16 hane)",
+    schema: customerCreateSchema,
+    input: validCustomer({ phone: "+1234567890123456" }),
+    expect: "fail",
+  },
+  {
+    name: "Telefon: artısız 10 hane yurt dışı sayılmaz (eksik TR olabilir)",
+    schema: customerCreateSchema,
+    input: validCustomer({ phone: "7916074416" }),
+    expect: "fail",
+  },
+
   // ─── Talep profili sayısal alanlar (regresyon: 2026-05-24 null reddedildi) ───
   {
     name: "minBudget null kabul edilir (REGRESYON 24 May)",

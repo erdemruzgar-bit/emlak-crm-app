@@ -10,6 +10,7 @@ import {
 import { motion } from "motion/react";
 import { HelpButton } from "@/components/ui/help-button";
 import { cn } from "@/lib/utils";
+import { formatApiError } from "@/lib/api-error";
 
 // ============== TYPES ==============
 
@@ -510,7 +511,7 @@ export default function CommissionCalculatorPage() {
       });
       if (!res.ok) {
         const d = await res.json().catch(() => ({}));
-        setSaveErr(d.error ? JSON.stringify(d.error) : "Sözleşme oluşturulamadı");
+        setSaveErr(formatApiError(d.error, "Sözleşme oluşturulamadı"));
         setSaving(false);
         return;
       }

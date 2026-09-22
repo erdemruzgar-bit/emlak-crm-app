@@ -8,8 +8,6 @@ Bu belge, **Faz 1 teslim sonrası** müşteriye sunulacak ücretli ek geliştirm
 
 > **Faz 1 (Teslim Edilen):** Müşteri yönetimi, portföy, projeler & bloklar, müşteri↔proje ilişkisi, toplu mülk üretme (aralık + liste), sözleşmeler, randevu, görev, hatırlatma, raporlama, KVKK hassas veri erişim denetimi, RBAC, audit log, komisyon, tüm sayfalar için yardım kılavuzu.
 
-> **Devam eden iş ve bilinen açıklar için:** [DEVAM.md](DEVAM.md) — teslim sonrası yapılan değişiklikler, yarım kalan işin nereden devam edeceği ve dokunulmamış açıkların kaydı.
-
 ---
 
 ## A. İletişim Merkezi (Messages modülü)
@@ -149,13 +147,6 @@ Bu belge, **Faz 1 teslim sonrası** müşteriye sunulacak ücretli ek geliştirm
 
 ## N. Güvenlik ve Compliance
 
-- **İşlem loglamasının tamamlanması (geri alınabilirlik)** — Bugün toplu işlemler audit log'a
-  yalnızca *sayı* yazıyor, hangi kayıtlara dokunulduğunu yazmıyor; tekil güncellemelerde de yalnız
-  1-2 alan kaydediliyor. Bu yüzden yanlış yapılmış bir işlem güvenilir biçimde geri alınamıyor
-  (22 Eyl 2026'daki danışman devri geri alma işi ancak dolaylı bir yoldan kurtarılabildi).
-  Kapsam: `logDiff()` yardımcısı (yalnız değişen alanları yazar), toplu işlemlerde etkilenen kayıt
-  kimliklerinin saklanması, log saklama süresi. Ayrıntılı bulgu listesi ve tasarım: [DEVAM.md § 3](DEVAM.md).
-  **Efor:** M. **İş değeri:** operasyonel hata sonrası kurtarma; KVKK denetiminde izlenebilirlik.
 - **İki faktörlü kimlik doğrulama (2FA)** — TOTP veya SMS.
 - **Cihaz/Oturum yönetimi** — aktif oturumlar, uzak çıkış.
 - **SSO** — şirket Google Workspace / Microsoft 365 ile tek-tıkla giriş.

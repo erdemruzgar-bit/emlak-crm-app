@@ -77,6 +77,7 @@ Kendinin eklemediği müşterinin **telefon/e-posta/TC** alanları maskelidir (`
 |-------|-------|
 | Yeni çalışan | Ayarlar → Kullanıcılar → Yeni Kullanıcı |
 | Pasife alma / aktife alma | Ayarlar → Kullanıcılar → satır sonu ikonlar (kırmızı/yeşil) |
+| Kayıtları başka danışmana devret | Ayarlar → Kullanıcılar → devir ikonu (kullanıcının **tüm** müşteri/ilanını taşır, seçmeli değildir) |
 | Excel izni ver | Düzenle → "Excel İçeri/Dışarı Aktarma" checkbox |
 | Şube ekle | Ayarlar → Şubeler |
 | Müşteri/İlan/Oda tipleri | Ayarlar → ilgili katalog sayfası |
@@ -100,6 +101,7 @@ Kendinin eklemediği müşterinin **telefon/e-posta/TC** alanları maskelidir (`
 | Sözleşme kaydedildi ama ilan değişmedi | Sözleşme **Taslak** kalmış olabilir; detayında **Aktif** yapın |
 | İlan diğer şubelerden görünmüyor | AGENT yalnızca yetkili olduğu şubelerin ilanlarını görür; başka şubeye erişim için ADMIN/MANAGER "Ek Yetkili Olduğu Şubeler"e ekler |
 | Şifre sıfırlama | ADMIN/MANAGER → Ayarlar → Kullanıcılar → kalem → şifre alanını yeniden gir |
+| Şifre kabul edilmiyor | En az 8 karakter + en az bir harf + en az bir özel karakter (`!@#?*`) gerekir |
 
 ---
 

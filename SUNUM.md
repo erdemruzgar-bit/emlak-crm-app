@@ -44,7 +44,8 @@ ART CRM, bu sorunların hepsini çözer.
 | **Finans** | Sözleşme bazlı ciro, tahsilat takibi, aylık özet |
 | **Raporlama** | Dashboard, aylık trendler, danışman performansı, kaynak analizi, ciro raporları |
 | **Hassas Veri Erişim Denetimi (KVKK)** | Telefon/email/TC maskeleme + gerekçeli açma + sonuç notu zorunluluğu |
-| **Kullanıcı Yönetimi** | 3 seviyeli rol, fotoğraflı profil, Excel izinleri, aktif/pasif toggle |
+| **Kullanıcı Yönetimi** | 3 seviyeli rol, fotoğraflı profil, Excel izinleri, aktif/pasif toggle, ayrılan çalışanın müşteri/portföyünü başka danışmana toplu devretme |
+| **Kullanıcı Adli İnceleme** | ADMIN'e özel: tek bir çalışanın tüm denetim izi — aksiyon dağılımı, silme tablosu, ilk/son aktivite (salt-okunur, hassas veri içermez) |
 | **Katalog Yönetimi** | Müşteri tipi, ilan tipi, sakin durumu, oda tipi, komisyon politikası — UI'dan düzenlenir |
 
 ## Faz 2 — Yakında
@@ -126,6 +127,9 @@ Liste ekranında her müşteri satırında Telefon / WhatsApp / E-posta ikonu �
 
 ### Komisyon Hesaplayıcı
 Sol menüde **Komisyon Hesapla** — sözleşme oluşturmadan önce neti görmek için.
+
+### Vatandaşlık Hesaplayıcı
+Sol menüde **Vatandaşlık Hesapla** — yabancı yatırımcıya satışta TR vatandaşlık eşiğine (varsayılan 400.000 USD) olan farkı güncel USD/TRY kuruyla hesaplar. Eşik mevzuata göre güncellenebilir.
 
 ![Sözleşme](docs/screenshots/12-contract-new.png)
 

@@ -253,6 +253,15 @@ Taslak → Aktif → Süresi Doldu / Yenilendi / Feshedildi.
 ### 7.4 Komisyon Hesaplayıcı
 Sol menüde **Komisyon Hesapla** → tutar + tip + ko-broker durumuna göre net komisyonu önceden hesaplayabilirsiniz.
 
+### 7.5 Vatandaşlık Hesaplayıcı
+Sol menüde **Vatandaşlık Hesapla** → yabancıya satışta TR vatandaşlık programı eşiğine (varsayılan **400.000 USD**, mevzuatla değişebilir) göre hesap yapar.
+
+- Satış fiyatı + güncel **USD/TRY** kuru girilir; kur otomatik çekilir, elle de değiştirilebilir
+- Eşiğe olan **fark** hesaplanır
+- Eşik alanı düzenlenebilir — mevzuat değişirse buradan güncellenir
+
+> Çıkan sonuç ilana **otomatik işlenmez**; ilan formunda **Vatandaşlığa Uygun: Evet** seçip ilgili alanı elle girmeniz gerekir.
+
 ---
 
 ## 8. Finans
@@ -289,7 +298,8 @@ Sol menüden **Ayarlar → Kullanıcılar**:
 ### 10.1 Yeni Çalışan Ekleme
 1. **Yeni Kullanıcı** butonuna basın.
 2. **Fotoğraf yükle** — Çalışanın kim olduğunun kolayca görünmesi için önerilir.
-3. Ad, e-posta, şifre (en az 8 karakter), rol, ana şube ve ek yetkili şubeler girin.
+3. Ad, e-posta, şifre, rol, ana şube ve ek yetkili şubeler girin.
+   > **Şifre kuralı:** en az **8 karakter**, içinde en az **bir harf** ve en az **bir özel karakter** (`!@#?*` gibi) olmalı. Bu kural yalnızca yeni ve değiştirilen şifrelere uygulanır — mevcut kullanıcıların girişini etkilemez.
 4. **Rol seçimi:**
    - **Yönetici (ADMIN):** Tüm sisteme erişim
    - **Şube Müdürü (MANAGER):** Yalnızca kendi şubesi
@@ -305,8 +315,30 @@ Sol menüden **Ayarlar → Kullanıcılar**:
 
 > Pasif kullanıcı sisteme giremez ama verileri ve geçmişi silinmez.
 
+> **Üzerinde kayıt varsa doğrudan pasife alınmaz.** Kullanıcının atanmış müşterisi veya ilanı
+> varsa "Pasife Al" doğrudan çalışmaz; sistem **devir ekranını açar** ve "devir sonrası pasife al"
+> seçeneğini işaretli getirir. Yani kayıtlar sahipsiz kalmadan devredilir (bkz. § 10.4).
+
 ### 10.3 Çalışanı Düzenleme
 Kalem ikonu → ad, e-posta, fotoğraf, rol, şube ve Excel izinlerini güncelleyebilirsiniz. Şifreyi boş bırakırsanız eski şifre korunur.
+
+### 10.4 Kayıtları Başka Danışmana Devretme
+Bir çalışan ayrıldığında veya portföyü el değiştirdiğinde, üzerindeki **müşteri ve ilanlar** toplu olarak başka bir danışmana aktarılır.
+
+1. Ayarlar → Kullanıcılar → ilgili kullanıcının satırındaki **çift yönlü ok** ikonu
+   (bu ikon yalnızca kullanıcının **atanmış kaydı varsa** görünür)
+2. Hedef danışmanı seçin
+3. İsterseniz **"Devir sonrası pasife al"** kutusunu işaretleyin (yalnızca ADMIN)
+
+| Rol | Ne devredebilir |
+|-----|------------------|
+| **Yönetici (ADMIN)** | Kullanıcının tüm kayıtlarını, herhangi bir aktif danışmana; aynı işlemde pasife alabilir |
+| **Şube Müdürü (MANAGER)** | Yalnızca **kendi şubelerindeki** kayıtları ve yalnızca kendi şubesindeki bir **danışmana**; pasife alamaz |
+| **Danışman (AGENT)** | Yapamaz |
+
+> **Dikkat — işlem seçici değildir.** Devir, kaynak kullanıcının üzerindeki **tüm** müşteri ve ilanları taşır; tek tek seçemezsiniz. Kayıtların **şubesi değişmez**, yalnızca atanan danışman değişir. Anonimleştirilmiş müşteriler devre dahil edilmez.
+
+> **Geri alma:** Devir tek yönlü bir işlemdir ve sistemde "geri al" butonu yoktur. Yanlış devir yapılırsa hedef danışmanın üzerinde o kullanıcıdan gelen kayıtlarla kendi kayıtları karışır. Devirden önce hedef danışmanı iki kez kontrol edin.
 
 ---
 
@@ -409,6 +441,16 @@ Müşteri detayının sağ üstündeki **Veriyi Anonimleştir** butonu → veri 
 
 ### Denetim Kayıtları
 **Ayarlar → Denetim Kayıtları** → kim ne zaman hangi müşteriyi/ilan'ı görüntüledi/düzenledi. Her erişim IP adresiyle birlikte kayıt altına alınır.
+
+### Kullanıcı Adli İnceleme (yalnızca ADMIN)
+Aynı sayfada, tek bir kullanıcının tüm denetim izini özetleyen panel. Bir çalışan hakkında şüphe oluştuğunda veya ayrılırken ne yaptığına bakmak için:
+
+- Aksiyon dağılımı (kaç görüntüleme / düzenleme / silme)
+- **Silme tablosu** — ne, ne zaman, hangi kayıt, hangi IP
+- İlk ve son aktivite, pasife alınma zamanı
+- Varlık × işlem kırılımı ve en yoğun günler
+
+> Panel **salt-okunurdur** ve hassas alan döndürmez: telefon/TC gösterilmez, silme özetinde yalnızca tanımlayıcı etiket (ad, başlık veya kod) görünür.
 
 ### Hassas Veri Erişim Oturumu
 Yukarıdaki § 11 — bu, denetim kayıtlarından **bir adım öteye** giderek danışmanın gerekçe vermesini ve sonuç notu bırakmasını zorunlu kılar.

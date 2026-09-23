@@ -266,8 +266,16 @@ export default function EditPropertyPage() {
       setSaving(false);
       return;
     }
-    const _price = _showSale ? _salePrice : _rentPrice;
-    const _monthlyRent = _showRent ? _rentPrice : null;
+    // Satılık/Kiralık yoksa (Arşiv vb.) fiyat opsiyonel: genel "Fiyat" alanı form.price'a bağlı, boşsa 0.
+    const _otherPrice = parseFloat(form.price || "0");
+    if (!_showSale && !_showRent && !(Number.isFinite(_otherPrice) && _otherPrice >= 0)) {
+      setError("Fiyat geçerli bir sayı olmalı (boş bırakılabilir)");
+      setSaving(false);
+      return;
+    }
+    const _price = _showSale ? _salePrice : _showRent ? _rentPrice : _otherPrice;
+    // Satılık/Kiralık yoksa monthlyRent gönderilmez → kayıtlı kira silinmez (Kiralık'a geri alınınca döner).
+    const _monthlyRent = _showRent ? _rentPrice : _showSale ? null : undefined;
 
     const body = {
       title: form.title,
@@ -768,7 +776,22 @@ export default function EditPropertyPage() {
                 />
               </div>
             )}
-            {!showSale && !showRent && (
+            {selectedListingTypes.length > 0 && !showSale && !showRent && (
+              <div>
+                <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">
+                  Fiyat (TL) <span className="ml-1 text-[10px] font-normal normal-case">(opsiyonel)</span>
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="any"
+                  value={form.price}
+                  onChange={(e) => set("price", e.target.value)}
+                  className={inputClass}
+                />
+              </div>
+            )}
+            {selectedListingTypes.length === 0 && (
               <div className="sm:col-span-2 text-[11px] text-on-surface-variant italic px-1">
                 Yukarıdan en az bir ilan tipi seçin → fiyat alanı görünür.
               </div>

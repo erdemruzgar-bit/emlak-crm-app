@@ -36,6 +36,15 @@ test.describe("Yeni İlan formu", () => {
     await expect(page.getByText(/Aylık Kira/i)).not.toBeVisible();
   });
 
+  // Regresyon 2026-09-23: sadece Arşiv seçilince fiyat alanı kayboluyor, kayıt "Fiyat pozitif olmalı" ile reddediliyordu.
+  test("sadece Arşiv seçilince opsiyonel fiyat alanı görünür", async ({ page }) => {
+    await page.goto("/properties/new");
+    await page.getByRole("button", { name: "Arşiv", exact: true }).click();
+    await expect(page.getByText("(opsiyonel)", { exact: true })).toBeVisible();
+    await expect(page.getByText(/Satış Fiyatı/i)).not.toBeVisible();
+    await expect(page.getByText(/Aylık Kira/i)).not.toBeVisible();
+  });
+
   test("emlak tipi seçenekleri render olur", async ({ page }) => {
     await page.goto("/properties/new");
     for (const t of ["Daire", "Villa", "Arsa", "İşyeri", "Müstakil Ev"]) {

@@ -110,14 +110,15 @@ async function main() {
     record("listingTypes dolu (yeni alan)", false, e instanceof Error ? e.message : String(e));
   }
 
-  // 8) Property.price > 0 sağlaması (negatif/sıfır fiyat olmasın)
+  // 8) Property.price >= 0 sağlaması (negatif fiyat olmasın).
+  // 0 = fiyat belirtilmemiş: Arşiv ilanları ve fiyatı henüz girilmemiş proje birimleri (bulk-create/import).
   try {
     const badPrice = await prisma.property.count({
-      where: { price: { lte: 0 } },
+      where: { price: { lt: 0 } },
     });
-    record("Property.price > 0", badPrice === 0, badPrice === 0 ? "OK" : `${badPrice} ilan ≤ 0`);
+    record("Property.price >= 0", badPrice === 0, badPrice === 0 ? "OK" : `${badPrice} ilan < 0`);
   } catch (e) {
-    record("Property.price > 0", false, e instanceof Error ? e.message : String(e));
+    record("Property.price >= 0", false, e instanceof Error ? e.message : String(e));
   }
 
   // 9) Yetim Block (projectId yok) ve PropertyImage (propertyId yok) kontrolü

@@ -10,7 +10,8 @@ const propertyBaseShape = z.object({
   listingTypes: z.array(z.string()).min(1, "En az bir ilan tipi seçilmeli").optional(),
   propertyType: z.enum(["DAIRE", "VILLA", "ARSA", "ISYERI", "MUSTAKILEV"]),
   status: z.enum(["ACTIVE", "SOLD", "RENTED", "INACTIVE"]).optional(),
-  price: z.number().positive("Fiyat pozitif olmalı"),
+  // 0 = fiyat belirtilmemiş (Arşiv vb. tipler). SATILIK/KIRALIK için >0 şartı refine'da.
+  price: z.number().nonnegative("Fiyat negatif olamaz"),
   // Aylık kira (KIRALIK listing'lerde dolu). Sadece SATILIK ilanlarda null.
   monthlyRent: z.number().nonnegative().nullable().optional(),
   currency: z.string().default("TRY"),
@@ -88,9 +89,33 @@ const refinePropertyConstraints = (
     totalFloors?: number | null;
     parkingSpotCount?: number | null;
     hasParking?: boolean | null;
+    listingType?: string;
+    listingTypes?: string[];
+    price?: number;
+    monthlyRent?: number | null;
   },
   ctx: z.RefinementCtx,
 ) => {
+  // Satılık/Kiralık ilanda fiyat zorunlu; Arşiv ve katalogdaki diğer tiplerde opsiyonel (0 olabilir).
+  // Update şeması partial: sadece gönderilen alanlar kontrol edilir.
+  const types = data.listingTypes ?? (data.listingType ? [data.listingType] : undefined);
+  if (types?.includes("SATILIK") && data.price !== undefined && data.price <= 0) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["price"],
+      message: "Satılık ilanda satış fiyatı girilmeli",
+    });
+  }
+  if (types?.includes("KIRALIK")) {
+    const rent = data.monthlyRent ?? (types.includes("SATILIK") ? undefined : data.price);
+    if (rent != null && rent <= 0) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["monthlyRent"],
+        message: "Kiralık ilanda aylık kira girilmeli",
+      });
+    }
+  }
   if (data.floor != null && data.totalFloors != null && data.floor > data.totalFloors) {
     ctx.addIssue({
       code: "custom",

@@ -631,9 +631,13 @@ export default function PropertyDetailPage() {
               <span className="text-[10px] font-bold tracking-widest text-on-surface-variant uppercase">
                 Fiyat
               </span>
-              <div className="text-4xl font-black text-on-surface mt-1">
-                {formatPrice(property.price, property.currency)}
-              </div>
+              {property.price > 0 ? (
+                <div className="text-4xl font-black text-on-surface mt-1">
+                  {formatPrice(property.price, property.currency)}
+                </div>
+              ) : (
+                <div className="text-2xl font-bold text-on-surface-variant mt-1">Fiyat belirtilmemiş</div>
+              )}
 
               {property.owner ? (
                 <div className="space-y-3 mt-6">

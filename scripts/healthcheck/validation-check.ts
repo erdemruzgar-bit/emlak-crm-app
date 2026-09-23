@@ -14,10 +14,16 @@
 
 import { customerCreateSchema, customerUpdateSchema } from "../../src/lib/validations/customer";
 import { appointmentCreateSchema } from "../../src/lib/validations/appointment";
+import { propertyCreateSchema, propertyUpdateSchema } from "../../src/lib/validations/property";
 
 interface Case {
   name: string;
-  schema: typeof customerCreateSchema | typeof customerUpdateSchema | typeof appointmentCreateSchema;
+  schema:
+    | typeof customerCreateSchema
+    | typeof customerUpdateSchema
+    | typeof appointmentCreateSchema
+    | typeof propertyCreateSchema
+    | typeof propertyUpdateSchema;
   input: unknown;
   expect: "pass" | "fail";
   // Eğer "fail" beklendiyse, hata mesajının bu substring'i içermesi beklenir (opsiyonel).
@@ -278,6 +284,78 @@ const cases: Case[] = [
     input: { ...validAppointment({}), startDate: "2026-06-12 14:30" },
     expect: "fail",
   },
+
+  // ─── İlan fiyatı (regresyon: 2026-09-23 sadece Arşiv + Pasif → "Fiyat pozitif olmalı") ───
+  {
+    name: "İlan: REGRESYON — sadece Arşiv, fiyat 0 (23 Eyl bug)",
+    schema: propertyCreateSchema,
+    input: validProperty({ listingType: "ARSIV", listingTypes: ["ARSIV"], price: 0 }),
+    expect: "pass",
+  },
+  {
+    name: "İlan: REGRESYON — düzenlemede sadece Arşiv + Pasif, fiyat 0 (23 Eyl bug)",
+    schema: propertyUpdateSchema,
+    input: validProperty({ listingType: "ARSIV", listingTypes: ["ARSIV"], status: "INACTIVE", price: 0 }),
+    expect: "pass",
+  },
+  {
+    name: "İlan: sadece Arşiv, kayıtlı fiyat korunur",
+    schema: propertyUpdateSchema,
+    input: validProperty({ listingType: "ARSIV", listingTypes: ["ARSIV"], price: 17150000 }),
+    expect: "pass",
+  },
+  {
+    name: "İlan: katalogdan özel tip (Satılık/Kiralık değil), fiyat 0",
+    schema: propertyCreateSchema,
+    input: validProperty({ listingType: "DEVREN", listingTypes: ["DEVREN"], price: 0 }),
+    expect: "pass",
+  },
+  {
+    name: "İlan: negatif fiyat",
+    schema: propertyCreateSchema,
+    input: validProperty({ listingType: "ARSIV", listingTypes: ["ARSIV"], price: -1 }),
+    expect: "fail",
+    expectErrorContains: "negatif",
+  },
+  {
+    name: "İlan: Satılık, fiyat 0",
+    schema: propertyCreateSchema,
+    input: validProperty({ price: 0 }),
+    expect: "fail",
+    expectErrorContains: "Satılık",
+  },
+  {
+    name: "İlan: Satılık + Arşiv, fiyat 0",
+    schema: propertyUpdateSchema,
+    input: validProperty({ listingTypes: ["SATILIK", "ARSIV"], price: 0 }),
+    expect: "fail",
+    expectErrorContains: "Satılık",
+  },
+  {
+    name: "İlan: sadece Kiralık, kira 0",
+    schema: propertyCreateSchema,
+    input: validProperty({ listingType: "KIRALIK", listingTypes: ["KIRALIK"], price: 0, monthlyRent: 0 }),
+    expect: "fail",
+    expectErrorContains: "Kiralık",
+  },
+  {
+    name: "İlan: sadece Kiralık (legacy — kira price'ta, monthlyRent yok)",
+    schema: propertyCreateSchema,
+    input: validProperty({ listingType: "KIRALIK", listingTypes: ["KIRALIK"], price: 25000 }),
+    expect: "pass",
+  },
+  {
+    name: "İlan: Satılık + Kiralık, satış + kira dolu",
+    schema: propertyCreateSchema,
+    input: validProperty({ listingTypes: ["SATILIK", "KIRALIK"], price: 5000000, monthlyRent: 25000 }),
+    expect: "pass",
+  },
+  {
+    name: "İlan: sadece durum güncellemesi (fiyat/tip gönderilmedi)",
+    schema: propertyUpdateSchema,
+    input: { status: "INACTIVE" },
+    expect: "pass",
+  },
 ];
 
 function validCustomer(overrides: Record<string, unknown>) {
@@ -286,6 +364,17 @@ function validCustomer(overrides: Record<string, unknown>) {
     lastName: "Veli",
     customerType: "BUYER",
     consents: { acikRiza: true, aydinlatma: true, pazarlama: false },
+    ...overrides,
+  };
+}
+
+function validProperty(overrides: Record<string, unknown>) {
+  return {
+    title: "NEV MAHAL A - 041",
+    listingType: "SATILIK",
+    listingTypes: ["SATILIK"],
+    propertyType: "DAIRE",
+    price: 5000000,
     ...overrides,
   };
 }

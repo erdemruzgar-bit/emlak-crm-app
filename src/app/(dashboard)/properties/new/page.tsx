@@ -165,7 +165,13 @@ export default function NewPropertyPage() {
       setLoading(false);
       return;
     }
-    const _price = _showSale ? _salePrice : _rentPrice; // schema price required+positive
+    // Satılık/Kiralık yoksa (Arşiv vb.) fiyat opsiyonel: genel "Fiyat" alanı da salePrice'a bağlı, boşsa 0.
+    if (!_showSale && !_showRent && !(Number.isFinite(_salePrice) && _salePrice >= 0)) {
+      toast.error("Fiyat geçerli bir sayı olmalı (boş bırakılabilir)");
+      setLoading(false);
+      return;
+    }
+    const _price = _showSale || !_showRent ? _salePrice : _rentPrice;
     const _monthlyRent = _showRent ? _rentPrice : null;
 
     const body = {
@@ -368,7 +374,22 @@ export default function NewPropertyPage() {
                 />
               </div>
             )}
-            {!showSale && !showRent && (
+            {selectedListingTypes.length > 0 && !showSale && !showRent && (
+              <div>
+                <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">
+                  Fiyat (TL) <span className="ml-1 text-[10px] font-normal normal-case">(opsiyonel)</span>
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="any"
+                  value={salePrice}
+                  onChange={(e) => setSalePrice(e.target.value)}
+                  className={inputClass}
+                />
+              </div>
+            )}
+            {selectedListingTypes.length === 0 && (
               <div className="sm:col-span-2 text-[11px] text-on-surface-variant italic px-1">
                 Önce yukarıdan en az bir ilan tipi (Satılık veya Kiralık) seçin → fiyat alanı görünecek.
               </div>
